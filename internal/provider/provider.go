@@ -6,6 +6,8 @@ package provider
 import (
 	"context"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
@@ -15,41 +17,48 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure ScaffoldingProvider satisfies various provider interfaces.
-var _ provider.Provider = &ScaffoldingProvider{}
-var _ provider.ProviderWithFunctions = &ScaffoldingProvider{}
+// Ensure awxProvider satisfies various provider interfaces.
+var _ provider.Provider = &awxProvider{}
+var _ provider.ProviderWithFunctions = &awxProvider{}
 
-// ScaffoldingProvider defines the provider implementation.
-type ScaffoldingProvider struct {
+// awxProvider defines the provider implementation.
+type awxProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-// ScaffoldingProviderModel describes the provider data model.
-type ScaffoldingProviderModel struct {
+// awxProviderModel describes the provider data model.
+type awxProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
+	Token    types.String `tfsdk:"token"`
 }
 
-func (p *ScaffoldingProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "scaffolding"
+func (p *awxProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "awx"
 	resp.Version = p.version
 }
 
-func (p *ScaffoldingProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "Example provider attribute",
-				Optional:            true,
+				//MarkdownDescription: "Example provider attribute",
+				Optional: true,
+			},
+			"token": schema.StringAttribute{
+				Optional: true,
 			},
 		},
 	}
 }
 
-func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScaffoldingProviderModel
+func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	token := os.Getenv("TOWER_OAUTH_TOKEN")
+	endpoint := os.Getenv("TOWER_HOST")
+
+	var data awxProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -58,35 +67,70 @@ func (p *ScaffoldingProvider) Configure(ctx context.Context, req provider.Config
 	}
 
 	// Configuration values are now available.
-	// if data.Endpoint.IsNull() { /* ... */ }
+	if data.Endpoint.ValueString() != "" {
+		endpoint = data.Endpoint.ValueString()
+	}
+
+	if data.Token.ValueString() != "" {
+		token = data.Token.ValueString()
+	}
+
+	if token == "" {
+		resp.Diagnostics.AddError(
+			"Missing API Token Configuration",
+			"While configuring the provider, the API token was not found in "+
+				"the TOWER_OAUTH_TOKEN environment variable or provider "+
+				"configuration block token attribute.",
+		)
+		// Not returning early allows the logic to collect all errors.
+	}
+
+	if endpoint == "" {
+		resp.Diagnostics.AddError(
+			"Missing API Endpoint Configuration",
+			"While configuring the provider, the API endpoint hostname was not found in "+
+				"the TOWER_HOST environment variable or provider "+
+				"configuration block endpoint attribute.",
+		)
+		// Not returning early allows the logic to collect all errors.
+	}
 
 	// Example client configuration for data sources and resources
-	client := http.DefaultClient
+	httpclient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	client := new(JobTemplateSurveyResource)
+
+	client.client = httpclient
+	client.endpoint = endpoint
+	client.token = token
+
 	resp.DataSourceData = client
 	resp.ResourceData = client
 }
 
-func (p *ScaffoldingProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewExampleResource,
+		NewJobTemplateSurveyResource,
 	}
 }
 
-func (p *ScaffoldingProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewExampleDataSource,
+		//NewExampleDataSource,
 	}
 }
 
-func (p *ScaffoldingProvider) Functions(ctx context.Context) []func() function.Function {
+func (p *awxProvider) Functions(ctx context.Context) []func() function.Function {
 	return []func() function.Function{
-		NewExampleFunction,
+		//NewExampleFunction,
 	}
 }
 
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &ScaffoldingProvider{
+		return &awxProvider{
 			version: version,
 		}
 	}
