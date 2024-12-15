@@ -39,14 +39,14 @@ type JobTemplateSurveyResourceModel struct {
 	Id          types.String      `tfsdk:"id"`
 	Name        types.String      `tfsdk:"name"`
 	Description types.String      `tfsdk:"description"`
-	Spec        []SurveySpecModel `tfsdk:"spec"` //TODO unsure
+	Spec        []SurveySpecModel `tfsdk:"spec"`
 }
 
 type SurveySpecModel struct {
-	Max  types.Int32  `tfsdk:"max"`
-	Min  types.Int32  `tfsdk:"min"`
-	Type types.String `tfsdk:"type"`
-	//Choices             types.ListType `tfsdk:"choices"` //TODO unsure
+	Max                 types.Int32  `tfsdk:"max"`
+	Min                 types.Int32  `tfsdk:"min"`
+	Type                types.String `tfsdk:"type"`
+	Choices             types.List   `tfsdk:"choices"`
 	Default             types.String `tfsdk:"default"`
 	Required            types.Bool   `tfsdk:"required"`
 	Variable            types.String `tfsdk:"variable"`
@@ -57,18 +57,17 @@ type SurveySpecModel struct {
 type JobTemplateSurvey struct {
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
-	Spec        []SurveySpec `json:"spec"` // if this isn't any at end then unmarshal wont' work
+	Spec        []SurveySpec `json:"spec"`
 }
 
 type SurveySpec struct {
-	Max  int    `json:"max"`
-	Min  int    `json:"min"`
-	Type string `json:"type"`
-	//Choices  any    `json:"choices"`
-	Default  any    `json:"default"`
-	Required bool   `json:"required"`
-	Variable string `json:"variable"`
-	//`json:"new_question"`: true,
+	Max                 int    `json:"max"`
+	Min                 int    `json:"min"`
+	Type                string `json:"type"`
+	Choices             any    `json:"choices"`
+	Default             any    `json:"default"`
+	Required            bool   `json:"required"`
+	Variable            string `json:"variable"`
 	QuestionName        string `json:"question_name"`
 	QuestionDescription string `json:"question_description"`
 }
@@ -85,10 +84,6 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,
-				// MarkdownDescription: "Example identifier",
-				// PlanModifiers: []planmodifier.String{
-				// 	stringplanmodifier.UseStateForUnknown(),
-				// },
 			},
 			"name": schema.StringAttribute{
 				Required: true,
@@ -96,7 +91,7 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 			"description": schema.StringAttribute{
 				Required: true,
 			},
-			"spec": schema.ListNestedAttribute{ //TODO this whole block is not certain
+			"spec": schema.ListNestedAttribute{
 				Required: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -140,12 +135,12 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 							MarkdownDescription: "Default value for the survey question.",
 							Description:         "Default value for the survey question.",
 						},
-						// "choices": schema.ListAttribute{ //TODO is this correct and match struct reciever?
-						// 	ElementType:         types.StringType,
-						// 	Optional:            true,
-						// 	MarkdownDescription: "List of strings which define the choices users can make for multichoice or multiselect.",
-						// 	Description:         "List of strings which define the choices users can make for multichoice or multiselect.",
-						// },
+						"choices": schema.ListAttribute{
+							ElementType:         types.StringType,
+							Optional:            true,
+							MarkdownDescription: "List of strings which define the choices users can make for multichoice or multiselect.",
+							Description:         "List of strings which define the choices users can make for multichoice or multiselect.",
+						},
 					},
 				},
 			},
@@ -159,17 +154,7 @@ func (r *JobTemplateSurveyResource) Configure(ctx context.Context, req resource.
 		return
 	}
 
-	//var tempPointer *JobTemplateSurveyResource
 	configureData := req.ProviderData.(*JobTemplateSurveyResource)
-	//fmt.Println(tempPointer)
-	// if !ok {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unexpected Resource Configure Type",
-	// 		fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-	// 	)
-
-	// 	return
-	// }
 
 	r.client = configureData.client
 	r.endpoint = configureData.endpoint
@@ -187,16 +172,6 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	//	get Config for provider
-	var configData awxProviderModel
-
-	diags := req.Config.Get(ctx, &configData)
-	resp.Diagnostics.Append(diags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
@@ -205,7 +180,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := configData.Endpoint.ValueString() + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
 	// get body data for HTTP request
 	var bodyData JobTemplateSurvey
@@ -214,13 +189,30 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 
 	var specs []SurveySpec
 	for _, spec := range data.Spec {
+
+		// convert choices to slice of strings
+		stringSlice := make([]string, 0, len(spec.Choices.Elements()))
+		diag := spec.Choices.ElementsAs(ctx, &stringSlice, true)
+		resp.Diagnostics.Append(diag...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// convert to interface{} type
+		var finalList interface{}
+		finalList = stringSlice
+
 		specs = append(specs, SurveySpec{
 			Type:                spec.Type.ValueString(),
 			QuestionName:        spec.QuestionName.ValueString(),
 			QuestionDescription: spec.QuestionDescription.ValueString(),
 			Variable:            spec.Variable.ValueString(),
 			Required:            spec.Required.ValueBool(),
-			//TODO add the rest of the items like choices, default, etc...
+			Max:                 int(spec.Max.ValueInt32()),
+			Min:                 int(spec.Min.ValueInt32()),
+			Choices:             finalList,
+			Default:             spec.Default.ValueString(),
 		})
 	}
 
@@ -242,7 +234,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+configData.Token.ValueString())
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
 
 	httpResp, err := r.client.Do(httpReq)
 	if err != nil {
@@ -255,12 +247,6 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 
 	}
 
-	// For the purposes of this example code, hardcoding a response value to
-	// save into the Terraform state.
-	// data.Id = types.StringValue("example-id")
-
-	// Write logs using the tflog package
-	// Documentation: https://terraform.io/plugin/log
 	tflog.Trace(ctx, "created a resource")
 
 	// Save data into Terraform state
@@ -277,25 +263,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	//
-	// do http request to get data
-	//
-
-	//	get Config for provider
-	//var configData awxProviderModel
-	//var temper schema.StringAttribute
-	//temp := req.ProviderMeta.GetAttribute(ctx, path.Root("endpoint"), &configData)
-	//temp := r.endpoint
-	//temper := r.token
-	//fmt.Println(temp)
-	//fmt.Println(temper)
-	//diags := req.ProviderMeta.Get(ctx, &configData)
-	// resp.Diagnostics.Append(diags...)
-
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-
 	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
@@ -305,32 +272,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 	}
 
 	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
-
-	// // get body data for HTTP request
-	// var bodyData JobTemplateSurvey
-	// bodyData.Name = data.Name.ValueString()
-	// bodyData.Description = data.Description.ValueString()
-
-	// var specs []SurveySpec
-	// for _, spec := range data.Spec {
-	// 	specs = append(specs, SurveySpec{
-	// 		Type:                spec.Type.ValueString(),
-	// 		QuestionName:        spec.QuestionName.ValueString(),
-	// 		QuestionDescription: spec.QuestionDescription.ValueString(),
-	// 		Variable:            spec.Variable.ValueString(),
-	// 		Required:            spec.Required.ValueBool(),
-	// 		//TODO add the rest of the items like choices, default, etc...
-	// 	})
-	// }
-
-	//bodyData.Spec = specs
-
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// }
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -380,9 +321,20 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 		specModel.Max = types.Int32Value(int32(item.Max))
 		specModel.Min = types.Int32Value(int32(item.Min))
 		specModel.Type = types.StringValue(item.Type)
-		//specModel.Choices
-		//TODO fix choices on line above
-		//specModel.Default = types.BoolValue(strconv.ParseBool(item.Default))
+
+		elements := make([]string, 0, len(item.Choices.([]any)))
+
+		for _, v := range item.Choices.([]any) {
+			elements = append(elements, v.(string))
+		}
+
+		listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
+		if diags.HasError() {
+			return
+		}
+
+		specModel.Choices = listValue
+
 		specModel.Default = types.StringValue(item.Default.(string))
 		specModel.Required = types.BoolValue(item.Required)
 		specModel.QuestionName = types.StringValue(item.QuestionName)
@@ -393,9 +345,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 	data.Spec = dataSpecs
 
-	//
-	// then move data from request into data
-	//
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
