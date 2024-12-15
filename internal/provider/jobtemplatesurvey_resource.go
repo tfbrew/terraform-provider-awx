@@ -381,13 +381,37 @@ func (r *JobTemplateSurveyResource) Delete(ctx context.Context, req resource.Del
 		return
 	}
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := r.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete example, got error: %s", err))
-	//     return
-	// }
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+	}
+
+	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate delete request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
+
+	httpResp, err := r.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+
+	}
 }
 
 func (r *JobTemplateSurveyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
