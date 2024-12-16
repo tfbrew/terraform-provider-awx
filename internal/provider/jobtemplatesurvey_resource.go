@@ -216,8 +216,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 		}
 
 		// convert to interface{} type
-		var finalList interface{}
-		finalList = stringSlice
+		var finalList interface{} = stringSlice
 
 		specs = append(specs, SurveySpec{
 			Type:                spec.Type.ValueString(),
