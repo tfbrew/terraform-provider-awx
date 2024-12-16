@@ -9,3 +9,7 @@ type AwxClient struct {
 	endpoint string
 	token    string
 }
+
+func (c *AwxClient) DoSomething(varname string) string {
+	return "hi"
+}

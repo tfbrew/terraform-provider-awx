@@ -33,8 +33,6 @@ func NewJobTemplateSurveyResource() resource.Resource {
 // JobTemplateSurveyResource defines the resource implementation.
 type JobTemplateSurveyResource struct {
 	client *AwxClient
-	//endpoint string
-	//token    string
 }
 
 // JobTemplateSurveyResourceModel describes the resource data model.
