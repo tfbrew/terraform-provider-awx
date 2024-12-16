@@ -424,74 +424,278 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 
 	//responseID := fmt.Sprint(responseData.Id)
 	//data.Id = types.StringValue(responseID)
-	data.Name = types.StringValue(responseData.Name)
-	data.Description = types.StringValue(responseData.Description)
-	data.JobType = types.StringValue(responseData.JobType)
-	data.Inventory = types.Int32Value(int32(responseData.Inventory))
-	data.Project = types.Int32Value(int32(responseData.Project))
-	data.Playbook = types.StringValue(responseData.Playbook)
-	data.ScmBranch = types.StringValue(responseData.ScmBranch)
-	data.Forks = types.Int32Value(int32(responseData.Forks))
-	data.Limit = types.StringValue(responseData.Limit)
-	data.Verbosity = types.Int32Value(int32(responseData.Verbosity))
-	data.ExtraVars = types.StringValue(responseData.ExtraVars)
-	data.JobTags = types.StringValue(responseData.JobTags)
-	data.ForceHandlers = types.BoolValue(responseData.ForceHandlers)
-	//data.SkipTags = types.StringValue(responseData.SkipTags)
+	//data.Name = types.StringValue(responseData.Name)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	//data.Description = types.StringValue(responseData.Description)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	//data.JobType = types.StringValue(responseData.JobType)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_type"), responseData.JobType)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	//data.Inventory = types.Int32Value(int32(responseData.Inventory))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	//data.Project = types.Int32Value(int32(responseData.Project))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), responseData.Project)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	//data.Playbook = types.StringValue(responseData.Playbook)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("playbook"), responseData.Playbook)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.ScmBranch = types.StringValue(responseData.ScmBranch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.Forks = types.Int32Value(int32(responseData.Forks))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("forks"), responseData.Forks)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.Limit = types.StringValue(responseData.Limit)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("limit"), responseData.Limit)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.Verbosity = types.Int32Value(int32(responseData.Verbosity))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("verbosity"), responseData.Verbosity)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.ExtraVars = types.StringValue(responseData.ExtraVars)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), responseData.ExtraVars)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.JobTags = types.StringValue(responseData.JobTags)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_tags"), responseData.JobTags)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.ForceHandlers = types.BoolValue(responseData.ForceHandlers)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("force_handlers"), responseData.ForceHandlers)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	//data.SkipTags = types.StringValue(responseData.SkipTags)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_tags"), responseData.SkipTags)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	//resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
-	//if resp.Diagnostics.HasError() {
-	//	return
 
 	//data.StartAtTask = types.StringValue(responseData.StartAtTask)
-	//data.StartAtTask.IsNull() & responseData.StartAtTask == ""
-	data.Timeout = types.Int32Value(int32(responseData.Timeout))
-	data.UseFactCache = types.BoolValue(responseData.UseFactCache)
-	data.Organization = types.Int32Value(int32(responseData.Organization))
-	data.Status = types.StringValue(responseData.Status)
-	data.ExecutionEnvironment = types.Int32Value(int32(responseData.ExecutionEnvironment))
-	data.HostConfigKey = types.StringValue(responseData.HostConfigKey)
-	data.AskScmBranchOnLaunch = types.BoolValue(responseData.AskScmBranchOnLaunch)
-	data.AskDiffModeOnLaunch = types.BoolValue(responseData.AskDiffModeOnLaunch)
-	data.AskVariablesOnLaunch = types.BoolValue(responseData.AskVariablesOnLaunch)
-	data.AskLimitOnLaunch = types.BoolValue(responseData.AskLimitOnLaunch)
-	data.AskTagsOnLaunch = types.BoolValue(responseData.AskTagsOnLaunch)
-	data.AskSkipTagsOnLaunch = types.BoolValue(responseData.AskSkipTagsOnLaunch)
-	data.AskJobTypeOnLaunch = types.BoolValue(responseData.AskJobTypeOnLaunch)
-	data.AskVerbosityOnLaunch = types.BoolValue(responseData.AskVerbosityOnLaunch)
-	data.AskInventoryOnLaunch = types.BoolValue(responseData.AskInventoryOnLaunch)
-	data.AskCredentialOnLaunch = types.BoolValue(responseData.AskCredentialOnLaunch)
-	data.AskExecutionEnvironmenOnLaunch = types.BoolValue(responseData.AskExecutionEnvironmenOnLaunch)
-	data.AskLablesOnLaunch = types.BoolValue(responseData.AskLablesOnLaunch)
-	data.AskForksOnLaunch = types.BoolValue(responseData.AskForksOnLaunch)
-	data.AskJobSliceCountOnLaunch = types.BoolValue(responseData.AskJobSliceCountOnLaunch)
-	data.AskTimeoutOnLaunch = types.BoolValue(responseData.AskTimeoutOnLaunch)
-	data.AskInstanceGroupsOnLaunch = types.BoolValue(responseData.AskInstanceGroupsOnLaunch)
-	data.SurveyEnabled = types.BoolValue(responseData.SurveyEnabled)
-	data.BecomeEnabled = types.BoolValue(responseData.BecomeEnabled)
-	data.DiffMode = types.BoolValue(responseData.DiffMode)
-	data.AllowSimultaneous = types.BoolValue(responseData.AllowSimultaneous)
-	if responseData.CustomVirtualEnv == nil {
-		data.CustomVirtualEnv = types.StringValue("")
-	} else {
-		data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv.(string))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("start_at_tags"), responseData.StartAtTask)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	data.JobSliceCount = types.Int32Value(int32(responseData.JobSliceCount))
-	data.WebhookService = types.StringValue(responseData.WebhookService)
-	if responseData.WebhookCredential == nil {
-		data.WebhookCredential = types.StringValue("")
-	} else {
-		data.WebhookCredential = types.StringValue(responseData.WebhookCredential.(string))
-	}
-	data.PreventInstanceGroupFallback = types.BoolValue(responseData.PreventInstanceGroupFallback)
 
+	// data.Timeout = types.Int32Value(int32(responseData.Timeout))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), responseData.Timeout)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.UseFactCache = types.BoolValue(responseData.UseFactCache)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("use_fact_cache"), responseData.UseFactCache)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.Organization = types.Int32Value(int32(responseData.Organization))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.Status = types.StringValue(responseData.Status)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("status"), responseData.Status)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.ExecutionEnvironment = types.Int32Value(int32(responseData.ExecutionEnvironment))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), responseData.ExecutionEnvironment)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.HostConfigKey = types.StringValue(responseData.HostConfigKey)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host_config_key"), responseData.HostConfigKey)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.AskScmBranchOnLaunch = types.BoolValue(responseData.AskScmBranchOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_scm_branch_on_launch"), responseData.AskScmBranchOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskDiffModeOnLaunch = types.BoolValue(responseData.AskDiffModeOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_diff_mode_on_launch"), responseData.AskDiffModeOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskVariablesOnLaunch = types.BoolValue(responseData.AskVariablesOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_variables_on_launch"), responseData.AskVariablesOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	//data.AskLimitOnLaunch = types.BoolValue(responseData.AskLimitOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_limit_on_launch"), responseData.AskLimitOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskTagsOnLaunch = types.BoolValue(responseData.AskTagsOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_tags_on_launch"), responseData.AskTagsOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskSkipTagsOnLaunch = types.BoolValue(responseData.AskSkipTagsOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_skip_tags_on_launch"), responseData.AskSkipTagsOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskJobTypeOnLaunch = types.BoolValue(responseData.AskJobTypeOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_job_type_on_launch"), responseData.AskJobTypeOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskVerbosityOnLaunch = types.BoolValue(responseData.AskVerbosityOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_verbosity_on_launch"), responseData.AskVerbosityOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskInventoryOnLaunch = types.BoolValue(responseData.AskInventoryOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_inventory_on_launch"), responseData.AskInventoryOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskCredentialOnLaunch = types.BoolValue(responseData.AskCredentialOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_credential_on_launch"), responseData.AskCredentialOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskExecutionEnvironmenOnLaunch = types.BoolValue(responseData.AskExecutionEnvironmenOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_execution_environment_on_launch"), responseData.AskExecutionEnvironmenOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskLablesOnLaunch = types.BoolValue(responseData.AskLablesOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_labels_on_launch"), responseData.AskLablesOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskForksOnLaunch = types.BoolValue(responseData.AskForksOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_forks_on_launch"), responseData.AskForksOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskJobSliceCountOnLaunch = types.BoolValue(responseData.AskJobSliceCountOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_job_slice_count_on_launch"), responseData.AskJobSliceCountOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AskTimeoutOnLaunch = types.BoolValue(responseData.AskTimeoutOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_timeout_on_launch"), responseData.AskTimeoutOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	//data.AskInstanceGroupsOnLaunch = types.BoolValue(responseData.AskInstanceGroupsOnLaunch)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_instance_groups_on_launch"), responseData.AskInstanceGroupsOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// data.SurveyEnabled = types.BoolValue(responseData.SurveyEnabled)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("survey_enabled"), responseData.SurveyEnabled)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.BecomeEnabled = types.BoolValue(responseData.BecomeEnabled)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("become_enabled"), responseData.BecomeEnabled)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.DiffMode = types.BoolValue(responseData.DiffMode)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), responseData.DiffMode)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// data.AllowSimultaneous = types.BoolValue(responseData.AllowSimultaneous)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_simultaneous"), responseData.AllowSimultaneous)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if responseData.CustomVirtualEnv == nil {
+		// data.CustomVirtualEnv = types.StringValue("")
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), types.StringValue(""))...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		// data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv.(string))
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), responseData.CustomVirtualEnv.(string))...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	// data.JobSliceCount = types.Int32Value(int32(responseData.JobSliceCount))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_slice_count"), responseData.JobSliceCount)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	//data.WebhookService = types.StringValue(responseData.WebhookService)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_service"), responseData.WebhookService)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if responseData.WebhookCredential == nil {
+		//data.WebhookCredential = types.StringValue("")
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), types.StringValue(""))...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		//data.WebhookCredential = types.StringValue(responseData.WebhookCredential.(string))
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), responseData.WebhookCredential.(string))...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	//data.PreventInstanceGroupFallback = types.BoolValue(responseData.PreventInstanceGroupFallback)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("prevent_instance_group_fallback"), responseData.PreventInstanceGroupFallback)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	//resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers
