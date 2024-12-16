@@ -760,7 +760,6 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	//resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers
 func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateResourceModel
 
@@ -771,13 +770,92 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := r.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update example, got error: %s", err))
-	//     return
-	// }
+	var bodyData JobTemplate
+	bodyData.Name = data.Name.ValueString()
+	bodyData.Description = data.Description.ValueString()
+	bodyData.JobType = data.JobType.ValueString()
+	bodyData.Inventory = int(data.Inventory.ValueInt32())
+	bodyData.Project = int(data.Project.ValueInt32())
+	bodyData.Playbook = data.Playbook.ValueString()
+	bodyData.ScmBranch = data.ScmBranch.ValueString()
+	bodyData.Forks = int(data.Forks.ValueInt32())
+	bodyData.Limit = data.Limit.ValueString()
+	bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+	bodyData.ExtraVars = data.ExtraVars.ValueString()
+	bodyData.JobTags = data.JobTags.ValueString()
+	bodyData.ForceHandlers = data.ForceHandlers.ValueBool()
+	bodyData.SkipTags = data.SkipTags.ValueString()
+	bodyData.StartAtTask = data.StartAtTask.ValueString()
+	bodyData.Timeout = int(data.Timeout.ValueInt32())
+	bodyData.UseFactCache = data.UseFactCache.ValueBool()
+	bodyData.Organization = int(data.Organization.ValueInt32())
+	bodyData.Status = data.Status.ValueString()
+	bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
+	bodyData.HostConfigKey = data.HostConfigKey.ValueString()
+	bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()
+	bodyData.AskDiffModeOnLaunch = data.AskDiffModeOnLaunch.ValueBool()
+	bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()
+	bodyData.AskLimitOnLaunch = data.AskLimitOnLaunch.ValueBool()
+	bodyData.AskTagsOnLaunch = data.AskTagsOnLaunch.ValueBool()
+	bodyData.AskSkipTagsOnLaunch = data.AskSkipTagsOnLaunch.ValueBool()
+	bodyData.AskJobTypeOnLaunch = data.AskJobTypeOnLaunch.ValueBool()
+	bodyData.AskVerbosityOnLaunch = data.AskVerbosityOnLaunch.ValueBool()
+	bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()
+	bodyData.AskCredentialOnLaunch = data.AskCredentialOnLaunch.ValueBool()
+	bodyData.AskExecutionEnvironmenOnLaunch = data.AskExecutionEnvironmenOnLaunch.ValueBool()
+	bodyData.AskLablesOnLaunch = data.AskLablesOnLaunch.ValueBool()
+	bodyData.AskForksOnLaunch = data.AskForksOnLaunch.ValueBool()
+	bodyData.AskJobSliceCountOnLaunch = data.AskJobSliceCountOnLaunch.ValueBool()
+	bodyData.AskTimeoutOnLaunch = data.AskTimeoutOnLaunch.ValueBool()
+	bodyData.AskInstanceGroupsOnLaunch = data.AskInstanceGroupsOnLaunch.ValueBool()
+	bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
+	bodyData.BecomeEnabled = data.BecomeEnabled.ValueBool()
+	bodyData.DiffMode = data.DiffMode.ValueBool()
+	bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
+	bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
+	bodyData.JobSliceCount = int(data.JobSliceCount.ValueInt32())
+	bodyData.WebhookService = data.WebhookService.ValueString()
+	bodyData.WebhookCredential = data.WebhookCredential.ValueString()
+	bodyData.PreventInstanceGroupFallback = data.PreventInstanceGroupFallback.ValueBool()
+
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+	}
+
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+	}
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		return
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+		return
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
