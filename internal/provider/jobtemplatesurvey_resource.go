@@ -15,6 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -64,7 +67,7 @@ type SurveySpec struct {
 	Max                 int    `json:"max"`
 	Min                 int    `json:"min"`
 	Type                string `json:"type"`
-	Choices             any    `json:"choices"`
+	Choices             any    `json:"choices,omitempty"`
 	Default             any    `json:"default"`
 	Required            bool   `json:"required"`
 	Variable            string `json:"variable"`
@@ -78,21 +81,34 @@ func (r *JobTemplateSurveyResource) Metadata(ctx context.Context, req resource.M
 
 func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		//TODO fix description on schema and markdown descr
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Example resource",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"spec": schema.ListNestedAttribute{
 				Required: true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplace(),
+				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"max": schema.Int32Attribute{
@@ -322,18 +338,23 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 		specModel.Min = types.Int32Value(int32(item.Min))
 		specModel.Type = types.StringValue(item.Type)
 
-		elements := make([]string, 0, len(item.Choices.([]any)))
+		if item.Choices != nil {
 
-		for _, v := range item.Choices.([]any) {
-			elements = append(elements, v.(string))
+			elements := make([]string, 0, len(item.Choices.([]any)))
+
+			for _, v := range item.Choices.([]any) {
+				elements = append(elements, v.(string))
+			}
+
+			listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
+			if diags.HasError() {
+				return
+			}
+
+			specModel.Choices = listValue
+		} else {
+			specModel.Choices = types.ListNull(types.StringType)
 		}
-
-		listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
-		if diags.HasError() {
-			return
-		}
-
-		specModel.Choices = listValue
 
 		specModel.Default = types.StringValue(item.Default.(string))
 		specModel.Required = types.BoolValue(item.Required)
@@ -349,6 +370,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers
 func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateSurveyResourceModel
 
