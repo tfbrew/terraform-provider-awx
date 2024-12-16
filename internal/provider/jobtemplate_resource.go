@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -315,49 +316,110 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// }
+	url := r.client.endpoint + "/api/v2/job_templates/"
 
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	// get body data for HTTP request
+	var bodyData JobTemplate
+	bodyData.Name = data.Name.ValueString()
+	bodyData.Description = data.Description.ValueString()
+	bodyData.JobType = data.JobType.ValueString()
+	bodyData.Inventory = int(data.Inventory.ValueInt32())
+	bodyData.Project = int(data.Project.ValueInt32())
+	bodyData.Playbook = data.Playbook.ValueString()
+	bodyData.ScmBranch = data.ScmBranch.ValueString()
+	bodyData.Forks = int(data.Forks.ValueInt32())
+	bodyData.Limit = data.Limit.ValueString()
+	bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+	bodyData.ExtraVars = data.ExtraVars.ValueString()
+	bodyData.JobTags = data.JobTags.ValueString()
+	bodyData.ForceHandlers = data.ForceHandlers.ValueBool()
+	bodyData.SkipTags = data.SkipTags.ValueString()
+	bodyData.StartAtTask = data.StartAtTask.ValueString()
+	bodyData.Timeout = int(data.Timeout.ValueInt32())
+	bodyData.UseFactCache = data.UseFactCache.ValueBool()
+	bodyData.Organization = int(data.Organization.ValueInt32())
+	bodyData.Status = data.Status.ValueString()
+	bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
+	bodyData.HostConfigKey = data.HostConfigKey.ValueString()
+	bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()
+	bodyData.AskDiffModeOnLaunch = data.AskDiffModeOnLaunch.ValueBool()
+	bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()
+	bodyData.AskLimitOnLaunch = data.AskLimitOnLaunch.ValueBool()
+	bodyData.AskTagsOnLaunch = data.AskTagsOnLaunch.ValueBool()
+	bodyData.AskSkipTagsOnLaunch = data.AskSkipTagsOnLaunch.ValueBool()
+	bodyData.AskJobTypeOnLaunch = data.AskJobTypeOnLaunch.ValueBool()
+	bodyData.AskVerbosityOnLaunch = data.AskVerbosityOnLaunch.ValueBool()
+	bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()
+	bodyData.AskCredentialOnLaunch = data.AskCredentialOnLaunch.ValueBool()
+	bodyData.AskExecutionEnvironmenOnLaunch = data.AskExecutionEnvironmenOnLaunch.ValueBool()
+	bodyData.AskLablesOnLaunch = data.AskLablesOnLaunch.ValueBool()
+	bodyData.AskForksOnLaunch = data.AskForksOnLaunch.ValueBool()
+	bodyData.AskJobSliceCountOnLaunch = data.AskJobSliceCountOnLaunch.ValueBool()
+	bodyData.AskTimeoutOnLaunch = data.AskTimeoutOnLaunch.ValueBool()
+	bodyData.AskInstanceGroupsOnLaunch = data.AskInstanceGroupsOnLaunch.ValueBool()
+	bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
+	bodyData.BecomeEnabled = data.BecomeEnabled.ValueBool()
+	bodyData.DiffMode = data.DiffMode.ValueBool()
+	bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
+	bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
+	bodyData.JobSliceCount = int(data.JobSliceCount.ValueInt32())
+	bodyData.WebhookService = data.WebhookService.ValueString()
+	bodyData.WebhookCredential = data.WebhookCredential.ValueString()
+	bodyData.PreventInstanceGroupFallback = data.PreventInstanceGroupFallback.ValueBool()
 
-	// // get body data for HTTP request
-	// var bodyData JobTemplate
-	// bodyData.Name = data.Name.ValueString()
-	// bodyData.Description = data.Description.ValueString()
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+	}
 
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// }
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// }
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		return
+	}
+	if httpResp.StatusCode != 201 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 201, got %v. ", httpResp.StatusCode))
+		return
+	}
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	// }
-	// if httpResp.StatusCode != 200 {
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+	tmp := struct {
+		Id int `json:"id"`
+	}{}
 
-	// }
+	defer httpResp.Body.Close()
+	httpRepsBodyData, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to get http response body",
+			fmt.Sprintf("Error was %v", err))
+		return
+	}
+	err = json.Unmarshal(httpRepsBodyData, &tmp)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to get unmarshall http response to grab ID",
+			fmt.Sprintf("error was %v", err))
+		return
+	}
+
+	idAsString := strconv.Itoa(tmp.Id)
+
+	data.Id = types.StringValue(idAsString)
 
 	tflog.Trace(ctx, "created a resource")
 
