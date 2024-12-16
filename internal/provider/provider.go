@@ -100,7 +100,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		Timeout: 30 * time.Second,
 	}
 
-	client := new(JobTemplateSurveyResource)
+	client := new(AwxClient)
 
 	client.client = httpclient
 	client.endpoint = endpoint
@@ -113,6 +113,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewJobTemplateSurveyResource,
+		//NewJobTemplateResource,
 	}
 }
 

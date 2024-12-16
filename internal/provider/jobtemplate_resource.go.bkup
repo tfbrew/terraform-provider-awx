@@ -1,0 +1,292 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
+package provider
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var _ resource.Resource = &JobTemplateResource{}
+var _ resource.ResourceWithImportState = &JobTemplateResource{}
+
+func NewJobTemplateResource() resource.Resource {
+	return &JobTemplateResource{}
+}
+
+// JobTemplateResource defines the resource implementation.
+type JobTemplateResource struct {
+	client   *http.Client
+	endpoint string
+	token    string
+}
+
+// JobTemplateResourceModel describes the resource data model.
+type JobTemplateResourceModel struct {
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+}
+
+type JobTemplate struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+func (r *JobTemplateResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_job_template"
+}
+
+func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		//TODO fix description on schema and markdown descr
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Example resource",
+
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"description": schema.StringAttribute{
+				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+		},
+	}
+}
+
+func (r *JobTemplateResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	// Prevent panic if the provider has not been configured.
+	if req.ProviderData == nil {
+		return
+	}
+
+	configureData := req.ProviderData.(*JobTemplateResource)
+
+	r.client = configureData.client
+	r.endpoint = configureData.endpoint
+	r.token = configureData.token
+
+}
+
+func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data JobTemplateResourceModel
+
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+	}
+
+	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+
+	// get body data for HTTP request
+	var bodyData JobTemplate
+	bodyData.Name = data.Name.ValueString()
+	bodyData.Description = data.Description.ValueString()
+
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+	}
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
+
+	httpResp, err := r.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+
+	}
+
+	tflog.Trace(ctx, "created a resource")
+
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data JobTemplateResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+	}
+
+	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
+
+	httpResp, err := r.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+
+	}
+
+	var responseData JobTemplate
+
+	body, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Uanble to get all data out of the http response data body",
+			fmt.Sprintf("Body got %v. ", body))
+	}
+
+	err = json.Unmarshal(body, &responseData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Uanble unmarshall response body into object",
+			fmt.Sprintf("Error =  %v. ", err.Error()))
+	}
+
+	data.Name = types.StringValue(responseData.Name)
+	data.Description = types.StringValue(responseData.Description)
+	//data.Spec =
+
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers
+func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data JobTemplateResourceModel
+
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If applicable, this is a great opportunity to initialize any necessary
+	// provider client data and make a call using it.
+	// httpResp, err := r.client.Do(httpReq)
+	// if err != nil {
+	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update example, got error: %s", err))
+	//     return
+	// }
+
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data JobTemplateResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+	}
+
+	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate delete request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
+
+	httpResp, err := r.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+
+	}
+}
+
+func (r *JobTemplateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}

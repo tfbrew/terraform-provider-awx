@@ -32,9 +32,9 @@ func NewJobTemplateSurveyResource() resource.Resource {
 
 // JobTemplateSurveyResource defines the resource implementation.
 type JobTemplateSurveyResource struct {
-	client   *http.Client
-	endpoint string
-	token    string
+	client *AwxClient
+	//endpoint string
+	//token    string
 }
 
 // JobTemplateSurveyResourceModel describes the resource data model.
@@ -170,12 +170,9 @@ func (r *JobTemplateSurveyResource) Configure(ctx context.Context, req resource.
 		return
 	}
 
-	configureData := req.ProviderData.(*JobTemplateSurveyResource)
+	configureData := req.ProviderData.(*AwxClient)
 
-	r.client = configureData.client
-	r.endpoint = configureData.endpoint
-	r.token = configureData.token
-
+	r.client = configureData
 }
 
 func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -196,7 +193,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
 	// get body data for HTTP request
 	var bodyData JobTemplateSurvey
@@ -249,9 +246,9 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
 
-	httpResp, err := r.client.Do(httpReq)
+	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
 	}
@@ -286,7 +283,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -297,9 +294,9 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
 
-	httpResp, err := r.client.Do(httpReq)
+	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
 	}
@@ -410,7 +407,7 @@ func (r *JobTemplateSurveyResource) Delete(ctx context.Context, req resource.Del
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
@@ -421,9 +418,9 @@ func (r *JobTemplateSurveyResource) Delete(ctx context.Context, req resource.Del
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.token)
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
 
-	httpResp, err := r.client.Do(httpReq)
+	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
 	}
