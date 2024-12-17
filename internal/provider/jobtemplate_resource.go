@@ -774,7 +774,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	//data.WebhookCredential = types.StringValue(responseData.WebhookCredential.(string))
-	if !(data.WebhookService.IsNull() && responseData.WebhookService == "") {
+	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == nil) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), responseData.WebhookCredential.(string))...)
 		if resp.Diagnostics.HasError() {
 			return
