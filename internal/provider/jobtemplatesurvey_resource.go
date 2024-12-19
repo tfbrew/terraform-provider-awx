@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -222,7 +223,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 			Max:                 int(spec.Max.ValueInt32()),
 			Min:                 int(spec.Min.ValueInt32()),
 			Choices:             finalList,
-			Default:             spec.Default.ValueString(),
+			Default:             spec.Default,
 		})
 	}
 
@@ -323,7 +324,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 	data.Name = types.StringValue(responseData.Name)
 	data.Description = types.StringValue(responseData.Description)
-	//data.Spec =
 
 	var dataSpecs []SurveySpecModel
 	for _, item := range responseData.Spec {
@@ -332,7 +332,9 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 		specModel.Min = types.Int32Value(int32(item.Min))
 		specModel.Type = types.StringValue(item.Type)
 
-		if item.Choices != nil {
+		itemChoiceKind := reflect.TypeOf(item.Choices).Kind()
+
+		if itemChoiceKind == reflect.Slice {
 
 			elements := make([]string, 0, len(item.Choices.([]any)))
 
@@ -350,7 +352,14 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 			specModel.Choices = types.ListNull(types.StringType)
 		}
 
-		specModel.Default = types.StringValue(item.Default.(string))
+		itemDefaultKind := reflect.TypeOf(item.Default).Kind()
+		switch itemDefaultKind {
+		case reflect.Float64:
+			specModel.Default = types.StringValue(fmt.Sprint(item.Default.(float64)))
+		default:
+			specModel.Default = types.StringValue(item.Default.(string))
+		}
+
 		specModel.Required = types.BoolValue(item.Required)
 		specModel.QuestionName = types.StringValue(item.QuestionName)
 		specModel.QuestionDescription = types.StringValue(item.QuestionDescription)
