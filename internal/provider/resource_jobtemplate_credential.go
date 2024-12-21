@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -237,14 +238,97 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	//TODO begin
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := r.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update example, got error: %s", err))
-	//     return
-	// }
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.JobTemplateId.ValueString()))
+		return
+	}
+
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+		return
+	}
+
+	var responseData JTCredentialAPIRead
+
+	body, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Uanble to get all data out of the http response data body",
+			fmt.Sprintf("Body got %v. ", body))
+		return
+	}
+
+	err = json.Unmarshal(body, &responseData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Uanble unmarshall response body into object",
+			fmt.Sprintf("Error =  %v. ", err.Error()))
+		return
+	}
+
+	ApiTfCredIds := make([]int, 0, responseData.Count)
+
+	for _, v := range responseData.Results {
+		ApiTfCredIds = append(ApiTfCredIds, v.Id)
+	}
+
+	var PlanCredIds []int
+	diags := data.CredentialIds.ElementsAs(ctx, &PlanCredIds, false)
+	if diags.HasError() {
+		return
+	}
+
+	// diassociate any credentials found currently via API call that
+	//  are no longer in the plan
+	for _, v := range ApiTfCredIds {
+		if !slices.Contains(PlanCredIds, v) {
+			var bodyData DissasocBody
+			bodyData.Id = v
+
+			err := r.client.DisassocJobTemplCredential(ctx, id, bodyData)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
+				return
+			}
+		}
+	}
+	// associate any credentials found in plan that weren't shown in API response
+	for _, v := range PlanCredIds {
+		if !slices.Contains(ApiTfCredIds, v) {
+			var bodyData Result
+			bodyData.Id = v
+
+			err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
+				return
+			}
+		}
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
