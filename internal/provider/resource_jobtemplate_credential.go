@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -33,11 +33,12 @@ type JobTemplateCredentialResource struct {
 
 // JobTemplateCredentialResourceModel describes the resource data model.
 type JobTemplateCredentialResourceModel struct {
-	Id           types.Int32 `tfsdk:"id"`
-	CredentialId types.Int32 `tfsdk:"credential_id"`
+	JobTemplateId types.String `tfsdk:"job_template_id"`
+	CredentialIds types.List   `tfsdk:"credential_ids"`
 }
 
 type JTCredentialAPIRead struct {
+	Count   int      `json:"count"`
 	Results []Result `json:"results"`
 }
 
@@ -56,15 +57,16 @@ func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource
 		MarkdownDescription: "Example resource",
 
 		Attributes: map[string]schema.Attribute{
-			"id": schema.Int32Attribute{
+			"job_template_id": schema.StringAttribute{
 				Required:            true,
 				Description:         "The ID of the containing Job Template.",
 				MarkdownDescription: "The ID of the containing Job Template",
 			},
-			"credential_id": schema.Int32Attribute{
+			"credential_ids": schema.ListAttribute{
 				Required:            true,
 				Description:         "The ID of the credential to be attached to the job template.",
 				MarkdownDescription: "The ID of the credential to be attached to the job template.",
+				ElementType:         types.Int32Type,
 			},
 		},
 	}
@@ -182,7 +184,11 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 	}
 
 	// set url for create HTTP request
-	id := data.Id.ValueInt32()
+	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.JobTemplateId.ValueString()))
+		return
+	}
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
@@ -192,6 +198,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -205,7 +212,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+		return
 	}
 
 	var responseData JTCredentialAPIRead
@@ -215,6 +222,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		resp.Diagnostics.AddError(
 			"Uanble to get all data out of the http response data body",
 			fmt.Sprintf("Body got %v. ", body))
+		return
 	}
 
 	err = json.Unmarshal(body, &responseData)
@@ -222,55 +230,26 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		resp.Diagnostics.AddError(
 			"Uanble unmarshall response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
+		return
 	}
-	//TODO START BELOW
 
-	data.Name = types.StringValue(responseData.Name)
-	data.Description = types.StringValue(responseData.Description)
+	tfCredIds := make([]int, 0, responseData.Count)
 
-	var dataSpecs []SurveySpecModel
-	for _, item := range responseData.Spec {
-		specModel := SurveySpecModel{}
-		specModel.Max = types.Int32Value(int32(item.Max))
-		specModel.Min = types.Int32Value(int32(item.Min))
-		specModel.Type = types.StringValue(item.Type)
-
-		itemChoiceKind := reflect.TypeOf(item.Choices).Kind()
-
-		if itemChoiceKind == reflect.Slice {
-
-			elements := make([]string, 0, len(item.Choices.([]any)))
-
-			for _, v := range item.Choices.([]any) {
-				elements = append(elements, v.(string))
-			}
-
-			listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
-			if diags.HasError() {
-				return
-			}
-
-			specModel.Choices = listValue
+	for _, v := range responseData.Results {
+		if data.CredentialIds.IsNull() {
+			tfCredIds = append(tfCredIds, v.Id)
 		} else {
-			specModel.Choices = types.ListNull(types.StringType)
+			//todo
+			return
 		}
-
-		itemDefaultKind := reflect.TypeOf(item.Default).Kind()
-		switch itemDefaultKind {
-		case reflect.Float64:
-			specModel.Default = types.StringValue(fmt.Sprint(item.Default.(float64)))
-		default:
-			specModel.Default = types.StringValue(item.Default.(string))
-		}
-
-		specModel.Required = types.BoolValue(item.Required)
-		specModel.QuestionName = types.StringValue(item.QuestionName)
-		specModel.QuestionDescription = types.StringValue(item.QuestionDescription)
-		specModel.Variable = types.StringValue(item.Variable)
-		dataSpecs = append(dataSpecs, specModel)
 	}
 
-	data.Spec = dataSpecs
+	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfCredIds)
+	if diags.HasError() {
+		return
+	}
+
+	data.CredentialIds = listValue
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -343,5 +322,5 @@ func (r *JobTemplateCredentialResource) Delete(ctx context.Context, req resource
 }
 
 func (r *JobTemplateCredentialResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("job_template_id"), req, resp)
 }
