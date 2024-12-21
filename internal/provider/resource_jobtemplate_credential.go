@@ -12,9 +12,9 @@
 // in one job template ID to fill out the entire resource. If this was not done this way
 // then when someone tries to to use the terraform plan -generate-config-out=./file.tf
 // functionality it will create the resource block correctly. Otherwise, the
-// configure-out thing would have to generate several resource blcoks per tempalte id
+// -generate-config-out function would have to generate several resource blocks per tempalte id
 // and it's not set up to do that, per my current awareness. As I'm writing this
-// provider specifically so we can use the -generate-config-out option, i felt this
+// provider specifically so we can use the -generate-config-out option, I felt this
 // was worth the price of breaking this principle.
 
 package provider
