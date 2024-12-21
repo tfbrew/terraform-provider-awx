@@ -15,7 +15,10 @@
 // -generate-config-out function would have to generate several resource blocks per tempalte id
 // and it's not set up to do that, per my current awareness. As I'm writing this
 // provider specifically so we can use the -generate-config-out option, I felt this
-// was worth the price of breaking this principle.
+// was worth the price of breaking this principle. The downside seems to be that this means
+// if one of the list element's api calls succeeds, but a subsequent list element's fails,
+// the success of the first element's call is not magially un-done. So you'll perpas have to
+// use refresh state functions in tf cli to resolve.
 
 package provider
 
