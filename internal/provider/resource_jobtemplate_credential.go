@@ -46,6 +46,11 @@ type Result struct {
 	Id int `json:"id"`
 }
 
+type DissasocBody struct {
+	Id           int  `json:"id"`
+	Disassociate bool `json:"disassociate"`
+}
+
 func (r *JobTemplateCredentialResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_jobtemplate_credential"
 }
@@ -255,37 +260,35 @@ func (r *JobTemplateCredentialResource) Delete(ctx context.Context, req resource
 		return
 	}
 
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// }
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
+	}
 
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	var credIds []int
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate delete request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// }
+	diags := data.CredentialIds.ElementsAs(ctx, &credIds, false)
+	if diags.HasError() {
+		return
+	}
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	for _, val := range credIds {
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
-	// }
-	// if httpResp.StatusCode != 200 {
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+		var body DissasocBody
 
-	// }
+		body.Id = val
+		body.Disassociate = true
+
+		err := r.client.DisassocJobTemplCredential(ctx, id, body)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
+			return
+		}
+	}
+
 }
 
 func (r *JobTemplateCredentialResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
