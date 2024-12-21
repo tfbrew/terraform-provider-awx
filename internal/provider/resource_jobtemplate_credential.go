@@ -107,79 +107,32 @@ func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// }
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
+	}
 
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	var credIds []int
 
-	// // get body data for HTTP request
-	// var bodyData JobTemplateSurvey
-	// bodyData.Name = data.Name.ValueString()
-	// bodyData.Description = data.Description.ValueString()
+	diags := data.CredentialIds.ElementsAs(ctx, &credIds, false)
+	if diags.HasError() {
+		return
+	}
 
-	// var specs []SurveySpec
-	// for _, spec := range data.Spec {
+	for _, val := range credIds {
 
-	// 	// convert choices to slice of strings
-	// 	stringSlice := make([]string, 0, len(spec.Choices.Elements()))
-	// 	diag := spec.Choices.ElementsAs(ctx, &stringSlice, true)
-	// 	resp.Diagnostics.Append(diag...)
+		var bodyData Result
+		bodyData.Id = val
 
-	// 	if resp.Diagnostics.HasError() {
-	// 		return
-	// 	}
-
-	// 	// convert to interface{} type
-	// 	var finalList interface{} = stringSlice
-
-	// 	specs = append(specs, SurveySpec{
-	// 		Type:                spec.Type.ValueString(),
-	// 		QuestionName:        spec.QuestionName.ValueString(),
-	// 		QuestionDescription: spec.QuestionDescription.ValueString(),
-	// 		Variable:            spec.Variable.ValueString(),
-	// 		Required:            spec.Required.ValueBool(),
-	// 		Max:                 int(spec.Max.ValueInt32()),
-	// 		Min:                 int(spec.Min.ValueInt32()),
-	// 		Choices:             finalList,
-	// 		Default:             spec.Default,
-	// 	})
-	// }
-
-	// bodyData.Spec = specs
-
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// }
-
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// }
-
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
-
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	// }
-	// if httpResp.StatusCode != 200 {
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
-	// }
+		err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
+			return
+		}
+	}
 
 	tflog.Trace(ctx, "created a resource")
 

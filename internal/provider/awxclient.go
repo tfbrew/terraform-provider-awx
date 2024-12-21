@@ -1,7 +1,11 @@
 package provider
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 type AwxClient struct {
@@ -10,6 +14,30 @@ type AwxClient struct {
 	token    string
 }
 
-func (c *AwxClient) DoSomething(varname string) string {
-	return "hi"
+func (c *AwxClient) AssocJobTemplCredential(ctx context.Context, id int, body Result) error {
+	url := c.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
+
+	jsonData, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		return err
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+
+	httpResp, err := c.client.Do(httpReq)
+	if err != nil {
+		return err
+	}
+	if httpResp.StatusCode != 204 {
+		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
+		return err
+	}
+
+	return nil
 }
