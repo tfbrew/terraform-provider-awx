@@ -36,26 +36,25 @@ type JobTemplateResource struct {
 
 // JobTemplateResourceModel describes the resource data model.
 type JobTemplateResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	Name          types.String `tfsdk:"name"`
-	Description   types.String `tfsdk:"description"`
-	JobType       types.String `tfsdk:"job_type"`
-	Inventory     types.Int32  `tfsdk:"inventory"`
-	Project       types.Int32  `tfsdk:"project"`
-	Playbook      types.String `tfsdk:"playbook"`
-	ScmBranch     types.String `tfsdk:"scm_branch"`
-	Forks         types.Int32  `tfsdk:"forks"`
-	Limit         types.String `tfsdk:"limit"`
-	Verbosity     types.Int32  `tfsdk:"verbosity"`
-	ExtraVars     types.String `tfsdk:"extra_vars"`
-	JobTags       types.String `tfsdk:"job_tags"`
-	ForceHandlers types.Bool   `tfsdk:"force_handlers"`
-	SkipTags      types.String `tfsdk:"skip_tags"`
-	StartAtTask   types.String `tfsdk:"start_at_tags"`
-	Timeout       types.Int32  `tfsdk:"timeout"`
-	UseFactCache  types.Bool   `tfsdk:"use_fact_cache"`
-	Organization  types.Int32  `tfsdk:"organization"`
-	//Status                         types.String `tfsdk:"status"`
+	Id                             types.String `tfsdk:"id"`
+	Name                           types.String `tfsdk:"name"`
+	Description                    types.String `tfsdk:"description"`
+	JobType                        types.String `tfsdk:"job_type"`
+	Inventory                      types.Int32  `tfsdk:"inventory"`
+	Project                        types.Int32  `tfsdk:"project"`
+	Playbook                       types.String `tfsdk:"playbook"`
+	ScmBranch                      types.String `tfsdk:"scm_branch"`
+	Forks                          types.Int32  `tfsdk:"forks"`
+	Limit                          types.String `tfsdk:"limit"`
+	Verbosity                      types.Int32  `tfsdk:"verbosity"`
+	ExtraVars                      types.String `tfsdk:"extra_vars"`
+	JobTags                        types.String `tfsdk:"job_tags"`
+	ForceHandlers                  types.Bool   `tfsdk:"force_handlers"`
+	SkipTags                       types.String `tfsdk:"skip_tags"`
+	StartAtTask                    types.String `tfsdk:"start_at_tags"`
+	Timeout                        types.Int32  `tfsdk:"timeout"`
+	UseFactCache                   types.Bool   `tfsdk:"use_fact_cache"`
+	Organization                   types.Int32  `tfsdk:"organization"`
 	ExecutionEnvironment           types.Int32  `tfsdk:"execution_environment"`
 	HostConfigKey                  types.String `tfsdk:"host_config_key"`
 	AskScmBranchOnLaunch           types.Bool   `tfsdk:"ask_scm_branch_on_launch"`
@@ -86,26 +85,25 @@ type JobTemplateResourceModel struct {
 }
 
 type JobTemplate struct {
-	Id            int    `json:"id,omitempty"`
-	Name          string `json:"name"`
-	Description   string `json:"description"`
-	JobType       string `json:"job_type"`
-	Inventory     int    `json:"inventory"`
-	Project       int    `json:"project"`
-	Playbook      string `json:"playbook"`
-	ScmBranch     string `json:"scm_branch"`
-	Forks         int    `json:"forks"`
-	Limit         string `json:"limit"`
-	Verbosity     int    `json:"verbosity"`
-	ExtraVars     string `json:"extra_vars"`
-	JobTags       string `json:"job_tags"`
-	ForceHandlers bool   `json:"force_handlers"`
-	SkipTags      string `json:"skip_tags"`
-	StartAtTask   string `json:"start_at_tags"`
-	Timeout       int    `json:"timeout"`
-	UseFactCache  bool   `json:"use_fact_cache"`
-	Organization  int    `json:"organization"`
-	//Status                         string `json:"status"`
+	Id                             int    `json:"id,omitempty"`
+	Name                           string `json:"name"`
+	Description                    string `json:"description"`
+	JobType                        string `json:"job_type"`
+	Inventory                      int    `json:"inventory"`
+	Project                        int    `json:"project"`
+	Playbook                       string `json:"playbook"`
+	ScmBranch                      string `json:"scm_branch"`
+	Forks                          int    `json:"forks"`
+	Limit                          string `json:"limit"`
+	Verbosity                      int    `json:"verbosity"`
+	ExtraVars                      string `json:"extra_vars"`
+	JobTags                        string `json:"job_tags"`
+	ForceHandlers                  bool   `json:"force_handlers"`
+	SkipTags                       string `json:"skip_tags"`
+	StartAtTask                    string `json:"start_at_tags"`
+	Timeout                        int    `json:"timeout"`
+	UseFactCache                   bool   `json:"use_fact_cache"`
+	Organization                   int    `json:"organization"`
 	ExecutionEnvironment           int    `json:"execution_environment"`
 	HostConfigKey                  string `json:"host_config_key"`
 	AskScmBranchOnLaunch           bool   `json:"ask_scm_branch_on_launch"`
@@ -208,9 +206,6 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			"organization": schema.Int32Attribute{
 				Optional: true,
 			},
-			// "status": schema.StringAttribute{
-			// 	Optional: true,
-			// },
 			"execution_environment": schema.Int32Attribute{
 				Optional: true,
 			},
@@ -338,7 +333,6 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	bodyData.Timeout = int(data.Timeout.ValueInt32())
 	bodyData.UseFactCache = data.UseFactCache.ValueBool()
 	bodyData.Organization = int(data.Organization.ValueInt32())
-	//bodyData.Status = data.Status.ValueString()
 	bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
 	bodyData.HostConfigKey = data.HostConfigKey.ValueString()
 	bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()

@@ -211,9 +211,6 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 	for _, v := range responseData.Results {
 		if data.CredentialIds.IsNull() {
 			tfCredIds = append(tfCredIds, v.Id)
-		} else {
-			//todo
-			return
 		}
 	}
 
@@ -238,9 +235,7 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	//TODO begin
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.JobTemplateId.ValueString()))
