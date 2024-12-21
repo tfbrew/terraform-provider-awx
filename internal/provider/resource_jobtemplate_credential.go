@@ -1,6 +1,22 @@
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
+// Travis Stratton 12/20/2024
+// The /api/v2/job_templates/{id}/credentials/ returns all credential objects
+// associated to the template. But, when asked to associate a credential or
+// dissassociate a credential, you must post a request once per credential ID.
+// Therefore, I couldn't find a way to limit this resource to the "one api call"
+// princible. Instead, the terraform schema stores a list of associated credential
+// ids. And, when creating or deleting or updated, it will make one api call PER
+// list element. This allows the import function to work by only needing to pass
+// in one job template ID to fill out the entire resource. If this was not done this way
+// then when someone tries to to use the terraform plan -generate-config-out=./file.tf
+// functionality it will create the resource block correctly. Otherwise, the
+// configure-out thing would have to generate several resource blcoks per tempalte id
+// and it's not set up to do that, per my current awareness. As I'm writing this
+// provider specifically so we can use the -generate-config-out option, i felt this
+// was worth the price of breaking this principle.
+
 package provider
 
 import (
