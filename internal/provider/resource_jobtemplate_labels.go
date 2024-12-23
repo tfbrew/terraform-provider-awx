@@ -130,12 +130,12 @@ func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.Cre
 
 	for _, val := range relatedIds {
 
-		var bodyData Result
+		var bodyData LabelResult
 		bodyData.Id = val
 
-		err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
+		err := r.client.AssocJobTemplLabel(ctx, id, bodyData)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
+			resp.Diagnostics.AddError("Failed to associate label.", err.Error())
 			return
 		}
 	}
