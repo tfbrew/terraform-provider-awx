@@ -209,9 +209,7 @@ func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadR
 	tfRelatedIds := make([]int, 0, responseData.Count)
 
 	for _, v := range responseData.Results {
-		if data.LabelIDs.IsNull() {
-			tfRelatedIds = append(tfRelatedIds, v.Id)
-		}
+		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
 	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
@@ -355,12 +353,12 @@ func (r *JobTemplateLabelsResource) Delete(ctx context.Context, req resource.Del
 
 	for _, val := range RelatedIds {
 
-		var body DissasocBody
+		var body LabelDissasocBody
 
 		body.Id = val
 		body.Disassociate = true
 
-		err := r.client.DisassocJobTemplCredential(ctx, id, body)
+		err := r.client.DisassocJobTemplLabel(ctx, id, body)
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to disassociate label.", err.Error())
 			return

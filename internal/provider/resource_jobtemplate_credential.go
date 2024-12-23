@@ -209,9 +209,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 	tfCredIds := make([]int, 0, responseData.Count)
 
 	for _, v := range responseData.Results {
-		if data.CredentialIds.IsNull() {
-			tfCredIds = append(tfCredIds, v.Id)
-		}
+		tfCredIds = append(tfCredIds, v.Id)
 	}
 
 	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfCredIds)
