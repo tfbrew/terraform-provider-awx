@@ -58,7 +58,7 @@ func (d *InstanceGroupsDataSource) Configure(ctx context.Context, req datasource
 		return
 	}
 
-	configureData := req.ProviderData.(*AwxClient)
+	configureData, ok := req.ProviderData.(*AwxClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
