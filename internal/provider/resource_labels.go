@@ -278,7 +278,7 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label
+// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *LabelsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data LabelsResourceModel
 

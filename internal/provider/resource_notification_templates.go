@@ -384,7 +384,7 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label
+// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *NotificationTemplatesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data NotificationTemplatesResourceModel
 

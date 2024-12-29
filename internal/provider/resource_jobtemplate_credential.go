@@ -63,7 +63,7 @@ func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource
                               principle. Instead, the terraform schema stores a list of associated credential ids. And, when creating or deleting or updated, it will make one api call PER \
                               list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
                               then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
-                              -generate-config-out function would have to generate several resource blocks per tempalte id and it's not set up to do that, per my current awareness. As I'm writing this \
+                              -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
                               provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
 							  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
 							  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
@@ -72,7 +72,7 @@ func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource
 					  principle. Instead, the terraform schema stores a list of associated credential ids. And, when creating or deleting or updated, it will make one api call PER \
 					  list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
 					  then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
-					  -generate-config-out function would have to generate several resource blocks per tempalte id and it's not set up to do that, per my current awareness. As I'm writing this \
+					  -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
 					  provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
 					  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
 					  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
@@ -223,7 +223,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers
+// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers.
 func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateCredentialResourceModel
 

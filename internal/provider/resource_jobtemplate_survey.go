@@ -373,7 +373,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers
+// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers.
 func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateSurveyResourceModel
 
