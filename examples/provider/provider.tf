@@ -1,5 +1,4 @@
-# Copyright (c) HashiCorp, Inc.
-
 provider "awx" {
-  # example configuration here
+  endpoint = "http://localhost:8078"
+  token    = "awxtoken"
 }
