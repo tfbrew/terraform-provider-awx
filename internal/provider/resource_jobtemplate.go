@@ -817,7 +817,16 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 
 	// data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv)
 	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == nil) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), responseData.CustomVirtualEnv.(string))...)
+
+		if customVirtualEnv, ok := responseData.CustomVirtualEnv.(string); ok {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), customVirtualEnv)...)
+		} else {
+			resp.Diagnostics.AddError(
+				"Invalid Type",
+				"Expected responseData.CustomVirtualEnv to be a string",
+			)
+		}
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -839,7 +848,16 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 
 	//data.WebhookCredential = types.StringValue(responseData.WebhookCredential.(string))
 	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == nil) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), responseData.WebhookCredential.(string))...)
+
+		if webhookCredential, ok := responseData.WebhookCredential.(string); ok {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), webhookCredential)...)
+		} else {
+			resp.Diagnostics.AddError(
+				"Invalid Type",
+				"Expected responseData.WebhookCredential to be a string",
+			)
+		}
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
