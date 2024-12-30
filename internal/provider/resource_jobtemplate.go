@@ -157,18 +157,20 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional: true,
 			},
 			"job_type": schema.StringAttribute{
-				Required:            true,
-				Description:         "Acceptable values are a choice of: run, or check.",
-				MarkdownDescription: "Acceptable values are a choice of: run, or check.",
+				Required:    true,
+				Description: "Acceptable values are a choice of: run, or check.",
 			},
 			"inventory": schema.Int32Attribute{
-				Optional: true,
+				Required:    true,
+				Description: "ID number of the inventory to associate with the job template",
 			},
 			"project": schema.Int32Attribute{
-				Optional: true,
+				Required: true,
+				Description: "ID number of the project to associate with the job template",
 			},
 			"playbook": schema.StringAttribute{
-				Optional: true,
+				Required: true,
+				Description: "Playbook name to be executed by this job",
 			},
 			"scm_branch": schema.StringAttribute{
 				Optional: true,
