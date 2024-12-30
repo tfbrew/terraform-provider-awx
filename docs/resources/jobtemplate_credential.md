@@ -22,8 +22,8 @@ The /api/v2/job_templates/{id}/credentials/ returns all credential objects assoc
 
 ```terraform
 resource "awx_jobtemplate_credential" "default" {
-  credential_ids  = "1,2,3"
-  job_template_id = ""
+  credential_ids  = [1, 2, 3]
+  job_template_id = 1
 }
 ```
 
