@@ -485,9 +485,18 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 	if httpResp.StatusCode != 201 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 201, got %v. ", httpResp.StatusCode))
+			fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
 		return
 	}
 
@@ -994,7 +1003,6 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	bodyData.Timeout = int(data.Timeout.ValueInt32())
 	bodyData.UseFactCache = data.UseFactCache.ValueBool()
 	bodyData.Organization = int(data.Organization.ValueInt32())
-	//bodyData.Status = data.Status.ValueString()
 	bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
 	bodyData.HostConfigKey = data.HostConfigKey.ValueString()
 	bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()

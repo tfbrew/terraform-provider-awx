@@ -343,51 +343,91 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// 	return
-	// }
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
+	}
 
-	// var bodyData Label
-	// bodyData.Id = id
-	// bodyData.Name = data.Name.ValueString()
-	// bodyData.Organization = int(data.Organization.ValueInt32())
+	var bodyData NotificationTemplateAPI
+	bodyData.Id = id
+	bodyData.Name = data.Name.ValueString()
+	bodyData.Description = data.Description.ValueString()
+	bodyData.Organization = int(data.Organization.ValueInt32())
+	bodyData.NotificationType = data.NotificationType.ValueString()
 
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// }
+	fieldToBytes := []byte(data.NotificationConfiguration.ValueString())
 
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/labels/%d/", id)
+	slackConfig := new(SlackConfiguration)
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// }
+	err = json.Unmarshal(fieldToBytes, &slackConfig)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to move Notification Config into json object",
+			fmt.Sprintf("Error = %s ", err.Error()))
+		return
+	}
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	bodyData.NotificationConfiguration = slackConfig
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	// 	return
-	// }
-	// if httpResp.StatusCode != 200 {
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-	// 	return
-	// }
+	fieldToBytes = []byte(data.Messages.ValueString())
+
+	messageData := new(Messages)
+
+	err = json.Unmarshal(fieldToBytes, &messageData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to move Messages into json object",
+			fmt.Sprintf("Error = %s ", err.Error()))
+		return
+	}
+
+	bodyData.Messages = messageData
+
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+		return
+	}
+
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/notification_templates/%d/", id)
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		return
+	}
+	if httpResp.StatusCode != 200 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
+		return
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
