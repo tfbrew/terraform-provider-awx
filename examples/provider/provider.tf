@@ -1,3 +1,4 @@
-provider "scaffolding" {
-  # example configuration here
+provider "awx" {
+  endpoint = "http://localhost:8078"
+  token    = "awxtoken"
 }

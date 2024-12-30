@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright (c)
 // SPDX-License-Identifier: MPL-2.0
 
 package provider
@@ -157,18 +157,20 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional: true,
 			},
 			"job_type": schema.StringAttribute{
-				Required:            true,
-				Description:         "Acceptable values are a choice of: run, or check.",
-				MarkdownDescription: "Acceptable values are a choice of: run, or check.",
+				Required:    true,
+				Description: "Acceptable values are a choice of: run, or check.",
 			},
 			"inventory": schema.Int32Attribute{
-				Optional: true,
+				Required:    true,
+				Description: "ID number of the inventory to associate with the job template",
 			},
 			"project": schema.Int32Attribute{
-				Optional: true,
+				Required:    true,
+				Description: "ID number of the project to associate with the job template",
 			},
 			"playbook": schema.StringAttribute{
-				Optional: true,
+				Required:    true,
+				Description: "Playbook name to be executed by this job",
 			},
 			"scm_branch": schema.StringAttribute{
 				Optional: true,
@@ -296,7 +298,16 @@ func (r *JobTemplateResource) Configure(ctx context.Context, req resource.Config
 		return
 	}
 
-	configureData := req.ProviderData.(*AwxClient)
+	configureData, ok := req.ProviderData.(*AwxClient)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
 
 	r.client = configureData
 }
@@ -897,7 +908,16 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 
 	// data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv)
 	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == nil) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), responseData.CustomVirtualEnv.(string))...)
+
+		if customVirtualEnv, ok := responseData.CustomVirtualEnv.(string); ok {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), customVirtualEnv)...)
+		} else {
+			resp.Diagnostics.AddError(
+				"Invalid Type",
+				"Expected responseData.CustomVirtualEnv to be a string",
+			)
+		}
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -919,7 +939,16 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 
 	//data.WebhookCredential = types.StringValue(responseData.WebhookCredential.(string))
 	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == nil) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), responseData.WebhookCredential.(string))...)
+
+		if webhookCredential, ok := responseData.WebhookCredential.(string); ok {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), webhookCredential)...)
+		} else {
+			resp.Diagnostics.AddError(
+				"Invalid Type",
+				"Expected responseData.WebhookCredential to be a string",
+			)
+		}
+
 		if resp.Diagnostics.HasError() {
 			return
 		}

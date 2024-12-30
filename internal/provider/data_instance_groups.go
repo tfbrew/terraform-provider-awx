@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright (c)
 // SPDX-License-Identifier: MPL-2.0
 
 package provider
@@ -58,7 +58,16 @@ func (d *InstanceGroupsDataSource) Configure(ctx context.Context, req datasource
 		return
 	}
 
-	configureData := req.ProviderData.(*AwxClient)
+	configureData, ok := req.ProviderData.(*AwxClient)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
 
 	d.client = configureData
 }

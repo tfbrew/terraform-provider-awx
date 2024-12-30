@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright (c)
 // SPDX-License-Identifier: MPL-2.0
 
 package provider
@@ -122,7 +122,16 @@ func (r *NotificationTemplatesResource) Configure(ctx context.Context, req resou
 		return
 	}
 
-	configureData := req.ProviderData.(*AwxClient)
+	configureData, ok := req.ProviderData.(*AwxClient)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
 
 	r.client = configureData
 }
@@ -384,7 +393,7 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label
+// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *NotificationTemplatesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data NotificationTemplatesResourceModel
 

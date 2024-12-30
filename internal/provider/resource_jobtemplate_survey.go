@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright (c)
 // SPDX-License-Identifier: MPL-2.0
 
 package provider
@@ -169,7 +169,16 @@ func (r *JobTemplateSurveyResource) Configure(ctx context.Context, req resource.
 		return
 	}
 
-	configureData := req.ProviderData.(*AwxClient)
+	configureData, ok := req.ProviderData.(*AwxClient)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
 
 	r.client = configureData
 }
@@ -336,10 +345,23 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 		if itemChoiceKind == reflect.Slice {
 
-			elements := make([]string, 0, len(item.Choices.([]any)))
+			choices, ok := item.Choices.([]any)
+			if !ok {
+				resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+					"Unexpected error in resource_jobtemplate_survey",
+				)
+			}
 
-			for _, v := range item.Choices.([]any) {
-				elements = append(elements, v.(string))
+			elements := make([]string, 0, len(choices))
+
+			for _, v := range choices {
+				if strValue, ok := v.(string); ok {
+					elements = append(elements, strValue)
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+						"Unexpected error in resource_jobtemplate_survey",
+					)
+				}
 			}
 
 			listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
@@ -355,9 +377,24 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 		itemDefaultKind := reflect.TypeOf(item.Default).Kind()
 		switch itemDefaultKind {
 		case reflect.Float64:
-			specModel.Default = types.StringValue(fmt.Sprint(item.Default.(float64)))
+
+			if defaultValue, ok := item.Default.(float64); ok {
+				specModel.Default = types.StringValue(fmt.Sprint(defaultValue))
+			} else {
+				resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+					"Unexpected error in resource_jobtemplate_survey",
+				)
+			}
+
 		default:
-			specModel.Default = types.StringValue(item.Default.(string))
+
+			if defaultValue, ok := item.Default.(string); ok {
+				specModel.Default = types.StringValue(defaultValue)
+			} else {
+				resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+					"Unexpected error in resource_jobtemplate_survey",
+				)
+			}
 		}
 
 		specModel.Required = types.BoolValue(item.Required)
@@ -373,7 +410,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers
+// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers.
 func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateSurveyResourceModel
 
