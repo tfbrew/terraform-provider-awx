@@ -1,5 +1,7 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright (c)
 // SPDX-License-Identifier: MPL-2.0
+
+
 
 package provider
 
@@ -354,20 +356,14 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 			elements := make([]string, 0, len(choices))
 
-			if choices, ok := item.Choices.([]any); ok {
-				for _, v := range choices {
-					if strValue, ok := v.(string); ok {
-						elements = append(elements, strValue)
-					} else {
-						resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
-							"Unexpected error in resource_jobtemplate_survey",
-						)
-					}
+			for _, v := range choices {
+				if strValue, ok := v.(string); ok {
+					elements = append(elements, strValue)
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+						"Unexpected error in resource_jobtemplate_survey",
+					)
 				}
-			} else {
-				resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
-					"Unexpected error in resource_jobtemplate_survey",
-				)
 			}
 
 			listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
@@ -383,7 +379,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 		itemDefaultKind := reflect.TypeOf(item.Default).Kind()
 		switch itemDefaultKind {
 		case reflect.Float64:
-			//			specModel.Default = types.StringValue(fmt.Sprint(item.Default.(float64)))
 
 			if defaultValue, ok := item.Default.(float64); ok {
 				specModel.Default = types.StringValue(fmt.Sprint(defaultValue))
@@ -394,7 +389,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 			}
 
 		default:
-			//			specModel.Default = types.StringValue(item.Default.(string))
 
 			if defaultValue, ok := item.Default.(string); ok {
 				specModel.Default = types.StringValue(defaultValue)
