@@ -303,34 +303,126 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	data.Id = types.StringValue(strconv.Itoa(responseData.Id))
-	data.Name = types.StringValue(responseData.Name)
-	data.Description = types.StringValue(responseData.Description)
-	data.Organization = types.Int32Value(int32(responseData.Organization))
-	data.NotificationType = types.StringValue(responseData.NotificationType)
+	if !(data.Name.IsNull() && responseData.Name == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
 
-	jsonString, err := json.Marshal(responseData.NotificationConfiguration)
+	if !(data.Description.IsNull() && responseData.Description == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.NotificationType.IsNull() && responseData.NotificationType == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_type"), responseData.NotificationType)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.NotificationType.IsNull() && responseData.NotificationType == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_type"), responseData.NotificationType)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	slackConfig := new(SlackConfiguration)
+
+	for k, v := range responseData.NotificationConfiguration.(map[string]any) {
+		if k == "hex_color" {
+			slackConfig.HexColors = v.(string)
+		}
+		if k == "token" {
+			slackConfig.Token = v.(string)
+		}
+		if k == "channels" {
+			channelList := make([]string, 0, len(v.([]any)))
+			for _, val := range v.([]any) {
+				channelList = append(channelList, val.(string))
+			}
+			slackConfig.Channels = channelList
+		}
+	}
+
+	config, err := json.Marshal(slackConfig)
+
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble marshall notification config",
-			fmt.Sprintf("Error =  %v. ", err.Error()))
+			"Unable to move Notification Config into json object",
+			fmt.Sprintf("Error = %s ", err.Error()))
 		return
 	}
 
-	data.NotificationConfiguration = types.StringValue(string(jsonString))
-
-	jsonString, err = json.Marshal(responseData.Messages)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to marshall messages field",
-			fmt.Sprintf("Error =  %v. ", err.Error()))
-		return
+	if !(data.NotificationConfiguration.IsNull() && responseData.NotificationConfiguration == nil) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_configuration"), string(config))...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
-	data.Messages = types.StringValue(string(jsonString))
 
-	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	messages := new(Messages)
 
+	if responseData.Messages != nil {
+
+		for k, v := range responseData.Messages.(map[string]any) {
+			if k == "error" {
+				errorMsg := v.(map[string]any)
+				messages.Error = MessageValue{Body: errorMsg["body"].(string), Message: errorMsg["message"].(string)}
+
+			}
+			if k == "started" {
+				startedMsg := v.(map[string]any)
+				messages.Started = MessageValue{Body: startedMsg["body"].(string), Message: startedMsg["message"].(string)}
+
+			}
+			if k == "success" {
+				successMsg := v.(map[string]any)
+				messages.Success = MessageValue{Body: successMsg["body"].(string), Message: successMsg["message"].(string)}
+
+			}
+			if k == "workflow_approval" {
+
+				wkaParent := v.(map[string]any)
+
+				wka := make(map[string]MessageValue, len(wkaParent))
+
+				for key, val := range wkaParent {
+					valMsg := val.(map[string]any)
+					wka[key] = MessageValue{Body: valMsg["body"].(string), Message: valMsg["message"].(string)}
+
+				}
+				messages.WorkflowApproval = wka
+			}
+		}
+
+		msgJson, err := json.Marshal(messages)
+
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to move Messages into json object",
+				fmt.Sprintf("Error = %s ", err.Error()))
+			return
+		}
+
+		if !(data.Messages.IsNull() && responseData.Messages == nil) {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("messages"), string(msgJson))...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+	}
 }
 
 func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -353,9 +445,12 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 	}
 
 	var bodyData NotificationTemplateAPI
-	bodyData.Id = id
+	//bodyData.Id = id
 	bodyData.Name = data.Name.ValueString()
-	bodyData.Description = data.Description.ValueString()
+
+	if !(data.Description.IsNull() && data.Description.ValueString() != "") {
+		bodyData.Description = data.Description.ValueString()
+	}
 	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.NotificationType = data.NotificationType.ValueString()
 

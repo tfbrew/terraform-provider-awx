@@ -731,14 +731,6 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 
-	// data.Status = types.StringValue(responseData.Status)
-	// if !(data.Status.IsNull() && responseData.Status == "never updated") {
-	// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("status"), responseData.Status)...)
-	// 	if resp.Diagnostics.HasError() {
-	// 		return
-	// 	}
-	// }
-
 	// data.ExecutionEnvironment = types.Int32Value(int32(responseData.ExecutionEnvironment))
 	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), responseData.ExecutionEnvironment)...)
