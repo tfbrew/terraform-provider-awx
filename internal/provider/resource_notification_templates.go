@@ -79,8 +79,7 @@ func (r *NotificationTemplatesResource) Metadata(ctx context.Context, req resour
 
 func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description:         "Manage a notification template. These can be attached, by ID, to job templates, as an example usage.",
-		MarkdownDescription: "Manage a notification template. These can be attached, by ID, to job templates, as an example usage.",
+		Description: "Manage a notification template. These can be attached, by ID, to job templates, as an example usage.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -99,19 +98,16 @@ func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource
 				Required: true,
 			},
 			"notification_type": schema.StringAttribute{
-				Required:            true,
-				Description:         "Only 'slack' is supported in this provider currently. Choose from: email, grafan, irc, mattermost, pagerduty, rocketchat, slack, twilio, webhook.",
-				MarkdownDescription: "Only 'slack' is supported in this provider currently. Choose from: email, grafan, irc, mattermost, pagerduty, rocketchat, slack, twilio, webhook.",
+				Required:    true,
+				Description: "Only 'slack' is supported in this provider currently. Choose from: email, grafan, irc, mattermost, pagerduty, rocketchat, slack, twilio, webhook.",
 			},
 			"notification_configuration": schema.StringAttribute{
-				Optional:            true,
-				Description:         "json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah).",
-				MarkdownDescription: "json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah).",
+				Optional:    true,
+				Description: "json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah).",
 			},
 			"messages": schema.StringAttribute{
-				Optional:            true,
-				Description:         "json",
-				MarkdownDescription: "json",
+				Optional:    true,
+				Description: "json",
 			},
 		},
 	}
@@ -139,7 +135,6 @@ func (r *NotificationTemplatesResource) Configure(ctx context.Context, req resou
 func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data NotificationTemplatesResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -190,7 +185,6 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 
 	url := r.client.endpoint + "/api/v2/notification_templates/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -240,7 +234,6 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 
 	tflog.Trace(ctx, "created a resource")
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -260,6 +253,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/notification_templates/%d/", id)
 
@@ -269,6 +263,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -282,7 +277,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+		return
 	}
 
 	var responseData NotificationTemplateAPI
@@ -428,14 +423,12 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data NotificationTemplatesResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -445,7 +438,7 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 	}
 
 	var bodyData NotificationTemplateAPI
-	//bodyData.Id = id
+
 	bodyData.Name = data.Name.ValueString()
 
 	if !(data.Description.IsNull() && data.Description.ValueString() != "") {
@@ -492,12 +485,12 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/notification_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -524,36 +517,33 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *NotificationTemplatesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data NotificationTemplatesResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/notification_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to generate delete request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -562,11 +552,13 @@ func (r *NotificationTemplatesResource) Delete(ctx context.Context, req resource
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
+		return
 	}
 	if httpResp.StatusCode != 204 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 204, got %v. ", httpResp.StatusCode))
+		return
 
 	}
 
