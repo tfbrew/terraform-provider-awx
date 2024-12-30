@@ -165,11 +165,11 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "ID number of the inventory to associate with the job template",
 			},
 			"project": schema.Int32Attribute{
-				Required: true,
+				Required:    true,
 				Description: "ID number of the project to associate with the job template",
 			},
 			"playbook": schema.StringAttribute{
-				Required: true,
+				Required:    true,
 				Description: "Playbook name to be executed by this job",
 			},
 			"scm_branch": schema.StringAttribute{
