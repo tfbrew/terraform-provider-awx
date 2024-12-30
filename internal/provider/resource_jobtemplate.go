@@ -86,51 +86,51 @@ type JobTemplateResourceModel struct {
 
 type JobTemplate struct {
 	Id                             int    `json:"id,omitempty"`
-	Name                           string `json:"name"`
+	Name                           string `json:"name,omitempty"`
 	Description                    string `json:"description"`
-	JobType                        string `json:"job_type"`
-	Inventory                      int    `json:"inventory"`
-	Project                        int    `json:"project"`
-	Playbook                       string `json:"playbook"`
-	ScmBranch                      string `json:"scm_branch"`
-	Forks                          int    `json:"forks"`
-	Limit                          string `json:"limit"`
-	Verbosity                      int    `json:"verbosity"`
-	ExtraVars                      string `json:"extra_vars"`
-	JobTags                        string `json:"job_tags"`
-	ForceHandlers                  bool   `json:"force_handlers"`
-	SkipTags                       string `json:"skip_tags"`
-	StartAtTask                    string `json:"start_at_tags"`
-	Timeout                        int    `json:"timeout"`
-	UseFactCache                   bool   `json:"use_fact_cache"`
-	Organization                   int    `json:"organization"`
-	ExecutionEnvironment           int    `json:"execution_environment"`
-	HostConfigKey                  string `json:"host_config_key"`
-	AskScmBranchOnLaunch           bool   `json:"ask_scm_branch_on_launch"`
-	AskDiffModeOnLaunch            bool   `json:"ask_diff_mode_on_launch"`
-	AskVariablesOnLaunch           bool   `json:"ask_variables_on_launch"`
-	AskLimitOnLaunch               bool   `json:"ask_limit_on_launch"`
-	AskTagsOnLaunch                bool   `json:"ask_tags_on_launch"`
-	AskSkipTagsOnLaunch            bool   `json:"ask_skip_tags_on_launch"`
-	AskJobTypeOnLaunch             bool   `json:"ask_job_type_on_launch"`
-	AskVerbosityOnLaunch           bool   `json:"ask_verbosity_on_launch"`
-	AskInventoryOnLaunch           bool   `json:"ask_inventory_on_launch"`
-	AskCredentialOnLaunch          bool   `json:"ask_credential_on_launch"`
-	AskExecutionEnvironmenOnLaunch bool   `json:"ask_execution_environment_on_launch"`
-	AskLablesOnLaunch              bool   `json:"ask_labels_on_launch"`
-	AskForksOnLaunch               bool   `json:"ask_forks_on_launch"`
-	AskJobSliceCountOnLaunch       bool   `json:"ask_job_slice_count_on_launch"`
-	AskTimeoutOnLaunch             bool   `json:"ask_timeout_on_launch"`
-	AskInstanceGroupsOnLaunch      bool   `json:"ask_instance_groups_on_launch"`
-	SurveyEnabled                  bool   `json:"survey_enabled"`
-	BecomeEnabled                  bool   `json:"become_enabled"`
-	DiffMode                       bool   `json:"diff_mode"`
-	AllowSimultaneous              bool   `json:"allow_simultaneous"`
+	JobType                        string `json:"job_type,omitempty"`
+	Inventory                      int    `json:"inventory,omitempty"`
+	Project                        int    `json:"project,omitempty"`
+	Playbook                       string `json:"playbook,omitempty"`
+	ScmBranch                      string `json:"scm_branch,omitempty"`
+	Forks                          int    `json:"forks,omitempty"`
+	Limit                          string `json:"limit,omitempty"`
+	Verbosity                      int    `json:"verbosity,omitempty"`
+	ExtraVars                      string `json:"extra_vars,omitempty"`
+	JobTags                        string `json:"job_tags,omitempty"`
+	ForceHandlers                  bool   `json:"force_handlers,omitempty"`
+	SkipTags                       string `json:"skip_tags,omitempty"`
+	StartAtTask                    string `json:"start_at_tags,omitempty"`
+	Timeout                        int    `json:"timeout,omitempty"`
+	UseFactCache                   bool   `json:"use_fact_cache,omitempty"`
+	Organization                   int    `json:"organization,omitempty"`
+	ExecutionEnvironment           int    `json:"execution_environment,omitempty"`
+	HostConfigKey                  string `json:"host_config_key,omitempty"`
+	AskScmBranchOnLaunch           bool   `json:"ask_scm_branch_on_launch,omitempty"`
+	AskDiffModeOnLaunch            bool   `json:"ask_diff_mode_on_launch,omitempty"`
+	AskVariablesOnLaunch           bool   `json:"ask_variables_on_launch,omitempty"`
+	AskLimitOnLaunch               bool   `json:"ask_limit_on_launch,omitempty"`
+	AskTagsOnLaunch                bool   `json:"ask_tags_on_launch,omitempty"`
+	AskSkipTagsOnLaunch            bool   `json:"ask_skip_tags_on_launch,omitempty"`
+	AskJobTypeOnLaunch             bool   `json:"ask_job_type_on_launch,omitempty"`
+	AskVerbosityOnLaunch           bool   `json:"ask_verbosity_on_launch,omitempty"`
+	AskInventoryOnLaunch           bool   `json:"ask_inventory_on_launch,omitempty"`
+	AskCredentialOnLaunch          bool   `json:"ask_credential_on_launch,omitempty"`
+	AskExecutionEnvironmenOnLaunch bool   `json:"ask_execution_environment_on_launch,omitempty"`
+	AskLablesOnLaunch              bool   `json:"ask_labels_on_launch,omitempty"`
+	AskForksOnLaunch               bool   `json:"ask_forks_on_launch,omitempty"`
+	AskJobSliceCountOnLaunch       bool   `json:"ask_job_slice_count_on_launch,omitempty"`
+	AskTimeoutOnLaunch             bool   `json:"ask_timeout_on_launch,omitempty"`
+	AskInstanceGroupsOnLaunch      bool   `json:"ask_instance_groups_on_launch,omitempty"`
+	SurveyEnabled                  bool   `json:"survey_enabled,omitempty"`
+	BecomeEnabled                  bool   `json:"become_enabled,omitempty"`
+	DiffMode                       bool   `json:"diff_mode,omitempty"`
+	AllowSimultaneous              bool   `json:"allow_simultaneous,omitempty"`
 	CustomVirtualEnv               any    `json:"custom_virtualenv,omitempty"` //blank is returned by api as "custom_virtual": null (not "")
-	JobSliceCount                  int    `json:"job_slice_count"`
-	WebhookService                 string `json:"webhook_service"`
+	JobSliceCount                  int    `json:"job_slice_count,omitempty"`
+	WebhookService                 string `json:"webhook_service,omitempty"`
 	WebhookCredential              any    `json:"webhook_credential,omitempty"` //blank is returned by api as "webhook_credentials": null (not "")
-	PreventInstanceGroupFallback   bool   `json:"prevent_instance_group_fallback"`
+	PreventInstanceGroupFallback   bool   `json:"prevent_instance_group_fallback,omitempty"`
 }
 
 func (r *JobTemplateResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -315,51 +315,140 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 
 	// get body data for HTTP request
 	var bodyData JobTemplate
-	bodyData.Name = data.Name.ValueString()
+	if !(data.Name.IsNull()) {
+		bodyData.Name = data.Name.ValueString()
+	}
 	bodyData.Description = data.Description.ValueString()
-	bodyData.JobType = data.JobType.ValueString()
-	bodyData.Inventory = int(data.Inventory.ValueInt32())
-	bodyData.Project = int(data.Project.ValueInt32())
-	bodyData.Playbook = data.Playbook.ValueString()
-	bodyData.ScmBranch = data.ScmBranch.ValueString()
-	bodyData.Forks = int(data.Forks.ValueInt32())
-	bodyData.Limit = data.Limit.ValueString()
-	bodyData.Verbosity = int(data.Verbosity.ValueInt32())
-	bodyData.ExtraVars = data.ExtraVars.ValueString()
-	bodyData.JobTags = data.JobTags.ValueString()
-	bodyData.ForceHandlers = data.ForceHandlers.ValueBool()
-	bodyData.SkipTags = data.SkipTags.ValueString()
-	bodyData.StartAtTask = data.StartAtTask.ValueString()
-	bodyData.Timeout = int(data.Timeout.ValueInt32())
-	bodyData.UseFactCache = data.UseFactCache.ValueBool()
-	bodyData.Organization = int(data.Organization.ValueInt32())
-	bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
-	bodyData.HostConfigKey = data.HostConfigKey.ValueString()
-	bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()
-	bodyData.AskDiffModeOnLaunch = data.AskDiffModeOnLaunch.ValueBool()
-	bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()
-	bodyData.AskLimitOnLaunch = data.AskLimitOnLaunch.ValueBool()
-	bodyData.AskTagsOnLaunch = data.AskTagsOnLaunch.ValueBool()
-	bodyData.AskSkipTagsOnLaunch = data.AskSkipTagsOnLaunch.ValueBool()
-	bodyData.AskJobTypeOnLaunch = data.AskJobTypeOnLaunch.ValueBool()
-	bodyData.AskVerbosityOnLaunch = data.AskVerbosityOnLaunch.ValueBool()
-	bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()
-	bodyData.AskCredentialOnLaunch = data.AskCredentialOnLaunch.ValueBool()
-	bodyData.AskExecutionEnvironmenOnLaunch = data.AskExecutionEnvironmenOnLaunch.ValueBool()
-	bodyData.AskLablesOnLaunch = data.AskLablesOnLaunch.ValueBool()
-	bodyData.AskForksOnLaunch = data.AskForksOnLaunch.ValueBool()
-	bodyData.AskJobSliceCountOnLaunch = data.AskJobSliceCountOnLaunch.ValueBool()
-	bodyData.AskTimeoutOnLaunch = data.AskTimeoutOnLaunch.ValueBool()
-	bodyData.AskInstanceGroupsOnLaunch = data.AskInstanceGroupsOnLaunch.ValueBool()
-	bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
-	bodyData.BecomeEnabled = data.BecomeEnabled.ValueBool()
-	bodyData.DiffMode = data.DiffMode.ValueBool()
-	bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
-	bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
-	bodyData.JobSliceCount = int(data.JobSliceCount.ValueInt32())
-	bodyData.WebhookService = data.WebhookService.ValueString()
-	bodyData.WebhookCredential = data.WebhookCredential.ValueString()
-	bodyData.PreventInstanceGroupFallback = data.PreventInstanceGroupFallback.ValueBool()
+
+	if !(data.JobType.IsNull()) {
+		bodyData.JobType = data.JobType.ValueString()
+	}
+	if !(data.Inventory.IsNull()) {
+		bodyData.Inventory = int(data.Inventory.ValueInt32())
+	}
+	if !(data.Project.IsNull()) {
+		bodyData.Project = int(data.Project.ValueInt32())
+	}
+	if !(data.Playbook.IsNull()) {
+		bodyData.Playbook = data.Playbook.ValueString()
+	}
+	if !(data.ScmBranch.IsNull()) {
+		bodyData.ScmBranch = data.ScmBranch.ValueString()
+	}
+	if !(data.Forks.IsNull()) {
+		bodyData.Forks = int(data.Forks.ValueInt32())
+	}
+	if !(data.Limit.IsNull()) {
+		bodyData.Limit = data.Limit.ValueString()
+	}
+	if !(data.Verbosity.IsNull()) {
+		bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+	}
+	if !(data.ExtraVars.IsNull()) {
+		bodyData.ExtraVars = data.ExtraVars.ValueString()
+	}
+	if !(data.JobTags.IsNull()) {
+		bodyData.JobTags = data.JobTags.ValueString()
+	}
+	if !(data.ForceHandlers.IsNull()) {
+		bodyData.ForceHandlers = data.ForceHandlers.ValueBool()
+	}
+	if !(data.SkipTags.IsNull()) {
+		bodyData.SkipTags = data.SkipTags.ValueString()
+	}
+	if !(data.StartAtTask.IsNull()) {
+		bodyData.StartAtTask = data.StartAtTask.ValueString()
+	}
+	if !(data.Timeout.IsNull()) {
+		bodyData.Timeout = int(data.Timeout.ValueInt32())
+	}
+	if !(data.UseFactCache.IsNull()) {
+		bodyData.UseFactCache = data.UseFactCache.ValueBool()
+	}
+	if !(data.Organization.IsNull()) {
+		bodyData.Organization = int(data.Organization.ValueInt32())
+	}
+	if !(data.UseFactCache.IsNull()) {
+		bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
+	}
+	if !(data.HostConfigKey.IsNull()) {
+		bodyData.HostConfigKey = data.HostConfigKey.ValueString()
+	}
+	if !(data.AskScmBranchOnLaunch.IsNull()) {
+		bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()
+	}
+	if !(data.AskDiffModeOnLaunch.IsNull()) {
+		bodyData.AskDiffModeOnLaunch = data.AskDiffModeOnLaunch.ValueBool()
+	}
+	if !(data.AskVariablesOnLaunch.IsNull()) {
+		bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()
+	}
+	if !(data.AskLimitOnLaunch.IsNull()) {
+		bodyData.AskLimitOnLaunch = data.AskLimitOnLaunch.ValueBool()
+	}
+	if !(data.AskTagsOnLaunch.IsNull()) {
+		bodyData.AskTagsOnLaunch = data.AskTagsOnLaunch.ValueBool()
+	}
+	if !(data.AskSkipTagsOnLaunch.IsNull()) {
+		bodyData.AskSkipTagsOnLaunch = data.AskSkipTagsOnLaunch.ValueBool()
+	}
+	if !(data.AskJobTypeOnLaunch.IsNull()) {
+		bodyData.AskJobTypeOnLaunch = data.AskJobTypeOnLaunch.ValueBool()
+	}
+	if !(data.AskVerbosityOnLaunch.IsNull()) {
+		bodyData.AskVerbosityOnLaunch = data.AskVerbosityOnLaunch.ValueBool()
+	}
+	if !(data.AskInventoryOnLaunch.IsNull()) {
+		bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()
+	}
+	if !(data.AskCredentialOnLaunch.IsNull()) {
+		bodyData.AskCredentialOnLaunch = data.AskCredentialOnLaunch.ValueBool()
+	}
+	if !(data.AskExecutionEnvironmenOnLaunch.IsNull()) {
+		bodyData.AskExecutionEnvironmenOnLaunch = data.AskExecutionEnvironmenOnLaunch.ValueBool()
+	}
+	if !(data.AskLablesOnLaunch.IsNull()) {
+		bodyData.AskLablesOnLaunch = data.AskLablesOnLaunch.ValueBool()
+	}
+	if !(data.AskForksOnLaunch.IsNull()) {
+		bodyData.AskForksOnLaunch = data.AskForksOnLaunch.ValueBool()
+	}
+	if !(data.AskJobSliceCountOnLaunch.IsNull()) {
+		bodyData.AskJobSliceCountOnLaunch = data.AskJobSliceCountOnLaunch.ValueBool()
+	}
+	if !(data.AskTimeoutOnLaunch.IsNull()) {
+		bodyData.AskTimeoutOnLaunch = data.AskTimeoutOnLaunch.ValueBool()
+	}
+	if !(data.AskInstanceGroupsOnLaunch.IsNull()) {
+		bodyData.AskInstanceGroupsOnLaunch = data.AskInstanceGroupsOnLaunch.ValueBool()
+	}
+	if !(data.SurveyEnabled.IsNull()) {
+		bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
+	}
+	if !(data.BecomeEnabled.IsNull()) {
+		bodyData.BecomeEnabled = data.BecomeEnabled.ValueBool()
+	}
+	if !(data.DiffMode.IsNull()) {
+		bodyData.DiffMode = data.DiffMode.ValueBool()
+	}
+	if !(data.AllowSimultaneous.IsNull()) {
+		bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
+	}
+	if !(data.CustomVirtualEnv.IsNull()) {
+		bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
+	}
+	if !(data.JobSliceCount.IsNull()) {
+		bodyData.JobSliceCount = int(data.JobSliceCount.ValueInt32())
+	}
+	if !(data.WebhookService.IsNull()) {
+		bodyData.WebhookService = data.WebhookService.ValueString()
+	}
+	if !(data.WebhookCredential.IsNull()) {
+		bodyData.WebhookCredential = data.WebhookCredential.ValueString()
+	}
+	if !(data.PreventInstanceGroupFallback.IsNull()) {
+		bodyData.PreventInstanceGroupFallback = data.PreventInstanceGroupFallback.ValueBool()
+	}
 
 	jsonData, err := json.Marshal(bodyData)
 	if err != nil {
