@@ -463,6 +463,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 		resp.Diagnostics.AddError(
 			"Unable marshal json",
 			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+		return
 	}
 
 	// create HTTP request
@@ -471,6 +472,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -543,6 +545,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
@@ -552,6 +555,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -560,11 +564,13 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		return
 	}
 	if httpResp.StatusCode != 200 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+		return
 
 	}
 
@@ -575,6 +581,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError(
 			"Uanble to get all data out of the http response data body",
 			fmt.Sprintf("Body got %v. ", body))
+		return
 	}
 
 	err = json.Unmarshal(body, &responseData)
@@ -582,6 +589,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError(
 			"Uanble unmarshall response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
+		return
 	}
 
 	//responseID := fmt.Sprint(responseData.Id)
@@ -914,6 +922,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 				"Invalid Type",
 				"Expected responseData.CustomVirtualEnv to be a string",
 			)
+			return
 		}
 
 		if resp.Diagnostics.HasError() {
@@ -945,6 +954,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 				"Invalid Type",
 				"Expected responseData.WebhookCredential to be a string",
 			)
+			return
 		}
 
 		if resp.Diagnostics.HasError() {
@@ -1025,6 +1035,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		resp.Diagnostics.AddError(
 			"Unable marshal json",
 			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+		return
 	}
 
 	// set url for create HTTP request
@@ -1033,6 +1044,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
@@ -1042,6 +1054,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -1079,6 +1092,7 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
@@ -1088,6 +1102,7 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 		resp.Diagnostics.AddError(
 			"Unable to generate delete request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -1096,12 +1111,13 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
+		return
 	}
-	if httpResp.StatusCode != 200 {
+	if httpResp.StatusCode != 204 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+			fmt.Sprintf("Expected 204, got %v. ", httpResp.StatusCode))
+		return
 	}
 }
 
