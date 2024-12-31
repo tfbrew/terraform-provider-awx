@@ -72,7 +72,7 @@ type SurveySpec struct {
 }
 
 func (r *JobTemplateSurveyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_jobtemplate_survey"
+	resp.TypeName = req.ProviderTypeName + "_job_templates_survey_spec"
 }
 
 func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

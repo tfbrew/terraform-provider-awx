@@ -17,79 +17,79 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &JobTemplateCredentialResource{}
-var _ resource.ResourceWithImportState = &JobTemplateCredentialResource{}
+var _ resource.Resource = &JobTemplateLabelsResource{}
+var _ resource.ResourceWithImportState = &JobTemplateLabelsResource{}
 
-func NewJobTemplateCredentialResource() resource.Resource {
-	return &JobTemplateCredentialResource{}
+func NewJobTemplateLabelsResource() resource.Resource {
+	return &JobTemplateLabelsResource{}
 }
 
-// JobTemplateCredentialResource defines the resource implementation.
-type JobTemplateCredentialResource struct {
+// JobTemplateLabelsResource defines the resource implementation.
+type JobTemplateLabelsResource struct {
 	client *AwxClient
 }
 
-// JobTemplateCredentialResourceModel describes the resource data model.
-type JobTemplateCredentialResourceModel struct {
+// JobTemplateLabelsResourceModel describes the resource data model.
+type JobTemplateLabelsResourceModel struct {
 	JobTemplateId types.String `tfsdk:"job_template_id"`
-	CredentialIds types.List   `tfsdk:"credential_ids"`
+	LabelIDs      types.List   `tfsdk:"label_ids"`
 }
 
-type JTCredentialAPIRead struct {
-	Count   int      `json:"count"`
-	Results []Result `json:"results"`
+type JTLabelsAPIRead struct {
+	Count        int           `json:"count"`
+	LabelResults []LabelResult `json:"results"`
 }
 
-type Result struct {
+type LabelResult struct {
 	Id int `json:"id"`
 }
 
-type DissasocBody struct {
+type LabelDissasocBody struct {
 	Id           int  `json:"id"`
 	Disassociate bool `json:"disassociate"`
 }
 
-func (r *JobTemplateCredentialResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_jobtemplate_credential"
+func (r *JobTemplateLabelsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_job_templates_labels"
 }
 
-func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *JobTemplateLabelsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: `The /api/v2/job_templates/{id}/credentials/ returns all credential objects associated to the template. But, when asked to associate a credential or \
-                              dissassociate a credential, you must post a request once per credential ID.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
-                              principle. Instead, the terraform schema stores a list of associated credential ids. And, when creating or deleting or updated, it will make one api call PER \
+		MarkdownDescription: `The /api/v2/job_templates/{id}/labels/ returns all label objects associated to the template. But, when asked to associate a label or \
+                              dissassociate a label, you must post a request once per label name.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
+                              principle. Instead, the terraform schema stores a list of associated labels. And, when creating or deleting or updated, it will make one api call PER \
                               list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
                               then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
                               -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
                               provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
 							  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
 							  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
-		Description: `The /api/v2/job_templates/{id}/credentials/ returns all credential objects associated to the template. But, when asked to associate a credential or \
-					  dissassociate a credential, you must post a request once per credential ID.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
-					  principle. Instead, the terraform schema stores a list of associated credential ids. And, when creating or deleting or updated, it will make one api call PER \
-					  list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
-					  then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
-					  -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
-					  provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
-					  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
-					  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
+		Description: `The /api/v2/job_templates/{id}/labels/ returns all label objects associated to the template. But, when asked to associate a label or \
+                              dissassociate a label, you must post a request once per label name.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
+                              principle. Instead, the terraform schema stores a list of associated labels. And, when creating or deleting or updated, it will make one api call PER \
+                              list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
+                              then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
+                              -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
+                              provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
+							  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
+							  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
 		Attributes: map[string]schema.Attribute{
 			"job_template_id": schema.StringAttribute{
 				Required:            true,
 				Description:         "The ID of the containing Job Template.",
 				MarkdownDescription: "The ID of the containing Job Template",
 			},
-			"credential_ids": schema.ListAttribute{
+			"label_ids": schema.ListAttribute{
 				Required:            true,
-				Description:         "An ordered list of credential IDs associated to a particular Job Template.",
-				MarkdownDescription: "An ordered list of credential IDs associated to a particular Job Template.",
+				Description:         "An ordered list of label IDs associated to a particular Job Template. Create new labels first with awx_labels resource type.",
+				MarkdownDescription: "An ordered list of label IDs associated to a particular Job Template. Create new labels first with awx_labels resource type.",
 				ElementType:         types.Int32Type,
 			},
 		},
 	}
 }
 
-func (r *JobTemplateCredentialResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *JobTemplateLabelsResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -109,8 +109,8 @@ func (r *JobTemplateCredentialResource) Configure(ctx context.Context, req resou
 	r.client = configureData
 }
 
-func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data JobTemplateCredentialResourceModel
+func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data JobTemplateLabelsResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -127,21 +127,21 @@ func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	var credIds []int
+	var relatedIds []int
 
-	diags := data.CredentialIds.ElementsAs(ctx, &credIds, false)
+	diags := data.LabelIDs.ElementsAs(ctx, &relatedIds, false)
 	if diags.HasError() {
 		return
 	}
 
-	for _, val := range credIds {
+	for _, val := range relatedIds {
 
-		var bodyData Result
+		var bodyData LabelResult
 		bodyData.Id = val
 
-		err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
+		err := r.client.AssocJobTemplLabel(ctx, id, bodyData)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
+			resp.Diagnostics.AddError("Failed to associate label.", err.Error())
 			return
 		}
 	}
@@ -152,8 +152,8 @@ func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data JobTemplateCredentialResourceModel
+func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data JobTemplateLabelsResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -169,7 +169,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -212,26 +212,25 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	tfCredIds := make([]int, 0, responseData.Count)
+	tfRelatedIds := make([]int, 0, responseData.Count)
 
 	for _, v := range responseData.Results {
-		tfCredIds = append(tfCredIds, v.Id)
+		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfCredIds)
+	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
 	if diags.HasError() {
 		return
 	}
 
-	data.CredentialIds = listValue
+	data.LabelIDs = listValue
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers.
-func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data JobTemplateCredentialResourceModel
+func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data JobTemplateLabelsResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -246,7 +245,7 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -271,7 +270,7 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	var responseData JTCredentialAPIRead
+	var responseData JTLabelsAPIRead
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -291,12 +290,12 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 
 	ApiTfCredIds := make([]int, 0, responseData.Count)
 
-	for _, v := range responseData.Results {
+	for _, v := range responseData.LabelResults {
 		ApiTfCredIds = append(ApiTfCredIds, v.Id)
 	}
 
-	var PlanCredIds []int
-	diags := data.CredentialIds.ElementsAs(ctx, &PlanCredIds, false)
+	var PlanLabelIds []int
+	diags := data.LabelIDs.ElementsAs(ctx, &PlanLabelIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -304,26 +303,26 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 	// diassociate any credentials found currently via API call that
 	//  are no longer in the plan
 	for _, v := range ApiTfCredIds {
-		if !slices.Contains(PlanCredIds, v) {
-			var bodyData DissasocBody
+		if !slices.Contains(PlanLabelIds, v) {
+			var bodyData LabelDissasocBody
 			bodyData.Id = v
 
-			err := r.client.DisassocJobTemplCredential(ctx, id, bodyData)
+			err := r.client.DisassocJobTemplLabel(ctx, id, bodyData)
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
+				resp.Diagnostics.AddError("Failed to disassociate label.", err.Error())
 				return
 			}
 		}
 	}
 	// associate any credentials found in plan that weren't shown in API response
-	for _, v := range PlanCredIds {
+	for _, v := range PlanLabelIds {
 		if !slices.Contains(ApiTfCredIds, v) {
-			var bodyData Result
+			var bodyData LabelResult
 			bodyData.Id = v
 
-			err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
+			err := r.client.AssocJobTemplLabel(ctx, id, bodyData)
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
+				resp.Diagnostics.AddError("Failed to associate label.", err.Error())
 				return
 			}
 		}
@@ -333,8 +332,8 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateCredentialResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data JobTemplateCredentialResourceModel
+func (r *JobTemplateLabelsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data JobTemplateLabelsResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -351,29 +350,29 @@ func (r *JobTemplateCredentialResource) Delete(ctx context.Context, req resource
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	var credIds []int
+	var RelatedIds []int
 
-	diags := data.CredentialIds.ElementsAs(ctx, &credIds, false)
+	diags := data.LabelIDs.ElementsAs(ctx, &RelatedIds, false)
 	if diags.HasError() {
 		return
 	}
 
-	for _, val := range credIds {
+	for _, val := range RelatedIds {
 
-		var body DissasocBody
+		var body LabelDissasocBody
 
 		body.Id = val
 		body.Disassociate = true
 
-		err := r.client.DisassocJobTemplCredential(ctx, id, body)
+		err := r.client.DisassocJobTemplLabel(ctx, id, body)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
+			resp.Diagnostics.AddError("Failed to disassociate label.", err.Error())
 			return
 		}
 	}
 
 }
 
-func (r *JobTemplateCredentialResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *JobTemplateLabelsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("job_template_id"), req, resp)
 }
