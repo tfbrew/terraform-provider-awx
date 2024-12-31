@@ -158,8 +158,8 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "Acceptable values are a choice of: run, or check.",
 			},
 			"inventory": schema.Int32Attribute{
-				Required:    true,
-				Description: "ID number of the inventory to associate with the job template",
+				Optional:    true,
+				Description: "ID number of the inventory to associate with the job template. Supply this or set ask_inventory_on_launch = true.",
 			},
 			"project": schema.Int32Attribute{
 				Required:    true,

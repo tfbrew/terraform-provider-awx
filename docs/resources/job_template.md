@@ -27,7 +27,6 @@ resource "awx_job_template" "default" {
 
 ### Required
 
-- `inventory` (Number) ID number of the inventory to associate with the job template
 - `job_type` (String) Acceptable values are a choice of: run, or check.
 - `name` (String)
 - `playbook` (String) Playbook name to be executed by this job
@@ -61,6 +60,7 @@ resource "awx_job_template" "default" {
 - `force_handlers` (Boolean)
 - `forks` (Number)
 - `host_config_key` (String)
+- `inventory` (Number) ID number of the inventory to associate with the job template. Supply this or set ask_inventory_on_launch = true.
 - `job_slice_count` (Number)
 - `job_tags` (String)
 - `limit` (String)

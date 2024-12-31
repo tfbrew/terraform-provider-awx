@@ -116,6 +116,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewJobTemplateLabelsResource,
 		NewJobTemplateInstanceGroupsResource,
 		NewNotificationTemplatesResource,
+		NewJobTemplateNotifTemplErrResource,
 	}
 }
 
