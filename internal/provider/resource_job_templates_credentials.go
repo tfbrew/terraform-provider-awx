@@ -50,7 +50,7 @@ type DissasocBody struct {
 }
 
 func (r *JobTemplateCredentialResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_job_templates_credential"
+	resp.TypeName = req.ProviderTypeName + "_job_templates_credentials"
 }
 
 func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
