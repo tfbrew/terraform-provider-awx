@@ -343,17 +343,24 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	stateSlackConfig := new(SlackConfiguration)
+	useResponseConfig := false
+	var stateToken string
 
-	err = json.Unmarshal([]byte(stateNotifConfig.ValueString()), &stateSlackConfig)
-	if err != nil {
-		resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-			"Unable to unmarshall plan's notification configuration into a go type for interogation.",
-		)
-		return
+	if stateNotifConfig.IsNull() {
+		useResponseConfig = true
+	} else {
+		stateSlackConfig := new(SlackConfiguration)
+
+		err = json.Unmarshal([]byte(stateNotifConfig.ValueString()), &stateSlackConfig)
+		if err != nil {
+			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+				"Unable to unmarshall plan's notification configuration into a go type for interogation."+err.Error(),
+			)
+			return
+		}
+
+		stateToken = stateSlackConfig.Token
 	}
-
-	stateToken := stateSlackConfig.Token
 
 	// now build the state from the API response data for notification configuration (slack)
 	slackConfig := new(SlackConfiguration)
@@ -378,7 +385,18 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 			}
 		}
 		if k == "token" {
-			slackConfig.Token = stateToken
+			if useResponseConfig {
+				if respToken, ok := v.(string); ok {
+					slackConfig.Token = respToken
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+						"Unexpected error in esource_notification_templates with. token is not a string",
+					)
+					return
+				}
+			} else {
+				slackConfig.Token = stateToken
+			}
 		}
 		if k == "channels" {
 			if channels, ok := v.([]any); ok {
