@@ -131,7 +131,7 @@ type JobTemplate struct {
 }
 
 func (r *JobTemplateResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_job_template"
+	resp.TypeName = req.ProviderTypeName + "_job_templates"
 }
 
 func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

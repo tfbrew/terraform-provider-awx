@@ -17,55 +17,79 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &JobTemplateNotifTemplErrResource{}
-var _ resource.ResourceWithImportState = &JobTemplateNotifTemplErrResource{}
+var _ resource.Resource = &JobTemplateCredentialResource{}
+var _ resource.ResourceWithImportState = &JobTemplateCredentialResource{}
 
-func NewJobTemplateNotifTemplErrResource() resource.Resource {
-	return &JobTemplateNotifTemplErrResource{}
+func NewJobTemplateCredentialResource() resource.Resource {
+	return &JobTemplateCredentialResource{}
 }
 
-// JobTemplateNotifTemplErrResource defines the resource implementation.
-type JobTemplateNotifTemplErrResource struct {
+// JobTemplateCredentialResource defines the resource implementation.
+type JobTemplateCredentialResource struct {
 	client *AwxClient
 }
 
-// JobTemplateNotifTemplErrResourceModel describes the resource data model.
-type JobTemplateNotifTemplErrResourceModel struct {
-	JobTemplateId    types.String `tfsdk:"job_template_id"`
-	NotifTEmplateIDs types.List   `tfsdk:"notif_template_ids"`
+// JobTemplateCredentialResourceModel describes the resource data model.
+type JobTemplateCredentialResourceModel struct {
+	JobTemplateId types.String `tfsdk:"job_template_id"`
+	CredentialIds types.List   `tfsdk:"credential_ids"`
 }
 
-func (r *JobTemplateNotifTemplErrResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_jobtemplate_notification_templates_error"
+type JTCredentialAPIRead struct {
+	Count   int      `json:"count"`
+	Results []Result `json:"results"`
 }
 
-func (r *JobTemplateNotifTemplErrResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+type Result struct {
+	Id int `json:"id"`
+}
+
+type DissasocBody struct {
+	Id           int  `json:"id"`
+	Disassociate bool `json:"disassociate"`
+}
+
+func (r *JobTemplateCredentialResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_job_templates_credentials"
+}
+
+func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `The /api/v2/job_templates/{id}/notification_templates_error/ returns all objects associated to the template. But, when asked to associate a notification template or \
-                              dissassociate a notification template, you must post a request once per notification template id.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
-                              principle. Instead, the terraform schema stores a list of associated instance_groups. And, when creating or deleting or updated, it will make one api call PER \
+		MarkdownDescription: `The /api/v2/job_templates/{id}/credentials/ returns all credential objects associated to the template. But, when asked to associate a credential or \
+                              dissassociate a credential, you must post a request once per credential ID.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
+                              principle. Instead, the terraform schema stores a list of associated credential ids. And, when creating or deleting or updated, it will make one api call PER \
                               list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
                               then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
                               -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
                               provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
 							  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
 							  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
+		Description: `The /api/v2/job_templates/{id}/credentials/ returns all credential objects associated to the template. But, when asked to associate a credential or \
+					  dissassociate a credential, you must post a request once per credential ID.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
+					  principle. Instead, the terraform schema stores a list of associated credential ids. And, when creating or deleting or updated, it will make one api call PER \
+					  list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
+					  then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
+					  -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
+					  provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
+					  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
+					  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
 		Attributes: map[string]schema.Attribute{
 			"job_template_id": schema.StringAttribute{
 				Required:            true,
 				Description:         "The ID of the containing Job Template.",
 				MarkdownDescription: "The ID of the containing Job Template",
 			},
-			"notif_template_ids": schema.ListAttribute{
-				Required:    true,
-				Description: "An ordered list of notification_templates IDs associated to a particular Job Template.",
-				ElementType: types.Int32Type,
+			"credential_ids": schema.ListAttribute{
+				Required:            true,
+				Description:         "An ordered list of credential IDs associated to a particular Job Template.",
+				MarkdownDescription: "An ordered list of credential IDs associated to a particular Job Template.",
+				ElementType:         types.Int32Type,
 			},
 		},
 	}
 }
 
-func (r *JobTemplateNotifTemplErrResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *JobTemplateCredentialResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -85,8 +109,8 @@ func (r *JobTemplateNotifTemplErrResource) Configure(ctx context.Context, req re
 	r.client = configureData
 }
 
-func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data JobTemplateCredentialResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -103,23 +127,21 @@ func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resou
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	var credIds []int
 
-	var relatedIds []int
-
-	diags := data.NotifTEmplateIDs.ElementsAs(ctx, &relatedIds, false)
+	diags := data.CredentialIds.ElementsAs(ctx, &credIds, false)
 	if diags.HasError() {
 		return
 	}
 
-	for _, val := range relatedIds {
+	for _, val := range credIds {
 
-		var bodyData ChildResult
+		var bodyData Result
 		bodyData.Id = val
 
-		err := r.client.AssocJobTemplChild(ctx, bodyData, url)
+		err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
+			resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
 			return
 		}
 	}
@@ -130,8 +152,8 @@ func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data JobTemplateCredentialResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -147,7 +169,7 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -172,7 +194,7 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	var responseData JTChildAPIRead
+	var responseData JTCredentialAPIRead
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -190,25 +212,26 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	tfRelatedIds := make([]int, 0, responseData.Count)
+	tfCredIds := make([]int, 0, responseData.Count)
 
 	for _, v := range responseData.Results {
-		tfRelatedIds = append(tfRelatedIds, v.Id)
+		tfCredIds = append(tfCredIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfCredIds)
 	if diags.HasError() {
 		return
 	}
 
-	data.NotifTEmplateIDs = listValue
+	data.CredentialIds = listValue
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers.
+func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data JobTemplateCredentialResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -223,7 +246,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -248,7 +271,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	var responseData JTChildAPIRead
+	var responseData JTCredentialAPIRead
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -266,41 +289,41 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	ApiTfChildIds := make([]int, 0, responseData.Count)
+	ApiTfCredIds := make([]int, 0, responseData.Count)
 
 	for _, v := range responseData.Results {
-		ApiTfChildIds = append(ApiTfChildIds, v.Id)
+		ApiTfCredIds = append(ApiTfCredIds, v.Id)
 	}
 
-	var PlanChildIds []int
-	diags := data.NotifTEmplateIDs.ElementsAs(ctx, &PlanChildIds, false)
+	var PlanCredIds []int
+	diags := data.CredentialIds.ElementsAs(ctx, &PlanCredIds, false)
 	if diags.HasError() {
 		return
 	}
 
-	// diassociate any chyildren found currently via API call that
+	// diassociate any credentials found currently via API call that
 	//  are no longer in the plan
-	for _, v := range ApiTfChildIds {
-		if !slices.Contains(PlanChildIds, v) {
-			var bodyData ChildDissasocBody
+	for _, v := range ApiTfCredIds {
+		if !slices.Contains(PlanCredIds, v) {
+			var bodyData DissasocBody
 			bodyData.Id = v
 
-			err := r.client.DisassocJobTemplChild(ctx, bodyData, url)
+			err := r.client.DisassocJobTemplCredential(ctx, id, bodyData)
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
+				resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
 				return
 			}
 		}
 	}
-	// associate any children found in plan that weren't shown in API response
-	for _, v := range PlanChildIds {
-		if !slices.Contains(ApiTfChildIds, v) {
-			var bodyData ChildResult
+	// associate any credentials found in plan that weren't shown in API response
+	for _, v := range PlanCredIds {
+		if !slices.Contains(ApiTfCredIds, v) {
+			var bodyData Result
 			bodyData.Id = v
 
-			err := r.client.AssocJobTemplChild(ctx, bodyData, url)
+			err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
+				resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
 				return
 			}
 		}
@@ -310,8 +333,8 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+func (r *JobTemplateCredentialResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data JobTemplateCredentialResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -328,31 +351,29 @@ func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resou
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	var credIds []int
 
-	var RelatedIds []int
-
-	diags := data.NotifTEmplateIDs.ElementsAs(ctx, &RelatedIds, false)
+	diags := data.CredentialIds.ElementsAs(ctx, &credIds, false)
 	if diags.HasError() {
 		return
 	}
 
-	for _, val := range RelatedIds {
+	for _, val := range credIds {
 
-		var body ChildDissasocBody
+		var body DissasocBody
 
 		body.Id = val
 		body.Disassociate = true
 
-		err := r.client.DisassocJobTemplChild(ctx, body, url)
+		err := r.client.DisassocJobTemplCredential(ctx, id, body)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
+			resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
 			return
 		}
 	}
 
 }
 
-func (r *JobTemplateNotifTemplErrResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *JobTemplateCredentialResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("job_template_id"), req, resp)
 }
