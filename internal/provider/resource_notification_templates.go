@@ -100,7 +100,7 @@ func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource
 			},
 			"notification_configuration": schema.StringAttribute{
 				Optional:    true,
-				Description: "json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah).",
+				Description: "json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah). The AWX Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.",
 			},
 			"messages": schema.StringAttribute{
 				Optional:    true,
@@ -144,34 +144,36 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.NotificationType = data.NotificationType.ValueString()
 
-	fieldToBytes := []byte(data.NotificationConfiguration.ValueString())
+	if !data.NotificationConfiguration.IsNull() {
+		fieldToBytes := []byte(data.NotificationConfiguration.ValueString())
 
-	slackConfig := new(SlackConfiguration)
+		slackConfig := new(SlackConfiguration)
 
-	err := json.Unmarshal(fieldToBytes, &slackConfig)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to move Notification Config into json object",
-			fmt.Sprintf("Error = %s ", err.Error()))
-		return
+		err := json.Unmarshal(fieldToBytes, &slackConfig)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to move Notification Config into json object",
+				fmt.Sprintf("Error = %s ", err.Error()))
+			return
+		}
+
+		bodyData.NotificationConfiguration = slackConfig
 	}
+	if !data.Messages.IsNull() {
+		fieldToBytes := []byte(data.Messages.ValueString())
 
-	bodyData.NotificationConfiguration = slackConfig
+		messageData := new(Messages)
 
-	fieldToBytes = []byte(data.Messages.ValueString())
+		err := json.Unmarshal(fieldToBytes, &messageData)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to move Messages into json object",
+				fmt.Sprintf("Error = %s ", err.Error()))
+			return
+		}
 
-	messageData := new(Messages)
-
-	err = json.Unmarshal(fieldToBytes, &messageData)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to move Messages into json object",
-			fmt.Sprintf("Error = %s ", err.Error()))
-		return
+		bodyData.Messages = messageData
 	}
-
-	bodyData.Messages = messageData
-
 	jsonData, err := json.Marshal(bodyData)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -228,6 +230,9 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 	idAsString := strconv.Itoa(tmp.Id)
 
 	data.Id = types.StringValue(idAsString)
+
+	// Once this object is created, the token value in the NotificationConfiguration field will never be returned as anythong
+	// other than blank by the AWX Tower API. So, let's
 
 	tflog.Trace(ctx, "created a resource")
 
@@ -330,6 +335,27 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		}
 	}
 
+	// Get the State's Token value provide that back into the State.
+	// The api will always return a blank value for token on GET, I'm assuming as a safety measure.
+	var stateNotifConfig types.String
+	diags := req.State.GetAttribute(ctx, path.Root("notification_configuration"), &stateNotifConfig)
+	if diags.HasError() {
+		return
+	}
+
+	stateSlackConfig := new(SlackConfiguration)
+
+	err = json.Unmarshal([]byte(stateNotifConfig.ValueString()), &stateSlackConfig)
+	if err != nil {
+		resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+			"Unable to unmarshall plan's notification configuration into a go type for interogation.",
+		)
+		return
+	}
+
+	stateToken := stateSlackConfig.Token
+
+	// now build the state from the API response data for notification configuration (slack)
 	slackConfig := new(SlackConfiguration)
 
 	notificationConfig, ok := responseData.NotificationConfiguration.(map[string]any)
@@ -352,14 +378,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 			}
 		}
 		if k == "token" {
-			if token, ok := v.(string); ok {
-				slackConfig.Token = token
-			} else {
-				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-					"Unexpected error in esource_notification_templates with. token is not a string",
-				)
-				return
-			}
+			slackConfig.Token = stateToken
 		}
 		if k == "channels" {
 			if channels, ok := v.([]any); ok {
@@ -404,6 +423,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 
 	if responseData.Messages != nil {
 
+		foundOneMessageVal := false
 		resp_msgs, ok := responseData.Messages.(map[string]any)
 		if !ok {
 			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
@@ -411,6 +431,11 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 			)
 		}
 		for k, v := range resp_msgs {
+			if v == nil {
+				continue
+			} else {
+				foundOneMessageVal = true
+			}
 			if k == "error" {
 
 				if errorMsg, ok := v.(map[string]any); ok {
@@ -525,7 +550,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 			return
 		}
 
-		if !(data.Messages.IsNull() && responseData.Messages == nil) {
+		if !(data.Messages.IsNull() && responseData.Messages == nil) && foundOneMessageVal {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("messages"), string(msgJson))...)
 			if resp.Diagnostics.HasError() {
 				return
