@@ -335,19 +335,55 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 
 	slackConfig := new(SlackConfiguration)
 
-	for k, v := range responseData.NotificationConfiguration.(map[string]any) {
+	notificationConfig, ok := responseData.NotificationConfiguration.(map[string]any)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+			"Unexpected error in resource_notification_templates with responseData.NotificationConfiguration",
+		)
+		return
+	}
+
+	for k, v := range notificationConfig {
 		if k == "hex_color" {
-			slackConfig.HexColors = v.(string)
+			if hexColor, ok := v.(string); ok {
+				slackConfig.HexColors = hexColor
+			} else {
+				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+					"Unexpected error in esource_notification_templates with. hex_color is not a string",
+				)
+				return
+			}
 		}
 		if k == "token" {
-			slackConfig.Token = v.(string)
+			if token, ok := v.(string); ok {
+				slackConfig.Token = token
+			} else {
+				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+					"Unexpected error in esource_notification_templates with. token is not a string",
+				)
+				return
+			}
 		}
 		if k == "channels" {
-			channelList := make([]string, 0, len(v.([]any)))
-			for _, val := range v.([]any) {
-				channelList = append(channelList, val.(string))
+			if channels, ok := v.([]any); ok {
+				channelList := make([]string, 0, len(channels))
+				for _, ch := range channels {
+					if channel, ok := ch.(string); ok {
+						channelList = append(channelList, channel)
+					} else {
+						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+							"Unexpected error in esource_notification_templates with. channel is not the right type.",
+						)
+						return
+					}
+				}
+				slackConfig.Channels = channelList
+			} else {
+				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+					"Unexpected error in esource_notification_templates with. channels is not the right type.",
+				)
+				return
 			}
-			slackConfig.Channels = channelList
 		}
 	}
 
@@ -371,34 +407,115 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 
 	if responseData.Messages != nil {
 
-		for k, v := range responseData.Messages.(map[string]any) {
+		resp_msgs, ok := responseData.Messages.(map[string]any)
+		if !ok {
+			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+				"Unexpected error in resource_notification_templates. resp_msgs not the right type",
+			)
+		}
+		for k, v := range resp_msgs {
 			if k == "error" {
-				errorMsg := v.(map[string]any)
-				messages.Error = MessageValue{Body: errorMsg["body"].(string), Message: errorMsg["message"].(string)}
+
+				if errorMsg, ok := v.(map[string]any); ok {
+					if msg_body, ok := errorMsg["body"].(string); ok {
+						if msg_message, ok := errorMsg["message"].(string); ok {
+							messages.Error = MessageValue{Body: msg_body, Message: msg_message}
+						} else {
+							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+								"Unexpected error in esource_notification_templates with. error msg_message is not the right type",
+							)
+						}
+					} else {
+						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+							"Unexpected error in esource_notification_templates with. error msg_body is not the right type",
+						)
+					}
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+						"Unexpected error in esource_notification_templates with. error msg is not the right type",
+					)
+					return
+				}
 
 			}
 			if k == "started" {
-				startedMsg := v.(map[string]any)
-				messages.Started = MessageValue{Body: startedMsg["body"].(string), Message: startedMsg["message"].(string)}
-
+				if startMsg, ok := v.(map[string]any); ok {
+					if msg_body, ok := startMsg["body"].(string); ok {
+						if msg_message, ok := startMsg["message"].(string); ok {
+							messages.Started = MessageValue{Body: msg_body, Message: msg_message}
+						} else {
+							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+								"Unexpected error in esource_notification_templates with. started msg_message is not the right type",
+							)
+						}
+					} else {
+						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+							"Unexpected error in esource_notification_templates with. started msg_body is not the right type",
+						)
+					}
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+						"Unexpected error in esource_notification_templates with. started msg is not the right type",
+					)
+					return
+				}
 			}
 			if k == "success" {
-				successMsg := v.(map[string]any)
-				messages.Success = MessageValue{Body: successMsg["body"].(string), Message: successMsg["message"].(string)}
-
+				if successMsg, ok := v.(map[string]any); ok {
+					if msg_body, ok := successMsg["body"].(string); ok {
+						if msg_message, ok := successMsg["message"].(string); ok {
+							messages.Success = MessageValue{Body: msg_body, Message: msg_message}
+						} else {
+							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+								"Unexpected error in esource_notification_templates with. started msg_message is not the right type",
+							)
+						}
+					} else {
+						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+							"Unexpected error in esource_notification_templates with. started msg_body is not the right type",
+						)
+					}
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+						"Unexpected error in esource_notification_templates with. started msg is not the right type",
+					)
+					return
+				}
 			}
 			if k == "workflow_approval" {
+				if wkaParentValue, ok := v.(map[string]any); ok {
+					wkaParent := wkaParentValue
+					wka := make(map[string]MessageValue, len(wkaParent))
+					for key, val := range wkaParent {
 
-				wkaParent := v.(map[string]any)
+						if valMsg, ok := val.(map[string]any); ok {
+							if msg_body, ok := valMsg["body"].(string); ok {
+								if msg_message, ok := valMsg["message"].(string); ok {
+									wka[key] = MessageValue{Body: msg_body, Message: msg_message}
+								} else {
+									resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+										"Unexpected error in esource_notification_templates with. val msg_message is not the right type",
+									)
+								}
+							} else {
+								resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+									"Unexpected error in esource_notification_templates with. val msg_body is not the right type",
+								)
+							}
+						} else {
+							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+								"Unexpected error in esource_notification_templates with. val msg is not the right type",
+							)
+							return
+						}
 
-				wka := make(map[string]MessageValue, len(wkaParent))
-
-				for key, val := range wkaParent {
-					valMsg := val.(map[string]any)
-					wka[key] = MessageValue{Body: valMsg["body"].(string), Message: valMsg["message"].(string)}
-
+					}
+					messages.WorkflowApproval = wka
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+						"Unexpected error in resource_notification_templates. wkaParent is not the right type",
+					)
 				}
-				messages.WorkflowApproval = wka
 			}
 		}
 
