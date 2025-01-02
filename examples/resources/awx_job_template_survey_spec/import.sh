@@ -1,0 +1,1 @@
+terraform import awx_job_template_survey_spec.example 100

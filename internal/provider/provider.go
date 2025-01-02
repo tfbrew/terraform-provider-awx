@@ -42,7 +42,7 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 		Description: "**Warning**: All v0 releases are considered alpha and subject to breaking changes at any time.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-				//MarkdownDescription: "Example provider attribute",
+
 				Optional: true,
 			},
 			"token": schema.StringAttribute{
