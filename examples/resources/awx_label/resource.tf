@@ -1,4 +1,4 @@
-resource "awx_labels" "default" {
+resource "awx_label" "example" {
   name         = "prd"
   organization = 1
 }

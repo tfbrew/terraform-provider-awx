@@ -1,5 +1,5 @@
-resource "awx_notification_templates" "default" {
-  name              = "travistest2"
+resource "awx_notification_template" "example" {
+  name              = "example1"
   notification_type = "slack"
   organization      = 1
   notification_configuration = jsonencode({

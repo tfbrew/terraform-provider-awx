@@ -1,4 +1,4 @@
-resource "awx_job_templates" "default" {
+resource "awx_job_template" "example" {
   job_type  = "run"
   name      = "test"
   inventory = 1

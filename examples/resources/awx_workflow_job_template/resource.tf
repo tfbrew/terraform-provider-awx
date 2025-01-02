@@ -1,4 +1,4 @@
-resource "awx_workflow_job_templates" "default" {
+resource "awx_workflow_job_templates" "example" {
   allow_simultaneous       = false
   ask_inventory_on_launch  = false
   ask_labels_on_launch     = false
@@ -12,7 +12,7 @@ resource "awx_workflow_job_templates" "default" {
   inventory                = 1
   job_tags                 = null
   limit                    = null
-  name                     = "default"
+  name                     = "example"
   organization             = 1
   scm_branch               = "main"
   skip_tags                = null
