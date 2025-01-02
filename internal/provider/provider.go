@@ -39,7 +39,7 @@ func (p *awxProvider) Metadata(ctx context.Context, req provider.MetadataRequest
 
 func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "**Warning**: All v0.*.* releases are considered alpha and subject to breaking changes at any time.",
+		Description: "**Warning**: All v0 releases are considered alpha and subject to breaking changes at any time.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				//MarkdownDescription: "Example provider attribute",
