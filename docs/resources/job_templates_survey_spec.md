@@ -3,12 +3,12 @@
 page_title: "awx_job_templates_survey_spec Resource - awx"
 subcategory: ""
 description: |-
-  Example resource
+  Associate survey specs to an existing Job Template.
 ---
 
 # awx_job_templates_survey_spec (Resource)
 
-Example resource
+Associate survey specs to an existing Job Template.
 
 ## Example Usage
 
@@ -49,5 +49,5 @@ Optional:
 - `choices` (List of String) List of strings which define the choices users can make for multichoice or multiselect.
 - `default` (String) Default value for the survey question.
 - `max` (Number) Maximum value, default 1024.
-- `min` (Number) Minimum value, default 0.
+- `min` (Number) Minimum value, default 1024.
 - `required` (Boolean) Set if the survey question is required, defaults to false.

@@ -3,12 +3,12 @@
 page_title: "awx_job_templates Resource - awx"
 subcategory: ""
 description: |-
-  Example resource
+  Managed Job Templates
 ---
 
 # awx_job_templates (Resource)
 
-Example resource
+Managed Job Templates
 
 ## Example Usage
 

@@ -17,55 +17,46 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &JobTemplateNotifTemplErrResource{}
-var _ resource.ResourceWithImportState = &JobTemplateNotifTemplErrResource{}
+var _ resource.Resource = &JobTemplateInstanceGroupsResource{}
+var _ resource.ResourceWithImportState = &JobTemplateInstanceGroupsResource{}
 
-func NewJobTemplateNotifTemplErrResource() resource.Resource {
-	return &JobTemplateNotifTemplErrResource{}
+func NewJobTemplateInstanceGroupsResource() resource.Resource {
+	return &JobTemplateInstanceGroupsResource{}
 }
 
-// JobTemplateNotifTemplErrResource defines the resource implementation.
-type JobTemplateNotifTemplErrResource struct {
+// JobTemplateInstanceGroupsResource defines the resource implementation.
+type JobTemplateInstanceGroupsResource struct {
 	client *AwxClient
 }
 
-// JobTemplateNotifTemplErrResourceModel describes the resource data model.
-type JobTemplateNotifTemplErrResourceModel struct {
-	JobTemplateId    types.String `tfsdk:"job_template_id"`
-	NotifTEmplateIDs types.List   `tfsdk:"notif_template_ids"`
+// JobTemplateInstanceGroupsResourceModel describes the resource data model.
+type JobTemplateInstanceGroupsResourceModel struct {
+	JobTemplateId     types.String `tfsdk:"job_template_id"`
+	InstanceGroupsIDs types.List   `tfsdk:"instance_groups_ids"`
 }
 
-func (r *JobTemplateNotifTemplErrResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_job_templates_notification_templates_error"
+func (r *JobTemplateInstanceGroupsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_job_template_instance_group"
 }
 
-func (r *JobTemplateNotifTemplErrResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *JobTemplateInstanceGroupsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `The /api/v2/job_templates/{id}/notification_templates_error/ returns all objects associated to the template. But, when asked to associate a notification template or \
-                              dissassociate a notification template, you must post a request once per notification template id.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
-                              principle. Instead, the terraform schema stores a list of associated instance_groups. And, when creating or deleting or updated, it will make one api call PER \
-                              list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
-                              then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
-                              -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
-                              provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
-							  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
-							  So you'll perpas have to use refresh state functions in tf cli to resolve.`,
+		Description: `The /api/v2/job_templates/{id}/instance_groups/ returns all instance_groups objects associated to the template. But, when asked to associate an instance_group or principle. Instead, the terraform schema stores a list of associated instance_groups. And, when creating or deleting or updated, it will make one api call PER list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. So you'll perpas have to use refresh state functions in tf cli to resolve.`,
 		Attributes: map[string]schema.Attribute{
 			"job_template_id": schema.StringAttribute{
-				Required:            true,
-				Description:         "The ID of the containing Job Template.",
-				MarkdownDescription: "The ID of the containing Job Template",
-			},
-			"notif_template_ids": schema.ListAttribute{
 				Required:    true,
-				Description: "An ordered list of notification_templates IDs associated to a particular Job Template.",
+				Description: "The ID of the containing Job Template.",
+			},
+			"instance_groups_ids": schema.ListAttribute{
+				Required:    true,
+				Description: "An ordered list of instance_groups IDs associated to a particular Job Template.",
 				ElementType: types.Int32Type,
 			},
 		},
 	}
 }
 
-func (r *JobTemplateNotifTemplErrResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *JobTemplateInstanceGroupsResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -85,8 +76,8 @@ func (r *JobTemplateNotifTemplErrResource) Configure(ctx context.Context, req re
 	r.client = configureData
 }
 
-func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+func (r *JobTemplateInstanceGroupsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data JobTemplateInstanceGroupsResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -103,11 +94,11 @@ func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resou
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
 
 	var relatedIds []int
 
-	diags := data.NotifTEmplateIDs.ElementsAs(ctx, &relatedIds, false)
+	diags := data.InstanceGroupsIDs.ElementsAs(ctx, &relatedIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -130,8 +121,8 @@ func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data JobTemplateInstanceGroupsResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -147,7 +138,7 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -201,14 +192,14 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	data.NotifTEmplateIDs = listValue
+	data.InstanceGroupsIDs = listValue
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data JobTemplateInstanceGroupsResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -223,7 +214,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -273,7 +264,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 	}
 
 	var PlanChildIds []int
-	diags := data.NotifTEmplateIDs.ElementsAs(ctx, &PlanChildIds, false)
+	diags := data.InstanceGroupsIDs.ElementsAs(ctx, &PlanChildIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -310,8 +301,8 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data JobTemplateNotifTemplErrResourceModel
+func (r *JobTemplateInstanceGroupsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data JobTemplateInstanceGroupsResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -328,11 +319,11 @@ func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resou
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
 
 	var RelatedIds []int
 
-	diags := data.NotifTEmplateIDs.ElementsAs(ctx, &RelatedIds, false)
+	diags := data.InstanceGroupsIDs.ElementsAs(ctx, &RelatedIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -353,6 +344,6 @@ func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resou
 
 }
 
-func (r *JobTemplateNotifTemplErrResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *JobTemplateInstanceGroupsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("job_template_id"), req, resp)
 }

@@ -32,18 +32,17 @@ type InstanceGroupsDataSourceModel struct {
 }
 
 func (d *InstanceGroupsDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_instance_groups"
+	resp.TypeName = req.ProviderTypeName + "_instance_group"
 }
 
 func (d *InstanceGroupsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example data source",
+		Description: "Manage Instance Groups",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "Example identifier",
-				Required:            true,
+				Description: "Example identifier",
+				Required:    true,
 			},
 		},
 	}
@@ -103,11 +102,16 @@ func (d *InstanceGroupsDataSource) Read(ctx context.Context, req datasource.Read
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
 	}
-	if httpResp.StatusCode != 200 {
+	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+		return
+	}
 
+	if httpResp.StatusCode == 404 {
+		resp.State.RemoveResource(ctx)
+		return
 	}
 
 	tmp := struct {

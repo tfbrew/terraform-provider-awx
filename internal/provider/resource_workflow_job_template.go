@@ -81,7 +81,7 @@ type WorkflowJobTemplateAPIModel struct {
 }
 
 func (r *WorkflowJobTemplatesResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_workflow_job_templates"
+	resp.TypeName = req.ProviderTypeName + "_workflow_job_template"
 }
 
 func (r *WorkflowJobTemplatesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -349,10 +349,15 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
 		return
 	}
-	if httpResp.StatusCode != 200 {
+	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+		return
+	}
+
+	if httpResp.StatusCode == 404 {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

@@ -131,14 +131,12 @@ type JobTemplate struct {
 }
 
 func (r *JobTemplateResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_job_templates"
+	resp.TypeName = req.ProviderTypeName + "_job_template"
 }
 
 func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		//TODO fix description on schema and markdown descr
-		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example resource",
+		Description: "Managed Job Templates",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -566,12 +564,17 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
 		return
 	}
-	if httpResp.StatusCode != 200 {
+	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
 		return
 
+	}
+
+	if httpResp.StatusCode == 404 {
+		resp.State.RemoveResource(ctx)
+		return
 	}
 
 	var responseData JobTemplate
@@ -930,7 +933,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 	// data.JobSliceCount = types.Int32Value(int32(responseData.JobSliceCount))
-	if !(data.JobSliceCount.IsNull() && responseData.JobSliceCount == 0) {
+	if !(data.JobSliceCount.IsNull() && responseData.JobSliceCount == 1) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_slice_count"), responseData.JobSliceCount)...)
 		if resp.Diagnostics.HasError() {
 			return

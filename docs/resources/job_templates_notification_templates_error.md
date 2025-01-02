@@ -8,15 +8,7 @@ description: |-
 
 # awx_job_templates_notification_templates_error (Resource)
 
-The /api/v2/job_templates/{id}/notification_templates_error/ returns all objects associated to the template. But, when asked to associate a notification template or \
-                              dissassociate a notification template, you must post a request once per notification template id.Therefore, I couldn't find a way to limit this resource to the 'one api call' \
-                              principle. Instead, the terraform schema stores a list of associated instance_groups. And, when creating or deleting or updated, it will make one api call PER \
-                              list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way \
-                              then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the \
-                              -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this \
-                              provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means \
-							  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. \
-							  So you'll perpas have to use refresh state functions in tf cli to resolve.
+The /api/v2/job_templates/{id}/notification_templates_error/ returns all objects associated to the template. But, when asked to associate a notification template or dissassociate a notification template, you must post a request once per notification template id.Therefore, I couldn't find a way to limit this resource to the 'one api call' principle. Instead, the terraform schema stores a list of associated instance_groups. And, when creating or deleting or updated, it will make one api call PER list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. So you'll perpas have to use refresh state functions in tf cli to resolve.
 
 ## Example Usage
 
@@ -32,5 +24,5 @@ resource "awx_job_templates_notification_templates_error" "default" {
 
 ### Required
 
-- `job_template_id` (String) The ID of the containing Job Template
+- `job_template_id` (String) The ID of the containing Job Template.
 - `notif_template_ids` (List of Number) An ordered list of notification_templates IDs associated to a particular Job Template.

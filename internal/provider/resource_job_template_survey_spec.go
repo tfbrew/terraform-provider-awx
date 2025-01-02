@@ -72,14 +72,12 @@ type SurveySpec struct {
 }
 
 func (r *JobTemplateSurveyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_job_templates_survey_spec"
+	resp.TypeName = req.ProviderTypeName + "_job_template_survey_spec"
 }
 
 func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		//TODO fix description on schema and markdown descr
-		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example resource",
+		Description: "Associate survey specs to an existing Job Template.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -108,50 +106,41 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"max": schema.Int32Attribute{
-							Optional:            true,
-							MarkdownDescription: "Maximum value, default 1024.",
-							Description:         "Maximum value, default 1024.",
+							Optional:    true,
+							Description: "Maximum value, default 1024.",
 						},
 						"min": schema.Int32Attribute{
-							Optional:            true,
-							MarkdownDescription: "Minimum value, default 0.",
-							Description:         "Minimum value, default 1024.",
+							Optional:    true,
+							Description: "Minimum value, default 1024.",
 						},
 						"type": schema.StringAttribute{
-							Required:            true,
-							MarkdownDescription: "Must be one of the following: text, textarea, password, integer, float, multiplechoice, or multiselect.",
-							Description:         "Must be one of the following: text, textarea, password, integer, float, multiplechoice, or multiselect.",
+							Required:    true,
+							Description: "Must be one of the following: text, textarea, password, integer, float, multiplechoice, or multiselect.",
 						},
 						"question_name": schema.StringAttribute{
-							Required:            true,
-							MarkdownDescription: "Name of survey question.",
-							Description:         "Name of survey question.",
+							Required:    true,
+							Description: "Name of survey question.",
 						},
 						"question_description": schema.StringAttribute{
-							Required:            true,
-							MarkdownDescription: "Description of survey question.",
-							Description:         "Description of survey question.",
+							Required:    true,
+							Description: "Description of survey question.",
 						},
 						"variable": schema.StringAttribute{
-							Required:            true,
-							MarkdownDescription: "Variable name to store users answer to the survey question.",
-							Description:         "Variable name to store users answer to the survey question.",
+							Required:    true,
+							Description: "Variable name to store users answer to the survey question.",
 						},
 						"required": schema.BoolAttribute{
-							Optional:            true,
-							MarkdownDescription: "Set if the survey question is required, defaults to false.",
-							Description:         "Set if the survey question is required, defaults to false.",
+							Optional:    true,
+							Description: "Set if the survey question is required, defaults to false.",
 						},
 						"default": schema.StringAttribute{
-							Optional:            true,
-							MarkdownDescription: "Default value for the survey question.",
-							Description:         "Default value for the survey question.",
+							Optional:    true,
+							Description: "Default value for the survey question.",
 						},
 						"choices": schema.ListAttribute{
-							ElementType:         types.StringType,
-							Optional:            true,
-							MarkdownDescription: "List of strings which define the choices users can make for multichoice or multiselect.",
-							Description:         "List of strings which define the choices users can make for multichoice or multiselect.",
+							ElementType: types.StringType,
+							Optional:    true,
+							Description: "List of strings which define the choices users can make for multichoice or multiselect.",
 						},
 					},
 				},

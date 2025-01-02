@@ -45,13 +45,12 @@ type Label struct {
 }
 
 func (r *LabelsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_labels"
+	resp.TypeName = req.ProviderTypeName + "_label"
 }
 
 func (r *LabelsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description:         "Create a label resource. NOTE, the AWX Tower API does NOT contain a delete method for labels. Therefore, any terraform destroy actions will succeed in terraform and remove them from your state, but will NOT have actually removed the label from the AWX Tower instance.",
-		MarkdownDescription: "Create a label resource. NOTE, the AWX Tower API does NOT contain a delete method for labels. Therefore, any terraform destroy actions will succeed in terraform and remove them from your state, but will NOT have actually removed the label from the AWX Tower instance.",
+		Description: "Create a label resource. NOTE, the AWX Tower API does NOT contain a delete method for labels. Therefore, any terraform destroy actions will succeed in terraform and remove them from your state, but will NOT have actually removed the label from the AWX Tower instance.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -185,11 +184,16 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
 	}
-	if httpResp.StatusCode != 200 {
+	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
 			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
 
+	}
+
+	if httpResp.StatusCode == 404 {
+		resp.State.RemoveResource(ctx)
+		return
 	}
 
 	var responseData Label
