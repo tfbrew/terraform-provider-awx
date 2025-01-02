@@ -269,9 +269,19 @@ func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.
 		return
 	}
 	if httpResp.StatusCode != 201 {
+
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 201`, got %v. ", httpResp.StatusCode))
+			fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
 		return
 	}
 
@@ -342,9 +352,19 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
+
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
 		return
 	}
 
@@ -560,9 +580,18 @@ func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.
 		return
 	}
 	if httpResp.StatusCode != 200 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
 		return
 	}
 
@@ -605,9 +634,19 @@ func (r *WorkflowJobTemplatesResource) Delete(ctx context.Context, req resource.
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
 	}
 	if httpResp.StatusCode != 204 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 204, got %v. ", httpResp.StatusCode))
+			fmt.Sprintf("Expected 204, got %v with message %s. ", httpResp.StatusCode, body))
+		return
 
 	}
 }
