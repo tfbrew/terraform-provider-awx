@@ -37,7 +37,6 @@ type WorkflowJobTemplatesResourceModel struct {
 	Name                 types.String `tfsdk:"name"`
 	Description          types.String `tfsdk:"description"`
 	ExtraVars            types.String `tfsdk:"extra_vars"`
-	Organization         types.Int32  `tfsdk:"organization"`
 	SurveyEnabled        types.Bool   `tfsdk:"survey_enabled"`
 	AllowSimultaneous    types.Bool   `tfsdk:"allow_simultaneous"`
 	AskVariablesOnLaunch types.Bool   `tfsdk:"ask_variables_on_launch"`
@@ -61,7 +60,6 @@ type WorkflowJobTemplateAPIModel struct {
 	Name                 string `json:"name"`
 	Description          string `json:"description"`
 	ExtraVars            string `json:"extra_vars"`
-	Organization         int    `json:"organization"`
 	SurveyEnabled        bool   `json:"survey_enabled"`
 	AllowSimultaneous    bool   `json:"allow_simultaneous"`
 	AskVariablesOnLaunch bool   `json:"ask_variables_on_launch"`
@@ -102,9 +100,6 @@ func (r *WorkflowJobTemplatesResource) Schema(ctx context.Context, req resource.
 				Optional: true,
 			},
 			"extra_vars": schema.StringAttribute{
-				Optional: true,
-			},
-			"organization": schema.Int32Attribute{
 				Optional: true,
 			},
 			"survey_enabled": schema.BoolAttribute{
@@ -198,9 +193,6 @@ func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.
 	}
 	if !data.ExtraVars.IsNull() {
 		bodyData.ExtraVars = data.ExtraVars.ValueString()
-	}
-	if !data.Organization.IsNull() {
-		bodyData.Organization = int(data.Organization.ValueInt32())
 	}
 	if !data.SurveyEnabled.IsNull() {
 		bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
@@ -400,13 +392,6 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
 	if !(data.SurveyEnabled.IsNull() && responseData.SurveyEnabled) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("survey_enabled"), responseData.SurveyEnabled)...)
 		if resp.Diagnostics.HasError() {
@@ -530,7 +515,6 @@ func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Description = data.Description.ValueString()
 	bodyData.ExtraVars = data.ExtraVars.ValueString()
-	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
 	bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
 	bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()

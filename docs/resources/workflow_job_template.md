@@ -59,7 +59,6 @@ resource "awx_workflow_job_templates" "example" {
 - `inventory` (Number)
 - `job_tags` (String)
 - `limit` (String)
-- `organization` (Number)
 - `scm_branch` (String)
 - `skip_tags` (String)
 - `survey_enabled` (Boolean)
