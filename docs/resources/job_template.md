@@ -64,7 +64,6 @@ resource "awx_job_template" "example" {
 - `job_slice_count` (Number)
 - `job_tags` (String)
 - `limit` (String)
-- `organization` (Number)
 - `prevent_instance_group_fallback` (Boolean)
 - `scm_branch` (String)
 - `skip_tags` (String)
