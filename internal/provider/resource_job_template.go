@@ -51,7 +51,6 @@ type JobTemplateResourceModel struct {
 	StartAtTask                    types.String `tfsdk:"start_at_tags"`
 	Timeout                        types.Int32  `tfsdk:"timeout"`
 	UseFactCache                   types.Bool   `tfsdk:"use_fact_cache"`
-	Organization                   types.Int32  `tfsdk:"organization"`
 	ExecutionEnvironment           types.Int32  `tfsdk:"execution_environment"`
 	HostConfigKey                  types.String `tfsdk:"host_config_key"`
 	AskScmBranchOnLaunch           types.Bool   `tfsdk:"ask_scm_branch_on_launch"`
@@ -100,7 +99,6 @@ type JobTemplate struct {
 	StartAtTask                    string `json:"start_at_tags,omitempty"`
 	Timeout                        int    `json:"timeout,omitempty"`
 	UseFactCache                   bool   `json:"use_fact_cache,omitempty"`
-	Organization                   int    `json:"organization,omitempty"`
 	ExecutionEnvironment           int    `json:"execution_environment,omitempty"`
 	HostConfigKey                  string `json:"host_config_key,omitempty"`
 	AskScmBranchOnLaunch           bool   `json:"ask_scm_branch_on_launch,omitempty"`
@@ -198,9 +196,6 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional: true,
 			},
 			"use_fact_cache": schema.BoolAttribute{
-				Optional: true,
-			},
-			"organization": schema.Int32Attribute{
 				Optional: true,
 			},
 			"execution_environment": schema.Int32Attribute{
@@ -370,9 +365,6 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	}
 	if !(data.UseFactCache.IsNull()) {
 		bodyData.UseFactCache = data.UseFactCache.ValueBool()
-	}
-	if !(data.Organization.IsNull()) {
-		bodyData.Organization = int(data.Organization.ValueInt32())
 	}
 	if !(data.UseFactCache.IsNull()) {
 		bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
@@ -731,14 +723,6 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 
-	// data.Organization = types.Int32Value(int32(responseData.Organization))
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
 	// data.ExecutionEnvironment = types.Int32Value(int32(responseData.ExecutionEnvironment))
 	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), responseData.ExecutionEnvironment)...)
@@ -1004,7 +988,6 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	bodyData.StartAtTask = data.StartAtTask.ValueString()
 	bodyData.Timeout = int(data.Timeout.ValueInt32())
 	bodyData.UseFactCache = data.UseFactCache.ValueBool()
-	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
 	bodyData.HostConfigKey = data.HostConfigKey.ValueString()
 	bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()
