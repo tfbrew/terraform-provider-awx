@@ -12,7 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -99,22 +101,37 @@ func (r *WorkflowJobTemplatesResource) Schema(ctx context.Context, req resource.
 				Required: true,
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     stringdefault.StaticString(""),
+				Computed:    true,
+				Description: "defaults to \"\"",
 			},
 			"extra_vars": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     stringdefault.StaticString("---"),
+				Computed:    true,
+				Description: "Defaults to \"---\"",
 			},
 			"organization": schema.Int32Attribute{
-				Optional: true,
+				Required: true,
 			},
 			"survey_enabled": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"allow_simultaneous": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"ask_variables_on_launch": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"inventory": schema.Int32Attribute{
 				Optional: true,
@@ -126,28 +143,49 @@ func (r *WorkflowJobTemplatesResource) Schema(ctx context.Context, req resource.
 				Optional: true,
 			},
 			"ask_inventory_on_launch": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"ask_scm_branch_on_launch": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"ask_limit_on_launch": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"webhook_service": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     stringdefault.StaticString(""),
+				Computed:    true,
+				Description: "Defaults to \"\".",
 			},
 			"webhook_credential": schema.StringAttribute{
 				Optional: true,
 			},
 			"ask_labels_on_launch": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"ask_skip_tags_on_launch": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"ask_tags_on_launch": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
+				Description: "Defaults to false.",
 			},
 			"skip_tags": schema.StringAttribute{
 				Optional: true,
