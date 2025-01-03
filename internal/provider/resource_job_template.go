@@ -151,11 +151,13 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			"description": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"job_type": schema.StringAttribute{
 				Optional:    true,
 				Description: "Acceptable values are a choice of: run, or check.",
 				Default:     stringdefault.StaticString("run"),
+				Computed:    true,
 			},
 			"inventory": schema.Int32Attribute{
 				Optional:    true,
@@ -172,46 +174,57 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			"scm_branch": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"forks": schema.Int32Attribute{
 				Optional: true,
 				Default:  int32default.StaticInt32(0),
+				Computed: true,
 			},
 			"limit": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"verbosity": schema.Int32Attribute{
 				Optional: true,
 				Default:  int32default.StaticInt32(0),
+				Computed: true,
 			},
 			"extra_vars": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"job_tags": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"force_handlers": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"skip_tags": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"start_at_tags": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"timeout": schema.Int32Attribute{
 				Optional: true,
 				Default:  int32default.StaticInt32(0),
+				Computed: true,
 			},
 			"use_fact_cache": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"execution_environment": schema.Int32Attribute{
 				Optional: true,
@@ -219,86 +232,107 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			"host_config_key": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"ask_scm_branch_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_diff_mode_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_variables_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_limit_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_tags_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_skip_tags_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_job_type_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_verbosity_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_inventory_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_credential_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_execution_environment_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_labels_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_forks_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_job_slice_count_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_timeout_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"ask_instance_groups_on_launch": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"survey_enabled": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"become_enabled": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"diff_mode": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"allow_simultaneous": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 			"custom_virtualenv": schema.StringAttribute{
 				Optional: true,
@@ -306,10 +340,12 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			"job_slice_count": schema.Int32Attribute{
 				Optional: true,
 				Default:  int32default.StaticInt32(1),
+				Computed: true,
 			},
 			"webhook_service": schema.StringAttribute{
 				Optional: true,
 				Default:  stringdefault.StaticString(""),
+				Computed: true,
 			},
 			"webhook_credential": schema.StringAttribute{
 				Optional: true,
@@ -317,6 +353,7 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			"prevent_instance_group_fallback": schema.BoolAttribute{
 				Optional: true,
 				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 		},
 	}
