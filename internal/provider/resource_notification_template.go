@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -89,7 +90,10 @@ func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource
 				Required: true,
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Default:     stringdefault.StaticString(""),
+				Computed:    true,
+				Description: "Defaults to \"\"",
 			},
 			"organization": schema.Int32Attribute{
 				Required: true,
