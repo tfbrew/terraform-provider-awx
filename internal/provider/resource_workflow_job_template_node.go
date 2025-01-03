@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -34,7 +35,7 @@ type WorkflowJobTemplatesNodeResource struct {
 // WorkflowJobTemplatesNodeResourceModel describes the resource data model.
 type WorkflowJobTemplatesNodeResourceModel struct {
 	Id                     types.String `tfsdk:"id"`
-	WorkflowJobId          types.String `tfsdk:"workflow_job_template_id"`
+	WorkflowJobId          types.Int32  `tfsdk:"workflow_job_template_id"`
 	UnifiedJobTemplateId   types.Int32  `tfsdk:"unified_job_template"`
 	Inventory              types.Int32  `tfsdk:"inventory"`
 	ExtraData              types.String `tfsdk:"extra_data"`
@@ -54,7 +55,7 @@ type WorkflowJobTemplateNodeAPIModel struct {
 	WorkflowJobId          int    `json:"workflow_job_template_id"`
 	UnifiedJobTemplateId   int    `json:"unified_job_template"`
 	Inventory              int    `json:"inventory"`
-	ExtraData              string `json:"extra_data,omitempty"`
+	ExtraData              any    `json:"extra_data,omitempty"`
 	ScmBranch              string `json:"scm_branch,omitempty"`
 	JobType                string `json:"job_type,omitempty"`
 	JobTags                string `json:"job_tags,omitempty"`
@@ -316,7 +317,7 @@ func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resourc
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_templates_nodes/%d/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -392,12 +393,43 @@ func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resourc
 			return
 		}
 	}
-	if !(data.ExtraData.IsNull() && (responseData.ExtraData == "" || responseData.ExtraData == "{}")) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), responseData.ExtraData)...)
-		if resp.Diagnostics.HasError() {
+
+	rawExtraData := responseData.ExtraData
+
+	rawType := reflect.TypeOf(rawExtraData)
+
+	if rawType.Kind() == reflect.Map {
+		if len(rawExtraData.(map[string]any)) == 0 {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), "{}")...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		} else {
+			resp.Diagnostics.AddError("fail to cast any as string",
+				"Expected to just be tryign to convert {} to \"{}\"",
+			)
+			return
+		}
+
+	}
+
+	if rawType.Kind() == reflect.String {
+
+		if extraDataProper, ok := responseData.ExtraData.(string); ok {
+			if !(data.ExtraData.IsNull() && (extraDataProper == "" || extraDataProper == "{}")) {
+				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), responseData.ExtraData)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+			}
+		} else {
+			resp.Diagnostics.AddError("fail to cast any as string",
+				"ExtraData couldnt be interpreted as a string.",
+			)
 			return
 		}
 	}
+
 	if !(data.ScmBranch.IsNull() && (responseData.ScmBranch == "")) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
 		if resp.Diagnostics.HasError() {
