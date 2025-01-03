@@ -12,7 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -81,7 +84,6 @@ type JobTemplateResourceModel struct {
 }
 
 type JobTemplate struct {
-	Id                             int    `json:"id,omitempty"`
 	Name                           string `json:"name,omitempty"`
 	Description                    string `json:"description"`
 	JobType                        string `json:"job_type,omitempty"`
@@ -148,10 +150,12 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"description": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"job_type": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "Acceptable values are a choice of: run, or check.",
+				Default:     stringdefault.StaticString("run"),
 			},
 			"inventory": schema.Int32Attribute{
 				Optional:    true,
@@ -167,117 +171,152 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"scm_branch": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"forks": schema.Int32Attribute{
 				Optional: true,
+				Default:  int32default.StaticInt32(0),
 			},
 			"limit": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"verbosity": schema.Int32Attribute{
 				Optional: true,
+				Default:  int32default.StaticInt32(0),
 			},
 			"extra_vars": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"job_tags": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"force_handlers": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"skip_tags": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"start_at_tags": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"timeout": schema.Int32Attribute{
 				Optional: true,
+				Default:  int32default.StaticInt32(0),
 			},
 			"use_fact_cache": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"execution_environment": schema.Int32Attribute{
 				Optional: true,
 			},
 			"host_config_key": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"ask_scm_branch_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_diff_mode_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_variables_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_limit_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_tags_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_skip_tags_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_job_type_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_verbosity_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_inventory_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_credential_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_execution_environment_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_labels_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_forks_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_job_slice_count_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_timeout_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"ask_instance_groups_on_launch": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"survey_enabled": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"become_enabled": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"diff_mode": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"allow_simultaneous": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 			"custom_virtualenv": schema.StringAttribute{
 				Optional: true,
 			},
 			"job_slice_count": schema.Int32Attribute{
 				Optional: true,
+				Default:  int32default.StaticInt32(1),
 			},
 			"webhook_service": schema.StringAttribute{
 				Optional: true,
+				Default:  stringdefault.StaticString(""),
 			},
 			"webhook_credential": schema.StringAttribute{
 				Optional: true,
 			},
 			"prevent_instance_group_fallback": schema.BoolAttribute{
 				Optional: true,
+				Default:  booldefault.StaticBool(false),
 			},
 		},
 	}
