@@ -27,7 +27,6 @@ resource "awx_job_template" "example" {
 
 ### Required
 
-- `job_type` (String) Acceptable values are a choice of: run, or check.
 - `name` (String)
 - `playbook` (String) Playbook name to be executed by this job
 - `project` (Number) ID number of the project to associate with the job template
@@ -63,6 +62,7 @@ resource "awx_job_template" "example" {
 - `inventory` (Number) ID number of the inventory to associate with the job template. Supply this or set ask_inventory_on_launch = true.
 - `job_slice_count` (Number)
 - `job_tags` (String)
+- `job_type` (String) Acceptable values are a choice of: run, or check.
 - `limit` (String)
 - `prevent_instance_group_fallback` (Boolean)
 - `scm_branch` (String)
