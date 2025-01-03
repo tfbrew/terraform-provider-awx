@@ -977,15 +977,18 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 
 	// data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv)
 	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == nil) {
-
-		if customVirtualEnv, ok := responseData.CustomVirtualEnv.(string); ok {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), customVirtualEnv)...)
+		if data.CustomVirtualEnv.ValueString() == "" && responseData.CustomVirtualEnv == nil {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), "")...)
 		} else {
-			resp.Diagnostics.AddError(
-				"Invalid Type",
-				"Expected responseData.CustomVirtualEnv to be a string",
-			)
-			return
+			if customVirtualEnv, ok := responseData.CustomVirtualEnv.(string); ok {
+				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), customVirtualEnv)...)
+			} else {
+				resp.Diagnostics.AddError(
+					"Invalid Type",
+					"Expected responseData.CustomVirtualEnv to be a string",
+				)
+				return
+			}
 		}
 
 		if resp.Diagnostics.HasError() {
