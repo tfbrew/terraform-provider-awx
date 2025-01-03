@@ -192,9 +192,10 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed: true,
 			},
 			"extra_vars": schema.StringAttribute{
-				Optional: true,
-				Default:  stringdefault.StaticString(""),
-				Computed: true,
+				Optional:    true,
+				Default:     stringdefault.StaticString("---"),
+				Computed:    true,
+				Description: "Default value is \"---\"",
 			},
 			"job_tags": schema.StringAttribute{
 				Optional: true,
