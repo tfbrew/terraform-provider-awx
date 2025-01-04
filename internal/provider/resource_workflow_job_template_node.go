@@ -52,7 +52,7 @@ type WorkflowJobTemplatesNodeResourceModel struct {
 
 type WorkflowJobTemplateNodeAPIModel struct {
 	Id                     int    `json:"id"`
-	WorkflowJobId          int    `json:"workflow_job_template_id"`
+	WorkflowJobId          int    `json:"workflow_job_template"`
 	UnifiedJobTemplateId   int    `json:"unified_job_template"`
 	Inventory              int    `json:"inventory"`
 	ExtraData              any    `json:"extra_data,omitempty"`
@@ -92,8 +92,8 @@ func (r *WorkflowJobTemplatesNodeResource) Schema(ctx context.Context, req resou
 				Description: "This is the ID of the actual job template that should be executed as this node.",
 			},
 			"inventory": schema.Int32Attribute{
-				Required:    true,
-				Description: "A required inventory ID.",
+				Optional:    true,
+				Description: "This attribute is set to optional. However, creating new nodes may not work without providing this value. This provider was set up marking this optional so that you can import existing nodes from your AWX tower environment that were created without specficying inventory. Somethign that doesn't appear allowed on more current versions of AWX.",
 			},
 			"extra_data": schema.StringAttribute{
 				Optional:    true,

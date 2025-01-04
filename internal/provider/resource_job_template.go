@@ -1013,21 +1013,25 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 
 	//data.WebhookCredential = types.StringValue(responseData.WebhookCredential.(string))
 	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == nil) {
-
-		if webhookCredential, ok := responseData.WebhookCredential.(string); ok {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), webhookCredential)...)
+		if data.WebhookCredential.ValueString() == "" && responseData.WebhookCredential == nil {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), "")...)
 		} else {
-			resp.Diagnostics.AddError(
-				"Invalid Type",
-				"Expected responseData.WebhookCredential to be a string",
-			)
-			return
+			if customWebhook, ok := responseData.WebhookCredential.(string); ok {
+				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), customWebhook)...)
+			} else {
+				resp.Diagnostics.AddError(
+					"Invalid Type",
+					"Expected responseData.WebhookCredential to be a string",
+				)
+				return
+			}
 		}
 
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
+
 	//data.PreventInstanceGroupFallback = types.BoolValue(responseData.PreventInstanceGroupFallback)
 	if !(data.PreventInstanceGroupFallback.IsNull() && data.PreventInstanceGroupFallback.ValueBool() == responseData.PreventInstanceGroupFallback) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("prevent_instance_group_fallback"), responseData.PreventInstanceGroupFallback)...)
