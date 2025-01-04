@@ -405,10 +405,20 @@ func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resourc
 				return
 			}
 		} else {
-			resp.Diagnostics.AddError("fail to cast any as string",
-				"Expected to just be tryign to convert {} to \"{}\"",
-			)
-			return
+			tempMap := make(map[string]any, len(rawExtraData.(map[string]any)))
+			for k, v := range rawExtraData.(map[string]any) {
+				tempMap[k] = v
+			}
+			tempJson, err := json.Marshal(tempMap)
+			if err != nil {
+				resp.Diagnostics.AddError("marshall issue", "Unable to marshall extra data into json for storage.")
+				return
+			}
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), string(tempJson))...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
 		}
 
 	}
