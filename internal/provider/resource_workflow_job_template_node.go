@@ -94,7 +94,7 @@ func (r *WorkflowJobTemplatesNodeResource) Schema(ctx context.Context, req resou
 			},
 			"inventory": schema.Int32Attribute{
 				Optional:    true,
-				Description: "This attribute is set to optional. However, creating new nodes may not work without providing this value. This provider was set up marking this optional so that you can import existing nodes from your AWX tower environment that were created without specficying inventory. Somethign that doesn't appear allowed on more current versions of AWX.",
+				Description: "This attribute is set to optional. However, creating new nodes may not work without providing this value. This provider was set up marking this optional so that you can import existing nodes from your AWX tower environment that were created without specficying inventory. Something that doesn't appear allowed on more current versions of AWX.",
 			},
 			"extra_data": schema.StringAttribute{
 				Optional:    true,
@@ -392,14 +392,22 @@ func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resourc
 	rawType := reflect.TypeOf(rawExtraData)
 
 	if rawType.Kind() == reflect.Map {
-		if len(rawExtraData.(map[string]any)) == 0 {
+
+		rawExtraData, ok := rawExtraData.(map[string]any)
+
+		if !ok {
+			resp.Diagnostics.AddError("unable to cast", "Unable to cast Extra Data as map[string]any")
+			return
+		}
+
+		if len(rawExtraData) == 0 {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), "{}")...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
 		} else {
-			tempMap := make(map[string]any, len(rawExtraData.(map[string]any)))
-			for k, v := range rawExtraData.(map[string]any) {
+			tempMap := make(map[string]any, len(rawExtraData))
+			for k, v := range rawExtraData {
 				tempMap[k] = v
 			}
 			tempJson, err := json.Marshal(tempMap)

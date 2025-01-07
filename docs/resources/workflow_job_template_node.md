@@ -48,7 +48,7 @@ resource "awx_workflow_job_template_node" "example_node" {
 - `diff_mode` (Boolean)
 - `extra_data` (String) JSON Key/value pairs, wrap in jsonencode().
 - `identifier` (String) The unique identifier for this node, set automatically by API when creating a new one.
-- `inventory` (Number) This attribute is set to optional. However, creating new nodes may not work without providing this value. This provider was set up marking this optional so that you can import existing nodes from your AWX tower environment that were created without specficying inventory. Somethign that doesn't appear allowed on more current versions of AWX.
+- `inventory` (Number) This attribute is set to optional. However, creating new nodes may not work without providing this value. This provider was set up marking this optional so that you can import existing nodes from your AWX tower environment that were created without specficying inventory. Something that doesn't appear allowed on more current versions of AWX.
 - `job_tags` (String)
 - `job_type` (String)
 - `limit` (String)
