@@ -120,6 +120,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewJobTemplateNotifTemplErrResource,
 		NewWorkflowJobTemplatesResource,
 		NewWorkflowJobTemplatesNodeResource,
+		NewWorkflowJobTemplatesNodeLabelResource,
 	}
 }
 

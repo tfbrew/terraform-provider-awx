@@ -35,20 +35,6 @@ type JobTemplateLabelsResourceModel struct {
 	LabelIDs      types.List   `tfsdk:"label_ids"`
 }
 
-type JTLabelsAPIRead struct {
-	Count        int           `json:"count"`
-	LabelResults []LabelResult `json:"results"`
-}
-
-type LabelResult struct {
-	Id int `json:"id"`
-}
-
-type LabelDissasocBody struct {
-	Id           int  `json:"id"`
-	Disassociate bool `json:"disassociate"`
-}
-
 func (r *JobTemplateLabelsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_job_template_label"
 }
