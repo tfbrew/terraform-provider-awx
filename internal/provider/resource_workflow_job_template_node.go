@@ -475,12 +475,12 @@ func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resourc
 			return
 		}
 	}
-	if !(data.AllParentsMustConverge.IsNull() && (responseData.AllParentsMustConverge)) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("all_parents_must_converge"), responseData.AllParentsMustConverge)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// if !(data.AllParentsMustConverge.IsNull() && (responseData.AllParentsMustConverge)) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("all_parents_must_converge"), responseData.AllParentsMustConverge)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	// }
 	if !(data.Identifier.IsNull() && (responseData.Identifier == "")) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identifier"), responseData.Identifier)...)
 		if resp.Diagnostics.HasError() {

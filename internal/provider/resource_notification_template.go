@@ -316,12 +316,12 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// if !(data.Description.IsNull() && responseData.Description == "") {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	// }
 
 	if !(data.Organization.IsNull() && responseData.Organization == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)

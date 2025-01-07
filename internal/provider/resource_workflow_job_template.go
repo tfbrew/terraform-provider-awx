@@ -449,12 +449,12 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	if !(data.ExtraVars.IsNull() && responseData.ExtraVars == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), responseData.ExtraVars)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// if !(data.ExtraVars.IsNull() && responseData.ExtraVars == "") {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), responseData.ExtraVars)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	// }
 
 	if !(data.Organization.IsNull() && responseData.Organization == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
@@ -463,25 +463,25 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	if !(data.SurveyEnabled.IsNull() && responseData.SurveyEnabled) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("survey_enabled"), responseData.SurveyEnabled)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// if !(data.SurveyEnabled.IsNull() && responseData.SurveyEnabled) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("survey_enabled"), responseData.SurveyEnabled)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	// }
 
-	if !(data.AllowSimultaneous.IsNull() && responseData.AllowSimultaneous) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_simultaneous"), responseData.AllowSimultaneous)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// if !(data.AllowSimultaneous.IsNull() && responseData.AllowSimultaneous) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_simultaneous"), responseData.AllowSimultaneous)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !(data.AskVariablesOnLaunch.IsNull() && responseData.AskVariablesOnLaunch) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_variables_on_launch"), responseData.AskVariablesOnLaunch)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// }
+	// if !(data.AskVariablesOnLaunch.IsNull() && responseData.AskVariablesOnLaunch) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_variables_on_launch"), responseData.AskVariablesOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	// }
 	if !(data.Inventory.IsNull() && responseData.Inventory == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
 		if resp.Diagnostics.HasError() {
@@ -500,54 +500,54 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 			return
 		}
 	}
-	if !(data.AskInventoryOnLaunch.IsNull() && responseData.AskInventoryOnLaunch) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_inventory_on_launch"), responseData.AskInventoryOnLaunch)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// if !(data.AskInventoryOnLaunch.IsNull() && responseData.AskInventoryOnLaunch) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_inventory_on_launch"), responseData.AskInventoryOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !(data.AskScmBranchOnLaunch.IsNull() && responseData.AskScmBranchOnLaunch) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_scm_branch_on_launch"), responseData.AskScmBranchOnLaunch)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// }
+	// if !(data.AskScmBranchOnLaunch.IsNull() && responseData.AskScmBranchOnLaunch) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_scm_branch_on_launch"), responseData.AskScmBranchOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !(data.AskLimitOnLaunch.IsNull() && responseData.AskLimitOnLaunch) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_limit_on_launch"), responseData.AskLimitOnLaunch)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// }
+	// if !(data.AskLimitOnLaunch.IsNull() && responseData.AskLimitOnLaunch) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_limit_on_launch"), responseData.AskLimitOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !(data.WebhookService.IsNull() && responseData.WebhookService == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_service"), responseData.WebhookService)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// }
+	// if !(data.WebhookService.IsNull() && responseData.WebhookService == "") {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_service"), responseData.WebhookService)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	// }
 	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), responseData.WebhookCredential)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.AskLabelsOnLaunch.IsNull() && responseData.AskLabelsOnLaunch) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_labels_on_launch"), responseData.AskLabelsOnLaunch)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// if !(data.AskLabelsOnLaunch.IsNull() && responseData.AskLabelsOnLaunch) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_labels_on_launch"), responseData.AskLabelsOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !(data.AskSkipTagsOnLaunch.IsNull() && responseData.AskSkipTagsOnLaunch) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_skip_tags_on_launch"), responseData.AskSkipTagsOnLaunch)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// }
+	// if !(data.AskSkipTagsOnLaunch.IsNull() && responseData.AskSkipTagsOnLaunch) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_skip_tags_on_launch"), responseData.AskSkipTagsOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !(data.AskTagsOnLaunch.IsNull() && responseData.AskTagsOnLaunch) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_tags_on_launch"), responseData.AskTagsOnLaunch)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// }
+	// if !(data.AskTagsOnLaunch.IsNull() && responseData.AskTagsOnLaunch) {
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_tags_on_launch"), responseData.AskTagsOnLaunch)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	// }
 	if !(data.SkipTags.IsNull() && responseData.SkipTags == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_tags"), responseData.SkipTags)...)
 		if resp.Diagnostics.HasError() {
