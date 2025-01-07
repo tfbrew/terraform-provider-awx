@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -128,6 +129,7 @@ func (r *WorkflowJobTemplatesNodeResource) Schema(ctx context.Context, req resou
 			},
 			"identifier": schema.StringAttribute{
 				Computed: true,
+				Optional: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -166,133 +168,123 @@ func (r *WorkflowJobTemplatesNodeResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	// var bodyData WorkflowJobTemplateNodeAPIModel
+	var bodyData WorkflowJobTemplateNodeAPIModel
 
-	// if !data.Name.IsNull() {
-	// 	bodyData.Name = data.Name.ValueString()
-	// }
-	// if !data.Description.IsNull() {
-	// 	bodyData.Description = data.Description.ValueString()
-	// }
-	// if !data.ExtraVars.IsNull() {
-	// 	bodyData.ExtraVars = data.ExtraVars.ValueString()
-	// }
-	// if !data.Organization.IsNull() {
-	// 	bodyData.Organization = int(data.Organization.ValueInt32())
-	// }
-	// if !data.SurveyEnabled.IsNull() {
-	// 	bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
-	// }
-	// if !data.AllowSimultaneous.IsNull() {
-	// 	bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
-	// }
-	// if !data.AskVariablesOnLaunch.IsNull() {
-	// 	bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()
-	// }
-	// if !data.Inventory.IsNull() {
-	// 	bodyData.Inventory = int(data.Inventory.ValueInt32())
-	// }
-	// if !data.Limit.IsNull() {
-	// 	bodyData.Limit = data.Limit.ValueString()
-	// }
-	// if !data.ScmBranch.IsNull() {
-	// 	bodyData.ScmBranch = data.ScmBranch.ValueString()
-	// }
-	// if !data.AskInventoryOnLaunch.IsNull() {
-	// 	bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()
-	// }
-	// if !data.AskScmBranchOnLaunch.IsNull() {
-	// 	bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()
-	// }
-	// if !data.AskLimitOnLaunch.IsNull() {
-	// 	bodyData.AskLimitOnLaunch = data.AskLimitOnLaunch.ValueBool()
-	// }
-	// if !data.WebhookService.IsNull() {
-	// 	bodyData.WebhookService = data.WebhookService.ValueString()
-	// }
-	// if !data.WebhookCredential.IsNull() {
-	// 	bodyData.WebhookCredential = data.WebhookCredential.ValueString()
-	// }
-	// if !data.AskLabelsOnLaunch.IsNull() {
-	// 	bodyData.AskLabelsOnLaunch = data.AskLabelsOnLaunch.ValueBool()
-	// }
-	// if !data.AskSkipTagsOnLaunch.IsNull() {
-	// 	bodyData.AskSkipTagsOnLaunch = data.AskSkipTagsOnLaunch.ValueBool()
-	// }
-	// if !data.AskTagsOnLaunch.IsNull() {
-	// 	bodyData.AskTagsOnLaunch = data.AskTagsOnLaunch.ValueBool()
-	// }
-	// if !data.SkipTags.IsNull() {
-	// 	bodyData.SkipTags = data.SkipTags.ValueString()
-	// }
-	// if !data.JobTags.IsNull() {
-	// 	bodyData.JobTags = data.JobTags.ValueString()
-	// }
+	if !data.WorkflowJobId.IsNull() {
+		bodyData.WorkflowJobId = int(data.WorkflowJobId.ValueInt32())
+	}
+	if !data.UnifiedJobTemplateId.IsNull() {
+		bodyData.UnifiedJobTemplateId = int(data.UnifiedJobTemplateId.ValueInt32())
+	}
+	if !data.Inventory.IsNull() {
+		bodyData.Inventory = int(data.Inventory.ValueInt32())
+	}
+	if !data.ExtraData.IsNull() {
+		extraDataMap := new(map[string]any)
+		err := json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable unmarshal map to json",
+				fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
+			return
+		}
 
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// }
+		bodyData.ExtraData = extraDataMap
+	}
+	if !data.ScmBranch.IsNull() {
+		bodyData.ScmBranch = data.ScmBranch.ValueString()
+	}
+	if !data.JobType.IsNull() {
+		bodyData.JobType = data.JobType.ValueString()
+	}
+	if !data.JobTags.IsNull() {
+		bodyData.JobTags = data.JobTags.ValueString()
+	}
+	if !data.SkipTags.IsNull() {
+		bodyData.SkipTags = data.SkipTags.ValueString()
+	}
+	if !data.Limit.IsNull() {
+		bodyData.Limit = data.Limit.ValueString()
+	}
+	if !data.DiffMode.IsNull() {
+		bodyData.DiffMode = data.DiffMode.ValueBool()
+	}
+	if !data.Verbosity.IsNull() {
+		bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+	}
+	if !data.AllParentsMustConverge.IsNull() {
+		bodyData.AllParentsMustConverge = data.AllParentsMustConverge.ValueBool()
+	}
+	if !data.Identifier.IsNull() {
+		bodyData.Identifier = data.Identifier.ValueString()
+	}
 
-	// url := r.client.endpoint + "/api/v2/workflow_job_templates/"
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+		return
+	}
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// }
+	url := r.client.endpoint + "/api/v2/workflow_job_template_nodes/"
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
+	}
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	// 	return
-	// }
-	// if httpResp.StatusCode != 201 {
-	// 	defer httpResp.Body.Close()
-	// 	body, err := io.ReadAll(httpResp.Body)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Unable read http request response body.",
-	// 			err.Error())
-	// 		return
-	// 	}
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
 
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
-	// 	return
-	// }
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		return
+	}
+	if httpResp.StatusCode != 201 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
 
-	// tmp := struct {
-	// 	Id int `json:"id"`
-	// }{}
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
+		return
+	}
 
-	// defer httpResp.Body.Close()
-	// httpRespBodyData, err := io.ReadAll(httpResp.Body)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to get http response body",
-	// 		fmt.Sprintf("Error was %v", err))
-	// 	return
-	// }
-	// err = json.Unmarshal(httpRespBodyData, &tmp)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to get unmarshall http response to grab ID",
-	// 		fmt.Sprintf("error was %v", err))
-	// 	return
-	// }
+	tmp := struct {
+		Id int `json:"id"`
+	}{}
 
-	// idAsString := strconv.Itoa(tmp.Id)
+	defer httpResp.Body.Close()
+	httpRespBodyData, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to get http response body",
+			fmt.Sprintf("Error was %v", err))
+		return
+	}
+	err = json.Unmarshal(httpRespBodyData, &tmp)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to get unmarshall http response to grab ID",
+			fmt.Sprintf("error was %v", err))
+		return
+	}
 
-	// data.Id = types.StringValue(idAsString)
+	idAsString := strconv.Itoa(tmp.Id)
+
+	data.Id = types.StringValue(idAsString)
 
 	tflog.Trace(ctx, "created a resource")
 
@@ -316,6 +308,7 @@ func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resourc
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
@@ -592,49 +585,49 @@ func (r *WorkflowJobTemplatesNodeResource) Delete(ctx context.Context, req resou
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// }
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_templates/%d/", id)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+	}
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate delete request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// }
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate delete request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
-	// }
-	// if httpResp.StatusCode != 204 {
-	// 	defer httpResp.Body.Close()
-	// 	body, err := io.ReadAll(httpResp.Body)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Unable read http request response body.",
-	// 			err.Error())
-	// 		return
-	// 	}
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
+	}
+	if httpResp.StatusCode != 204 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
 
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 204, got %v with message %s. ", httpResp.StatusCode, body))
-	// 	return
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 204, got %v with message %s. ", httpResp.StatusCode, body))
+		return
 
-	// }
+	}
 }
 
 func (r *WorkflowJobTemplatesNodeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
