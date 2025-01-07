@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -83,129 +84,38 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.NodeId.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+	}
 
-	// var bodyData WorkflowJobTemplateNodeAPIModel
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
 
-	// if !data.WorkflowJobId.IsNull() {
-	// 	bodyData.WorkflowJobId = int(data.WorkflowJobId.ValueInt32())
-	// }
-	// if !data.UnifiedJobTemplateId.IsNull() {
-	// 	bodyData.UnifiedJobTemplateId = int(data.UnifiedJobTemplateId.ValueInt32())
-	// }
-	// if !data.Inventory.IsNull() {
-	// 	bodyData.Inventory = int(data.Inventory.ValueInt32())
-	// }
-	// if !data.ExtraData.IsNull() {
-	// 	extraDataMap := new(map[string]any)
-	// 	err := json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Unable unmarshal map to json",
-	// 			fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
-	// 		return
-	// 	}
+	var relatedIds []int
 
-	// 	bodyData.ExtraData = extraDataMap
-	// }
-	// if !data.ScmBranch.IsNull() {
-	// 	bodyData.ScmBranch = data.ScmBranch.ValueString()
-	// }
-	// if !data.JobType.IsNull() {
-	// 	bodyData.JobType = data.JobType.ValueString()
-	// }
-	// if !data.JobTags.IsNull() {
-	// 	bodyData.JobTags = data.JobTags.ValueString()
-	// }
-	// if !data.SkipTags.IsNull() {
-	// 	bodyData.SkipTags = data.SkipTags.ValueString()
-	// }
-	// if !data.Limit.IsNull() {
-	// 	bodyData.Limit = data.Limit.ValueString()
-	// }
-	// if !data.DiffMode.IsNull() {
-	// 	bodyData.DiffMode = data.DiffMode.ValueBool()
-	// }
-	// if !data.Verbosity.IsNull() {
-	// 	bodyData.Verbosity = int(data.Verbosity.ValueInt32())
-	// }
-	// if !data.AllParentsMustConverge.IsNull() {
-	// 	bodyData.AllParentsMustConverge = data.AllParentsMustConverge.ValueBool()
-	// }
-	// if !data.Identifier.IsNull() {
-	// 	bodyData.Identifier = data.Identifier.ValueString()
-	// }
+	diags := data.LabelIDs.ElementsAs(ctx, &relatedIds, false)
+	if diags.HasError() {
+		return
+	}
 
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// 	return
-	// }
+	for _, val := range relatedIds {
 
-	// url := r.client.endpoint + "/api/v2/workflow_job_template_nodes/"
+		var bodyData ChildResult
+		bodyData.Id = val
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// 	return
-	// }
-
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
-
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	// 	return
-	// }
-	// if httpResp.StatusCode != 201 {
-	// 	defer httpResp.Body.Close()
-	// 	body, err := io.ReadAll(httpResp.Body)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Unable read http request response body.",
-	// 			err.Error())
-	// 		return
-	// 	}
-
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
-	// 	return
-	// }
-
-	// tmp := struct {
-	// 	Id int `json:"id"`
-	// }{}
-
-	// defer httpResp.Body.Close()
-	// httpRespBodyData, err := io.ReadAll(httpResp.Body)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to get http response body",
-	// 		fmt.Sprintf("Error was %v", err))
-	// 	return
-	// }
-	// err = json.Unmarshal(httpRespBodyData, &tmp)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to get unmarshall http response to grab ID",
-	// 		fmt.Sprintf("error was %v", err))
-	// 	return
-	// }
-
-	// idAsString := strconv.Itoa(tmp.Id)
-
-	// data.Id = types.StringValue(idAsString)
-
-	// tflog.Trace(ctx, "created a resource")
+		err := r.client.AssocJobTemplChild(ctx, bodyData, url)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
+			return
+		}
+	}
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
 }
 
 func (r *WorkflowJobTemplatesNodeLabelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -310,84 +220,94 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Update(ctx context.Context, req 
 		return
 	}
 
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// 	return
-	// }
+	id, err := strconv.Atoi(data.NodeId.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.NodeId.ValueString()))
+		return
+	}
 
-	// var bodyData WorkflowJobTemplateNodeAPIModel
-	// bodyData.WorkflowJobId = int(data.WorkflowJobId.ValueInt32())
-	// bodyData.UnifiedJobTemplateId = int(data.UnifiedJobTemplateId.ValueInt32())
-	// bodyData.Inventory = int(data.Inventory.ValueInt32())
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/labels/", id)
 
-	// // Generate a go type that fits into the any var so that when ALL
-	// //  bodyData fields are set with go types, we call Marshall to generate entire JSON
-	// extraDataMap := new(map[string]any)
-	// err = json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable unmarshal map to json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
-	// 	return
-	// }
-	// bodyData.ExtraData = extraDataMap
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
+	}
 
-	// bodyData.ScmBranch = data.ScmBranch.ValueString()
-	// bodyData.JobType = data.JobType.ValueString()
-	// bodyData.JobTags = data.JobTags.ValueString()
-	// bodyData.SkipTags = data.SkipTags.ValueString()
-	// bodyData.Limit = data.Limit.ValueString()
-	// bodyData.DiffMode = data.DiffMode.ValueBool()
-	// bodyData.Verbosity = int(data.Verbosity.ValueInt32())
-	// bodyData.AllParentsMustConverge = data.AllParentsMustConverge.ValueBool()
-	// bodyData.Identifier = data.Identifier.ValueString()
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
 
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// 	return
-	// }
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+		return
+	}
 
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
+	var responseData JTChildAPIRead
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// 	return
-	// }
+	body, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Uanble to get all data out of the http response data body",
+			fmt.Sprintf("Body got %v. ", body))
+		return
+	}
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	err = json.Unmarshal(body, &responseData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Uanble unmarshall response body into object",
+			fmt.Sprintf("Error =  %v. ", err.Error()))
+		return
+	}
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	// 	return
-	// }
-	// if httpResp.StatusCode != 200 {
-	// 	defer httpResp.Body.Close()
-	// 	body, err := io.ReadAll(httpResp.Body)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Unable read http request response body.",
-	// 			err.Error())
-	// 		return
-	// 	}
+	ApiTfChildIds := make([]int, 0, responseData.Count)
 
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-	// 	return
-	// }
+	for _, v := range responseData.Results {
+		ApiTfChildIds = append(ApiTfChildIds, v.Id)
+	}
+
+	var PlanChildIds []int
+	diags := data.LabelIDs.ElementsAs(ctx, &PlanChildIds, false)
+	if diags.HasError() {
+		return
+	}
+
+	// diassociate any chyildren found currently via API call that
+	//  are no longer in the plan
+	for _, v := range ApiTfChildIds {
+		if !slices.Contains(PlanChildIds, v) {
+			var bodyData ChildDissasocBody
+			bodyData.Id = v
+
+			err := r.client.DisassocJobTemplChild(ctx, bodyData, url)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
+				return
+			}
+		}
+	}
+	// associate any children found in plan that weren't shown in API response
+	for _, v := range PlanChildIds {
+		if !slices.Contains(ApiTfChildIds, v) {
+			var bodyData ChildResult
+			bodyData.Id = v
+
+			err := r.client.AssocJobTemplChild(ctx, bodyData, url)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
+				return
+			}
+		}
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -395,54 +315,44 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Update(ctx context.Context, req 
 
 // Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *WorkflowJobTemplatesNodeLabelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// var data WorkflowJobTemplatesNodeLabelResourceModel
+	var data WorkflowJobTemplatesNodeLabelResourceModel
 
-	// // Read Terraform prior state data into the model
-	// resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.NodeId.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
-	// }
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.NodeId.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+	}
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate delete request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// }
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/labels/", id)
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	var RelatedIds []int
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
-	// }
-	// if httpResp.StatusCode != 204 {
-	// 	defer httpResp.Body.Close()
-	// 	body, err := io.ReadAll(httpResp.Body)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Unable read http request response body.",
-	// 			err.Error())
-	// 		return
-	// 	}
+	diags := data.LabelIDs.ElementsAs(ctx, &RelatedIds, false)
+	if diags.HasError() {
+		return
+	}
 
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 204, got %v with message %s. ", httpResp.StatusCode, body))
-	// 	return
+	for _, val := range RelatedIds {
 
-	// }
+		var body ChildDissasocBody
+
+		body.Id = val
+		body.Disassociate = true
+
+		err := r.client.DisassocJobTemplChild(ctx, body, url)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
+			return
+		}
+	}
 }
 
 func (r *WorkflowJobTemplatesNodeLabelResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
