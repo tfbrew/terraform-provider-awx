@@ -72,7 +72,7 @@ resource "awx_notification_template" "example" {
 
 ### Optional
 
-- `description` (String)
+- `description` (String) Defaults to ""
 - `messages` (String) json
 - `notification_configuration` (String) json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah). The AWX Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.
 

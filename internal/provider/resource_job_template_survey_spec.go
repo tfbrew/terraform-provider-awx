@@ -347,6 +347,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
 						"Unexpected error in resource_jobtemplate_survey",
 					)
+					return
 				}
 			}
 

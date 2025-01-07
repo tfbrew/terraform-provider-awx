@@ -55,7 +55,7 @@ resource "awx_job_template" "example" {
 - `description` (String)
 - `diff_mode` (Boolean)
 - `execution_environment` (Number)
-- `extra_vars` (String)
+- `extra_vars` (String) Default value is "---"
 - `force_handlers` (Boolean)
 - `forks` (Number)
 - `host_config_key` (String)

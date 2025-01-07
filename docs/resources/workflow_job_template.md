@@ -43,28 +43,28 @@ resource "awx_workflow_job_templates" "example" {
 ### Required
 
 - `name` (String)
+- `organization` (Number)
 
 ### Optional
 
-- `allow_simultaneous` (Boolean)
-- `ask_inventory_on_launch` (Boolean)
-- `ask_labels_on_launch` (Boolean)
-- `ask_limit_on_launch` (Boolean)
-- `ask_scm_branch_on_launch` (Boolean)
-- `ask_skip_tags_on_launch` (Boolean)
-- `ask_tags_on_launch` (Boolean)
-- `ask_variables_on_launch` (Boolean)
-- `description` (String)
-- `extra_vars` (String)
+- `allow_simultaneous` (Boolean) Defaults to false.
+- `ask_inventory_on_launch` (Boolean) Defaults to false.
+- `ask_labels_on_launch` (Boolean) Defaults to false.
+- `ask_limit_on_launch` (Boolean) Defaults to false.
+- `ask_scm_branch_on_launch` (Boolean) Defaults to false.
+- `ask_skip_tags_on_launch` (Boolean) Defaults to false.
+- `ask_tags_on_launch` (Boolean) Defaults to false.
+- `ask_variables_on_launch` (Boolean) Defaults to false.
+- `description` (String) defaults to ""
+- `extra_vars` (String) Defaults to "---"
 - `inventory` (Number)
 - `job_tags` (String)
 - `limit` (String)
-- `organization` (Number)
 - `scm_branch` (String)
 - `skip_tags` (String)
-- `survey_enabled` (Boolean)
+- `survey_enabled` (Boolean) Defaults to false.
 - `webhook_credential` (String)
-- `webhook_service` (String)
+- `webhook_service` (String) Defaults to "".
 
 ### Read-Only
 
