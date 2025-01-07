@@ -118,6 +118,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewJobTemplateInstanceGroupsResource,
 		NewNotificationTemplatesResource,
 		NewJobTemplateNotifTemplErrResource,
+		NewOrganizationResource,
 		NewWorkflowJobTemplatesResource,
 	}
 }
@@ -125,6 +126,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewInstanceGroupsDataSource,
+		NewOrganizationDataSource,
 	}
 }
 
