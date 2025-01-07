@@ -5,6 +5,7 @@ resource "awx_workflow_job_template_node" "example_node" {
   extra_data = jsonencode({
     current_version = "101"
     update_zipfile  = "example.zip"
+    variable1       = 1
   })
   inventory                = 100
   job_tags                 = null
