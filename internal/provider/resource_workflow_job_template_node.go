@@ -500,79 +500,84 @@ func (r *WorkflowJobTemplatesNodeResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	// // set url for create HTTP request
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// 	return
-	// }
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+		return
+	}
 
-	// var bodyData WorkflowJobTemplateNodeAPIModel
-	// bodyData.Name = data.Name.ValueString()
-	// bodyData.Description = data.Description.ValueString()
-	// bodyData.ExtraVars = data.ExtraVars.ValueString()
-	// bodyData.Organization = int(data.Organization.ValueInt32())
-	// bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
-	// bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
-	// bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()
-	// bodyData.Inventory = int(data.Inventory.ValueInt32())
-	// bodyData.Limit = data.Limit.ValueString()
-	// bodyData.ScmBranch = data.ScmBranch.ValueString()
-	// bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()
-	// bodyData.AskScmBranchOnLaunch = data.AskScmBranchOnLaunch.ValueBool()
-	// bodyData.AskLimitOnLaunch = data.AskLimitOnLaunch.ValueBool()
-	// bodyData.WebhookService = data.WebhookService.ValueString()
-	// bodyData.WebhookCredential = data.WebhookCredential.ValueString()
-	// bodyData.AskLabelsOnLaunch = data.AskLabelsOnLaunch.ValueBool()
-	// bodyData.AskSkipTagsOnLaunch = data.AskSkipTagsOnLaunch.ValueBool()
-	// bodyData.AskTagsOnLaunch = data.AskTagsOnLaunch.ValueBool()
-	// bodyData.SkipTags = data.SkipTags.ValueString()
-	// bodyData.JobTags = data.JobTags.ValueString()
+	var bodyData WorkflowJobTemplateNodeAPIModel
+	bodyData.WorkflowJobId = int(data.WorkflowJobId.ValueInt32())
+	bodyData.UnifiedJobTemplateId = int(data.UnifiedJobTemplateId.ValueInt32())
+	bodyData.Inventory = int(data.Inventory.ValueInt32())
 
-	// jsonData, err := json.Marshal(bodyData)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable marshal json",
-	// 		fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	// 	return
-	// }
+	// Generate a go type that fits into the any var so that when ALL
+	//  bodyData fields are set with go types, we call Marshall to generate entire JSON
+	extraDataMap := new(map[string]any)
+	err = json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable unmarshal map to json",
+			fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
+		return
+	}
+	bodyData.ExtraData = extraDataMap
 
-	// url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_templates/%d/", id)
+	bodyData.ScmBranch = data.ScmBranch.ValueString()
+	bodyData.JobType = data.JobType.ValueString()
+	bodyData.JobTags = data.JobTags.ValueString()
+	bodyData.SkipTags = data.SkipTags.ValueString()
+	bodyData.Limit = data.Limit.ValueString()
+	bodyData.DiffMode = data.DiffMode.ValueBool()
+	bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+	bodyData.AllParentsMustConverge = data.AllParentsMustConverge.ValueBool()
+	bodyData.Identifier = data.Identifier.ValueString()
 
-	// // create HTTP request
-	// httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable to generate request",
-	// 		fmt.Sprintf("Unable to gen url: %v. ", url))
-	// 	return
-	// }
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+		return
+	}
 
-	// httpReq.Header.Add("Content-Type", "application/json")
-	// httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// httpResp, err := r.client.client.Do(httpReq)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	// 	return
-	// }
-	// if httpResp.StatusCode != 200 {
-	// 	defer httpResp.Body.Close()
-	// 	body, err := io.ReadAll(httpResp.Body)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Unable read http request response body.",
-	// 			err.Error())
-	// 		return
-	// 	}
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
+	}
 
-	// 	resp.Diagnostics.AddError(
-	// 		"Bad request status code.",
-	// 		fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-	// 	return
-	// }
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		return
+	}
+	if httpResp.StatusCode != 200 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
+		return
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
