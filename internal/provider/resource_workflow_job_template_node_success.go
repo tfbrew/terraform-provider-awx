@@ -49,7 +49,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Schema(ctx context.Context, re
 			},
 			"success_node_ids": schema.SetAttribute{
 				Required:    true,
-				Description: "An ordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.",
+				Description: "An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.",
 				ElementType: types.Int32Type,
 			},
 		},

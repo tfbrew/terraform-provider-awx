@@ -25,7 +25,7 @@ resource "awx_workflow_job_template_node_success" "example_node_success" {
 ### Required
 
 - `node_id` (String) The ID of the containing workflow job template node.
-- `success_node_ids` (List of Number) An ordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.
+- `success_node_ids` (Set of Number) An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.
 
 ## Import
 
