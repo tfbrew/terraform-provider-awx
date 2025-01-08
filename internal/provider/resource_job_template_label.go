@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -33,20 +32,6 @@ type JobTemplateLabelsResource struct {
 type JobTemplateLabelsResourceModel struct {
 	JobTemplateId types.String `tfsdk:"job_template_id"`
 	LabelIDs      types.List   `tfsdk:"label_ids"`
-}
-
-type JTLabelsAPIRead struct {
-	Count        int           `json:"count"`
-	LabelResults []LabelResult `json:"results"`
-}
-
-type LabelResult struct {
-	Id int `json:"id"`
-}
-
-type LabelDissasocBody struct {
-	Id           int  `json:"id"`
-	Disassociate bool `json:"disassociate"`
 }
 
 func (r *JobTemplateLabelsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -134,8 +119,6 @@ func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.Cre
 			return
 		}
 	}
-
-	tflog.Trace(ctx, "created a resource")
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
