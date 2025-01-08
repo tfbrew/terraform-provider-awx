@@ -58,11 +58,11 @@ func (d *ExecutionEnvironmentDataSource) Schema(ctx context.Context, req datasou
 		Description: "Get execution environment datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Execution Environment ID",
+				Description: "Execution Environment ID.",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Execution Environment name",
+				Description: "Execution Environment name.",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
@@ -223,13 +223,6 @@ func (d *ExecutionEnvironmentDataSource) Read(ctx context.Context, req datasourc
 	data.Id = types.StringValue(idAsString)
 
 	data.Name = types.StringValue(responseData.Name)
-
-	if responseData.Name != "" {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
 
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)

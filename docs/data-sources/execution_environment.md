@@ -27,8 +27,8 @@ data "awx_execution_environment" "example-name" {
 
 ### Optional
 
-- `id` (String) Execution Environment ID
-- `name` (String) Execution Environment name
+- `id` (String) Execution Environment ID.
+- `name` (String) Execution Environment name.
 
 ### Read-Only
 
