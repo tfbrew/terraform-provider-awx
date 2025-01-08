@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -81,6 +82,15 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 	}
 }
 
+func (d OrganizationDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+		),
+	}
+}
+
 func (d *OrganizationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
@@ -112,12 +122,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	var url string
 
-	if !data.Id.IsNull() && !data.Name.IsNull() {
-		resp.Diagnostics.AddError(
-			"Too many inputs for datasource.",
-			fmt.Sprintf("Both id: %v and name: %v were provided for organization datasource. Please provide only one.", data.Id.ValueString(), data.Name.ValueString()))
-		return
-	} else if !data.Id.IsNull() {
+	if !data.Id.IsNull() {
 		// set url for read by id HTTP request
 		id, err := strconv.Atoi(data.Id.ValueString())
 		if err != nil {
@@ -127,15 +132,11 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 			return
 		}
 		url = d.client.endpoint + fmt.Sprintf("/api/v2/organizations/%d/", id)
-	} else if !data.Name.IsNull() {
+	}
+	if !data.Name.IsNull() {
 		// set url for read by name HTTP request
 		name := data.Name.ValueString()
 		url = d.client.endpoint + fmt.Sprintf("/api/v2/organizations/?name=%s", name)
-	} else {
-		resp.Diagnostics.AddError(
-			"ID or Name of organization required.",
-			"Neither id or name of organization provided.")
-		return
 	}
 
 	// create HTTP request
@@ -211,41 +212,31 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		}
 	}
 
-	if !(data.Id.IsNull() && responseData.Id == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), fmt.Sprintf("%v", responseData.Id))...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
+	idAsString := strconv.Itoa(responseData.Id)
+	data.Id = types.StringValue(idAsString)
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	data.Name = types.StringValue(responseData.Name)
+
+	if responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	if responseData.Description != "" {
+		data.Description = types.StringValue(responseData.Description)
 	}
 
-	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), responseData.CustomVirtualEnv)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	if responseData.CustomVirtualEnv != "" {
+		data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv)
 	}
 
-	if !(data.DefaultEnv.IsNull() && responseData.DefaultEnv == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("default_environment"), responseData.DefaultEnv)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	if responseData.DefaultEnv != 0 {
+		data.DefaultEnv = types.Int32Value(int32(responseData.DefaultEnv))
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("max_hosts"), responseData.MaxHosts)...)
+	data.MaxHosts = types.Int32Value(int32(responseData.MaxHosts))
 
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
