@@ -31,7 +31,7 @@ type WorkflowJobTemplatesNodeSuccessResource struct {
 // WorkflowJobTemplatesNodeSuccessResourceModel describes the resource data model.
 type WorkflowJobTemplatesNodeSuccessResourceModel struct {
 	NodeId         types.String `tfsdk:"node_id"`
-	SuccessNodeIds types.List   `tfsdk:"success_node_ids"`
+	SuccessNodeIds types.Set    `tfsdk:"success_node_ids"`
 }
 
 func (r *WorkflowJobTemplatesNodeSuccessResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -47,7 +47,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Schema(ctx context.Context, re
 				Required:    true,
 				Description: "The ID of the containing workflow job template node.",
 			},
-			"success_node_ids": schema.ListAttribute{
+			"success_node_ids": schema.SetAttribute{
 				Required:    true,
 				Description: "An ordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.",
 				ElementType: types.Int32Type,
@@ -201,12 +201,12 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req 
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
 	if diags.HasError() {
 		return
 	}
-
 	data.SuccessNodeIds = listValue
+
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
