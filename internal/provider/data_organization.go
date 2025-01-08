@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	urlParser "net/url"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
@@ -59,7 +60,7 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Organization Name",
+				Description: "Organization name",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
@@ -135,7 +136,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 	if !data.Name.IsNull() {
 		// set url for read by name HTTP request
-		name := data.Name.ValueString()
+		name := urlParser.QueryEscape(data.Name.ValueString())
 		url = d.client.endpoint + fmt.Sprintf("/api/v2/organizations/?name=%s", name)
 	}
 

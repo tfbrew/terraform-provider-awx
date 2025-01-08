@@ -17,74 +17,79 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ datasource.DataSource = &InstanceGroupDataSource{}
+var _ datasource.DataSource = &ExecutionEnvironmentDataSource{}
 
-func NewInstanceGroupDataSource() datasource.DataSource {
-	return &InstanceGroupDataSource{}
+func NewExecutionEnvironmentDataSource() datasource.DataSource {
+	return &ExecutionEnvironmentDataSource{}
 }
 
-// InstanceGroupDataSource defines the data source implementation.
-type InstanceGroupDataSource struct {
+// ExecutionEnvironmentDataSource defines the data source implementation.
+type ExecutionEnvironmentDataSource struct {
 	client *AwxClient
 }
 
-// InstanceGroupDataSourceModel describes the data source data model.
-type InstanceGroupDataSourceModel struct {
-	Id                       types.String `tfsdk:"id"`
-	Name                     types.String `tfsdk:"name"`
-	MaxConcurrentJobs        types.Int32  `tfsdk:"max_concurrent_jobs"`
-	MaxForks                 types.Int32  `tfsdk:"max_forks"`
-	PolicyInstancePercentage types.Int32  `tfsdk:"policy_instance_percentage"`
-	PolicyInstanceMinimum    types.Int32  `tfsdk:"policy_instance_minimum"`
+// ExecutionEnvironmentDataSourceModel describes the data source data model.
+type ExecutionEnvironmentDataSourceModel struct {
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Description  types.String `tfsdk:"description"`
+	Image        types.String `tfsdk:"image"`
+	Pull         types.String `tfsdk:"pull"`
+	Organization types.Int32  `tfsdk:"organization"`
+	Credential   types.Int32  `tfsdk:"credential"`
 }
 
-type InstanceGroupDataSourceJson struct {
-	Id                       int    `json:"id"`
-	Name                     string `json:"name"`
-	MaxConcurrentJobs        int    `json:"max_concurrent_jobs"`
-	MaxForks                 int    `json:"max_forks"`
-	PolicyInstancePercentage int    `json:"policy_instance_percentage"`
-	PolicyInstanceMinimum    int    `json:"policy_instance_minimum"`
+type ExecutionEnvironmentDataSourceJson struct {
+	Id           int    `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Image        string `json:"image"`
+	Pull         string `json:"pull"`
+	Organization int    `json:"organization"`
+	Credential   int    `json:"credential"`
 }
 
-func (d *InstanceGroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_instance_group"
+func (d *ExecutionEnvironmentDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_execution_environment"
 }
 
-func (d *InstanceGroupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *ExecutionEnvironmentDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manage Instance Groups",
-
+		Description: "Get execution environment datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Instance Group ID.",
+				Description: "Execution Environment ID.",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Instance Group name.",
+				Description: "Execution Environment name.",
 				Optional:    true,
 			},
-			"max_concurrent_jobs": schema.Int32Attribute{
-				Description: "Maximum number of jobs to run concurrently on this group. Zero means no limit will be enforced.",
+			"description": schema.StringAttribute{
+				Description: "Execution Environment description.",
 				Computed:    true,
 			},
-			"max_forks": schema.Int32Attribute{
-				Description: "Maximum number of forks to allow across all jobs running concurrently on this group. Zero means no limit will be enforced.",
+			"image": schema.StringAttribute{
+				Description: "The full image location, including the container registry, image name, and version tag.",
 				Computed:    true,
 			},
-			"policy_instance_percentage": schema.Int32Attribute{
-				Description: "Minimum percentage of all instances that will be automatically assigned to this group when new instances come online.",
+			"pull": schema.StringAttribute{
+				Description: "always: always pull container before running, missing: only pull the image if not pressent before running, never: never pull container before running.",
 				Computed:    true,
 			},
-			"policy_instance_minimum": schema.Int32Attribute{
-				Description: "Minimum number of instances that will be automatically assigned to this group when new instances come online.",
+			"organization": schema.Int32Attribute{
+				Description: "Leave this field blank to make the execution environment globally available.",
+				Computed:    true,
+			},
+			"credential": schema.Int32Attribute{
+				Description: "Credential to authenticate with a protected container registry.",
 				Computed:    true,
 			},
 		},
 	}
 }
 
-func (d InstanceGroupDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
+func (d ExecutionEnvironmentDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
 	return []datasource.ConfigValidator{
 		datasourcevalidator.ExactlyOneOf(
 			path.MatchRoot("id"),
@@ -93,7 +98,7 @@ func (d InstanceGroupDataSource) ConfigValidators(ctx context.Context) []datasou
 	}
 }
 
-func (d *InstanceGroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *ExecutionEnvironmentDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -112,8 +117,8 @@ func (d *InstanceGroupDataSource) Configure(ctx context.Context, req datasource.
 	d.client = configureData
 }
 
-func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data InstanceGroupDataSourceModel
+func (d *ExecutionEnvironmentDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ExecutionEnvironmentDataSourceModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -133,12 +138,12 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 				fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 			return
 		}
-		url = d.client.endpoint + fmt.Sprintf("/api/v2/instance_groups/%d/", id)
+		url = d.client.endpoint + fmt.Sprintf("/api/v2/execution_environments/%d/", id)
 	}
 	if !data.Name.IsNull() {
 		// set url for read by name HTTP request
 		name := urlParser.QueryEscape(data.Name.ValueString())
-		url = d.client.endpoint + fmt.Sprintf("/api/v2/instance_groups/?name=%s", name)
+		url = d.client.endpoint + fmt.Sprintf("/api/v2/execution_environments/?name=%s", name)
 	}
 
 	// create HTTP request
@@ -157,7 +162,7 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to read instance_groups, got error: %s", err))
+			fmt.Sprintf("Unable to read execution_environments, got error: %s", err))
 		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
@@ -180,7 +185,7 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	var responseData InstanceGroupDataSourceJson
+	var responseData ExecutionEnvironmentDataSourceJson
 
 	if !data.Id.IsNull() && data.Name.IsNull() {
 		err = json.Unmarshal(body, &responseData)
@@ -194,8 +199,8 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 	// If looking up by name, check that there is only one response and extract it.
 	if data.Id.IsNull() && !data.Name.IsNull() {
 		nameResult := struct {
-			Count   int                           `json:"count"`
-			Results []InstanceGroupDataSourceJson `json:"results"`
+			Count   int                                  `json:"count"`
+			Results []ExecutionEnvironmentDataSourceJson `json:"results"`
 		}{}
 		err = json.Unmarshal(body, &nameResult)
 		if err != nil {
@@ -208,8 +213,8 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 			responseData = nameResult.Results[0]
 		} else {
 			resp.Diagnostics.AddError(
-				"Incorrect number of instance_groups returned by name",
-				fmt.Sprintf("Unable to read instance_group as API returned %v instance_groups.", nameResult.Count))
+				"Incorrect number of execution_environments returned by name",
+				fmt.Sprintf("Unable to read execution_environment as API returned %v execution_environments.", nameResult.Count))
 			return
 		}
 	}
@@ -218,10 +223,26 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 	data.Id = types.StringValue(idAsString)
 
 	data.Name = types.StringValue(responseData.Name)
-	data.MaxConcurrentJobs = types.Int32Value(int32(responseData.MaxConcurrentJobs))
-	data.MaxForks = types.Int32Value(int32(responseData.MaxForks))
-	data.PolicyInstancePercentage = types.Int32Value(int32(responseData.PolicyInstancePercentage))
-	data.PolicyInstanceMinimum = types.Int32Value(int32(responseData.PolicyInstanceMinimum))
+
+	if responseData.Description != "" {
+		data.Description = types.StringValue(responseData.Description)
+	}
+
+	if responseData.Image != "" {
+		data.Image = types.StringValue(responseData.Image)
+	}
+
+	if responseData.Pull != "" {
+		data.Pull = types.StringValue(responseData.Pull)
+	}
+
+	if responseData.Organization != 0 {
+		data.Organization = types.Int32Value(int32(responseData.Organization))
+	}
+
+	if responseData.Credential != 0 {
+		data.Credential = types.Int32Value(int32(responseData.Credential))
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
