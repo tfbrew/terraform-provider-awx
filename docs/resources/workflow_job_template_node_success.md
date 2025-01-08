@@ -32,5 +32,5 @@ resource "awx_workflow_job_template_node_success" "example_node_success" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import awx_workflow_job_template_node_success.example_node_label 201
+terraform import awx_workflow_job_template_node_success.example_node 201
 ```
