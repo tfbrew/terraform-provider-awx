@@ -17,73 +17,79 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ datasource.DataSource = &OrganizationDataSource{}
+var _ datasource.DataSource = &ExecutionEnvironmentDataSource{}
 
-func NewOrganizationDataSource() datasource.DataSource {
-	return &OrganizationDataSource{}
+func NewExecutionEnvironmentDataSource() datasource.DataSource {
+	return &ExecutionEnvironmentDataSource{}
 }
 
-// OrganizationDataSource defines the data source implementation.
-type OrganizationDataSource struct {
+// ExecutionEnvironmentDataSource defines the data source implementation.
+type ExecutionEnvironmentDataSource struct {
 	client *AwxClient
 }
 
-// OrganizationDataSourceModel describes the data source data model.
-type OrganizationDataSourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Description      types.String `tfsdk:"description"`
-	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
-	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
-	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
+// ExecutionEnvironmentDataSourceModel describes the data source data model.
+type ExecutionEnvironmentDataSourceModel struct {
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Description  types.String `tfsdk:"description"`
+	Image        types.String `tfsdk:"image"`
+	Pull         types.String `tfsdk:"pull"`
+	Organization types.Int32  `tfsdk:"organization"`
+	Credential   types.Int32  `tfsdk:"credential"`
 }
 
-type OrganizationDataSourceJson struct {
-	Id               int    `json:"id"`
-	Name             string `json:"name"`
-	Description      string `json:"description"`
-	CustomVirtualEnv string `json:"custom_virtualenv"`
-	DefaultEnv       int    `json:"default_environment"`
-	MaxHosts         int    `json:"max_hosts"`
+type ExecutionEnvironmentDataSourceJson struct {
+	Id           int    `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Image        string `json:"image"`
+	Pull         string `json:"pull"`
+	Organization int    `json:"organization"`
+	Credential   int    `json:"credential"`
 }
 
-func (d *OrganizationDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_organization"
+func (d *ExecutionEnvironmentDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_execution_environment"
 }
 
-func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *ExecutionEnvironmentDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Get organization datasource",
+		Description: "Get execution environment datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Organization ID",
+				Description: "Execution Environment ID",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Organization name",
+				Description: "Execution Environment name",
 				Optional:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "Organization description.",
+				Description: "Execution Environment description.",
 				Computed:    true,
 			},
-			"custom_virtualenv": schema.StringAttribute{
-				Description: "Local absolute file path containing a custom Python virtualenv to use.",
+			"image": schema.StringAttribute{
+				Description: "The full image location, including the container registry, image name, and version tag.",
 				Computed:    true,
 			},
-			"default_environment": schema.Int32Attribute{
-				Description: "The fallback execution environment that will be used for jobs inside of this organization if not explicitly assigned at the project, job template or workflow level.",
+			"pull": schema.StringAttribute{
+				Description: "always: always pull container before running, missing: only pull the image if not pressent before running, never: never pull container before running.",
 				Computed:    true,
 			},
-			"max_hosts": schema.Int32Attribute{
-				Description: "Maximum number of hosts allowed to be managed by this organization.",
+			"organization": schema.Int32Attribute{
+				Description: "Leave this field blank to make the execution environment globally available.",
+				Computed:    true,
+			},
+			"credential": schema.Int32Attribute{
+				Description: "Credential to authenticate with a protected container registry.",
 				Computed:    true,
 			},
 		},
 	}
 }
 
-func (d OrganizationDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
+func (d ExecutionEnvironmentDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
 	return []datasource.ConfigValidator{
 		datasourcevalidator.ExactlyOneOf(
 			path.MatchRoot("id"),
@@ -92,7 +98,7 @@ func (d OrganizationDataSource) ConfigValidators(ctx context.Context) []datasour
 	}
 }
 
-func (d *OrganizationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *ExecutionEnvironmentDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -111,8 +117,8 @@ func (d *OrganizationDataSource) Configure(ctx context.Context, req datasource.C
 	d.client = configureData
 }
 
-func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data OrganizationDataSourceModel
+func (d *ExecutionEnvironmentDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ExecutionEnvironmentDataSourceModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -132,12 +138,12 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 				fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 			return
 		}
-		url = d.client.endpoint + fmt.Sprintf("/api/v2/organizations/%d/", id)
+		url = d.client.endpoint + fmt.Sprintf("/api/v2/execution_environments/%d/", id)
 	}
 	if !data.Name.IsNull() {
 		// set url for read by name HTTP request
 		name := urlParser.QueryEscape(data.Name.ValueString())
-		url = d.client.endpoint + fmt.Sprintf("/api/v2/organizations/?name=%s", name)
+		url = d.client.endpoint + fmt.Sprintf("/api/v2/execution_environments/?name=%s", name)
 	}
 
 	// create HTTP request
@@ -156,7 +162,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to read organization, got error: %s", err))
+			fmt.Sprintf("Unable to read execution_environments, got error: %s", err))
 		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
@@ -179,7 +185,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	var responseData OrganizationDataSourceJson
+	var responseData ExecutionEnvironmentDataSourceJson
 
 	if !data.Id.IsNull() && data.Name.IsNull() {
 		err = json.Unmarshal(body, &responseData)
@@ -193,8 +199,8 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	// If looking up by name, check that there is only one response and extract it.
 	if data.Id.IsNull() && !data.Name.IsNull() {
 		nameResult := struct {
-			Count   int                          `json:"count"`
-			Results []OrganizationDataSourceJson `json:"results"`
+			Count   int                                  `json:"count"`
+			Results []ExecutionEnvironmentDataSourceJson `json:"results"`
 		}{}
 		err = json.Unmarshal(body, &nameResult)
 		if err != nil {
@@ -207,8 +213,8 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 			responseData = nameResult.Results[0]
 		} else {
 			resp.Diagnostics.AddError(
-				"Incorrect number of organizations returned by name",
-				fmt.Sprintf("Unable to read organization as API returned %v organizations.", nameResult.Count))
+				"Incorrect number of execution_environments returned by name",
+				fmt.Sprintf("Unable to read execution_environment as API returned %v execution_environments.", nameResult.Count))
 			return
 		}
 	}
@@ -229,15 +235,21 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		data.Description = types.StringValue(responseData.Description)
 	}
 
-	if responseData.CustomVirtualEnv != "" {
-		data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv)
+	if responseData.Image != "" {
+		data.Image = types.StringValue(responseData.Image)
 	}
 
-	if responseData.DefaultEnv != 0 {
-		data.DefaultEnv = types.Int32Value(int32(responseData.DefaultEnv))
+	if responseData.Pull != "" {
+		data.Pull = types.StringValue(responseData.Pull)
 	}
 
-	data.MaxHosts = types.Int32Value(int32(responseData.MaxHosts))
+	if responseData.Organization != 0 {
+		data.Organization = types.Int32Value(int32(responseData.Organization))
+	}
+
+	if responseData.Credential != 0 {
+		data.Credential = types.Int32Value(int32(responseData.Credential))
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

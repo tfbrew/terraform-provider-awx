@@ -28,7 +28,7 @@ data "awx_instance_group" "example-name" {
 ### Optional
 
 - `id` (String) Organization ID
-- `name` (String) Organization Name
+- `name` (String) Organization name
 
 ### Read-Only
 
