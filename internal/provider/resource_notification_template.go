@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -237,8 +236,6 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 
 	// Once this object is created, the token value in the NotificationConfiguration field will never be returned as anythong
 	// other than blank by the AWX Tower API. So, let's
-
-	tflog.Trace(ctx, "created a resource")
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

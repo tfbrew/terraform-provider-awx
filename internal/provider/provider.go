@@ -121,6 +121,8 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewOrganizationResource,
 		NewWorkflowJobTemplatesResource,
 		NewWorkflowJobTemplatesNodeResource,
+		NewWorkflowJobTemplatesNodeLabelResource,
+		NewWorkflowJobTemplatesNodeSuccessResource,
 	}
 }
 

@@ -41,6 +41,33 @@ func (c *AwxClient) AssocJobTemplChild(ctx context.Context, body ChildResult, ur
 	return nil
 }
 
+func (c *AwxClient) AssocSuccessNode(ctx context.Context, body ChildAssocBody, url string) error {
+
+	jsonData, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		return err
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+
+	httpResp, err := c.client.Do(httpReq)
+	if err != nil {
+		return err
+	}
+	if httpResp.StatusCode != 204 {
+		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
+		return err
+	}
+
+	return nil
+}
+
 func (c *AwxClient) DisassocJobTemplChild(ctx context.Context, body ChildDissasocBody, url string) error {
 
 	jsonData, err := json.Marshal(body)
