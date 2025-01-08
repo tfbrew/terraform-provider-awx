@@ -9,6 +9,11 @@ type ChildResult struct {
 	Id int `json:"id"`
 }
 
+type ChildAssocBody struct {
+	Id        int  `json:"id"`
+	Associate bool `json:"associate"`
+}
+
 type ChildDissasocBody struct {
 	Id           int  `json:"id"`
 	Disassociate bool `json:"disassociate"`
