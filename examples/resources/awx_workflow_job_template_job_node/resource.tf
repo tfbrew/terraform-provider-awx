@@ -1,4 +1,4 @@
-resource "awx_workflow_job_template_node" "example_node" {
+resource "awx_workflow_job_template_job_node" "example_node" {
   all_parents_must_converge = false
   diff_mode                 = false
   identifier                = "0ddd9e82-e447-4ef2-9c96-20932fef4456"

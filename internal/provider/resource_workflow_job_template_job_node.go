@@ -20,20 +20,20 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &WorkflowJobTemplatesNodeResource{}
-var _ resource.ResourceWithImportState = &WorkflowJobTemplatesNodeResource{}
+var _ resource.Resource = &WorkflowJobTemplatesJobNodeResource{}
+var _ resource.ResourceWithImportState = &WorkflowJobTemplatesJobNodeResource{}
 
-func NewWorkflowJobTemplatesNodeResource() resource.Resource {
-	return &WorkflowJobTemplatesNodeResource{}
+func NewWorkflowJobTemplatesJobNodeResource() resource.Resource {
+	return &WorkflowJobTemplatesJobNodeResource{}
 }
 
-// WorkflowJobTemplatesNodeResource defines the resource implementation.
-type WorkflowJobTemplatesNodeResource struct {
+// WorkflowJobTemplatesJobNodeResource defines the resource implementation.
+type WorkflowJobTemplatesJobNodeResource struct {
 	client *AwxClient
 }
 
-// WorkflowJobTemplatesNodeResourceModel describes the resource data model.
-type WorkflowJobTemplatesNodeResourceModel struct {
+// WorkflowJobTemplatesJobNodeResourceModel describes the resource data model.
+type WorkflowJobTemplatesJobNodeResourceModel struct {
 	Id                     types.String `tfsdk:"id"`
 	WorkflowJobId          types.Int32  `tfsdk:"workflow_job_template_id"`
 	UnifiedJobTemplateId   types.Int32  `tfsdk:"unified_job_template"`
@@ -67,11 +67,11 @@ type WorkflowJobTemplateNodeAPIModel struct {
 	Identifier             string `json:"identifier"`
 }
 
-func (r *WorkflowJobTemplatesNodeResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_workflow_job_template_node"
+func (r *WorkflowJobTemplatesJobNodeResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_workflow_job_template_job_node"
 }
 
-func (r *WorkflowJobTemplatesNodeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *WorkflowJobTemplatesJobNodeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "A node has its own ID, but must be associated to a workflow job template ID. And, the node must specify which actual job template this node will run, which is set using the attribute unified_job_template.",
 
@@ -138,7 +138,7 @@ func (r *WorkflowJobTemplatesNodeResource) Schema(ctx context.Context, req resou
 	}
 }
 
-func (r *WorkflowJobTemplatesNodeResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *WorkflowJobTemplatesJobNodeResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -157,8 +157,8 @@ func (r *WorkflowJobTemplatesNodeResource) Configure(ctx context.Context, req re
 	r.client = configureData
 }
 
-func (r *WorkflowJobTemplatesNodeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data WorkflowJobTemplatesNodeResourceModel
+func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data WorkflowJobTemplatesJobNodeResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -289,8 +289,8 @@ func (r *WorkflowJobTemplatesNodeResource) Create(ctx context.Context, req resou
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data WorkflowJobTemplatesNodeResourceModel
+func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data WorkflowJobTemplatesJobNodeResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -495,8 +495,8 @@ func (r *WorkflowJobTemplatesNodeResource) Read(ctx context.Context, req resourc
 
 }
 
-func (r *WorkflowJobTemplatesNodeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data WorkflowJobTemplatesNodeResourceModel
+func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data WorkflowJobTemplatesJobNodeResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -589,8 +589,8 @@ func (r *WorkflowJobTemplatesNodeResource) Update(ctx context.Context, req resou
 }
 
 // Left Intentionally blank, as there is no API endpoint to delete a label.
-func (r *WorkflowJobTemplatesNodeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data WorkflowJobTemplatesNodeResourceModel
+func (r *WorkflowJobTemplatesJobNodeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data WorkflowJobTemplatesJobNodeResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -640,6 +640,6 @@ func (r *WorkflowJobTemplatesNodeResource) Delete(ctx context.Context, req resou
 	}
 }
 
-func (r *WorkflowJobTemplatesNodeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *WorkflowJobTemplatesJobNodeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
