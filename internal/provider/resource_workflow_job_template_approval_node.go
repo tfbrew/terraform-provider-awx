@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -47,9 +46,9 @@ type WorkflowJobTemplateApprovalNodeModel struct {
 }
 
 type WorkflowJobTmplNodeApprvCreateAPIModel struct {
-	Description string `json:"description"`
+	Description any    `json:"description,omitempty"`
 	Name        string `json:"name"`
-	Timeout     int    `json:"timeout"`
+	Timeout     any    `json:"timeout,omitempty"`
 }
 
 func (r *WorkflowJobTemplateApprovalNode) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -86,12 +85,10 @@ func (r *WorkflowJobTemplateApprovalNode) Schema(ctx context.Context, req resour
 			"description": schema.StringAttribute{
 				Optional:    true,
 				Description: "The name of this template.",
-				Default:     stringdefault.StaticString(""),
-				Computed:    true,
 			},
 			"timeout": schema.Int32Attribute{
 				Description: "The number of seconds for timeout.",
-				Required:    true,
+				Optional:    true,
 			},
 		},
 	}
@@ -206,8 +203,12 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 	var jsonBody WorkflowJobTmplNodeApprvCreateAPIModel
 
 	jsonBody.Name = data.Name.ValueString()
-	jsonBody.Description = data.Description.ValueString()
-	jsonBody.Timeout = int(data.Timeout.ValueInt32())
+	if !data.Description.IsNull() {
+		jsonBody.Description = data.Description.ValueString()
+	}
+	if !data.Timeout.IsNull() {
+		jsonBody.Timeout = int(data.Timeout.ValueInt32())
+	}
 
 	jsonData, err = json.Marshal(jsonBody)
 	if err != nil {
@@ -357,8 +358,14 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 		return
 	}
 
-	data.WorkflowJobTemplateId = types.Int32Value(int32(getNameFromResponse.WorkflowJobTemplateId))
-	data.ApprovalTemplateId = types.Int32Value(int32(getNameFromResponse.ApprovalTemplateId))
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workflow_job_template_id"), getNameFromResponse.WorkflowJobTemplateId)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("approval_template_id"), getNameFromResponse.ApprovalTemplateId)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	/// now read the node's template's data
 
@@ -420,12 +427,36 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 		return
 	}
 
-	data.Name = types.StringValue(readAPIResponse.Name)
+	if !(data.Name.IsNull() && readAPIResponse.Name == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), readAPIResponse.Name)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
 
-	data.Description = types.StringValue(readAPIResponse.Description)
-	data.Timeout = types.Int32Value(int32(readAPIResponse.Timeout))
+	if !(data.Description.IsNull() && readAPIResponse.Description == "") {
+		descrString, ok := readAPIResponse.Description.(string)
+		if !ok {
+			resp.Diagnostics.AddError("couldn't convert any to string", "unable to convert any to string.")
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), descrString)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	if !(data.Timeout.IsNull() && readAPIResponse.Timeout != nil) {
+		timeoutInt, ok := readAPIResponse.Timeout.(int32)
+		if !ok {
+			resp.Diagnostics.AddError("couldn't convert any to int32", "unable to convert any to int32.")
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), timeoutInt)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
 
 }
 
