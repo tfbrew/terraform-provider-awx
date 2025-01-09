@@ -16,7 +16,7 @@ To add an approval node/step to an existing workflow job template a new node wil
 resource "awx_workflow_job_template_approval_node" "example_node" {
   workflow_job_template_id = 1753
   name                     = "example_approval"
-  description              = ""
+  description              = "A description"
   timeout                  = 360
 }
 ```
@@ -27,12 +27,12 @@ resource "awx_workflow_job_template_approval_node" "example_node" {
 ### Required
 
 - `name` (String) The name of this template.
-- `timeout` (Number) The number of seconds for timeout.
 - `workflow_job_template_id` (Number) This the ID for the awx_workflow_job_template for which this approval node/template should be embedded.
 
 ### Optional
 
 - `description` (String) The name of this template.
+- `timeout` (Number) The number of seconds for timeout.
 
 ### Read-Only
 
