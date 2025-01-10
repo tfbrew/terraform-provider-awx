@@ -55,8 +55,8 @@ resource "awx_workflow_job_templates" "example" {
 - `ask_skip_tags_on_launch` (Boolean) Prompt on launch for Skip Tags. Defaults to `false`.
 - `ask_tags_on_launch` (Boolean) Prompt on launch for Ask Tags. Defaults to `false`.
 - `ask_variables_on_launch` (Boolean) Defaults to `false`.
-- `description` (String) defaults to `""`
-- `extra_vars` (String) Defaults to `"---"`
+- `description` (String)
+- `extra_vars` (String)
 - `inventory` (Number) Inventory ID of the inventory containing the hosts you want this job to manage.
 - `job_tags` (String) Skip tags are useful when you have a large playbook, and you want to skip specific parts of a play or task. Use commas to separate multiple tags.
 - `limit` (String) Provide a host pattern to further constrain the list of hosts that will be managed or affected by the playbook. Multiple patterns are allowed.

@@ -60,14 +60,14 @@ type WorkflowJobTemplatesResourceModel struct {
 type WorkflowJobTemplateAPIModel struct {
 	Id                   int    `json:"id"`
 	Name                 string `json:"name"`
-	Description          string `json:"description"`
-	ExtraVars            string `json:"extra_vars"`
+	Description          any    `json:"description,omitempty"`
+	ExtraVars            any    `json:"extra_vars,omitempty"`
 	Organization         int    `json:"organization"`
 	SurveyEnabled        bool   `json:"survey_enabled"`
 	AllowSimultaneous    bool   `json:"allow_simultaneous"`
 	AskVariablesOnLaunch bool   `json:"ask_variables_on_launch"`
-	Inventory            int    `json:"inventory"`
-	Limit                string `json:"limit"`
+	Inventory            any    `json:"inventory"`
+	Limit                string `json:"limit,omitempty"`
 	ScmBranch            string `json:"scm_branch"`
 	AskInventoryOnLaunch bool   `json:"ask_inventory_on_launch"`
 	AskScmBranchOnLaunch bool   `json:"ask_scm_branch_on_launch"`
@@ -100,16 +100,10 @@ func (r *WorkflowJobTemplatesResource) Schema(ctx context.Context, req resource.
 				Required: true,
 			},
 			"description": schema.StringAttribute{
-				Optional:    true,
-				Default:     stringdefault.StaticString(""),
-				Computed:    true,
-				Description: "defaults to `\"\"`",
+				Optional: true,
 			},
 			"extra_vars": schema.StringAttribute{
-				Optional:    true,
-				Default:     stringdefault.StaticString("---"),
-				Computed:    true,
-				Description: "Defaults to `\"---\"`",
+				Optional: true,
 			},
 			"organization": schema.Int32Attribute{
 				Required: true,
@@ -444,19 +438,31 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
+	if !(data.Description.IsNull() && responseData.Description == nil) {
+		castString, ok := responseData.Description.(string)
+		if !ok {
+			resp.Diagnostics.AddError("uanble to cast descr as string.", "unable to cast as string.")
+			return
+		}
+		if castString != "" {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), castString)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+	}
+
+	if !(data.ExtraVars.IsNull() && responseData.ExtraVars == nil) {
+		castString, ok := responseData.ExtraVars.(string)
+		if !ok {
+			resp.Diagnostics.AddError("uanble to cast extravaras as string.", "unable to cast as string.")
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), castString)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-
-	// if !(data.ExtraVars.IsNull() && responseData.ExtraVars == "") {
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), responseData.ExtraVars)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	// }
 
 	if !(data.Organization.IsNull() && responseData.Organization == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
@@ -484,8 +490,14 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 	// }
-	if !(data.Inventory.IsNull() && responseData.Inventory == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
+	if !(data.Inventory.IsNull() && responseData.Inventory == nil) {
+		convertInt, ok := responseData.Inventory.(float64)
+		if !ok {
+			resp.Diagnostics.AddError("Unable to convert any to int32.", "Unable to convert any to int32.")
+			return
+		}
+
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), int(convertInt))...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -586,13 +598,19 @@ func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.
 
 	var bodyData WorkflowJobTemplateAPIModel
 	bodyData.Name = data.Name.ValueString()
-	bodyData.Description = data.Description.ValueString()
-	bodyData.ExtraVars = data.ExtraVars.ValueString()
+	if !data.Description.IsNull() {
+		bodyData.Description = data.Description.ValueString()
+	}
+	if !data.ExtraVars.IsNull() {
+		bodyData.ExtraVars = data.ExtraVars.ValueString()
+	}
 	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.SurveyEnabled = data.SurveyEnabled.ValueBool()
 	bodyData.AllowSimultaneous = data.AllowSimultaneous.ValueBool()
 	bodyData.AskVariablesOnLaunch = data.AskVariablesOnLaunch.ValueBool()
-	bodyData.Inventory = int(data.Inventory.ValueInt32())
+	if !data.Inventory.IsNull() {
+		bodyData.Inventory = int(data.Inventory.ValueInt32())
+	}
 	bodyData.Limit = data.Limit.ValueString()
 	bodyData.ScmBranch = data.ScmBranch.ValueString()
 	bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()

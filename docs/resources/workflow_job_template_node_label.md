@@ -14,7 +14,6 @@ Specify a node ID and then a list of the lable IDs that are associated to this n
 
 ```terraform
 resource "awx_workflow_job_template_node_label" "example_node_label" {
-  node_id   = 201
   label_ids = [322, 121]
 }
 ```
@@ -24,8 +23,8 @@ resource "awx_workflow_job_template_node_label" "example_node_label" {
 
 ### Required
 
-- `label_ids` (List of Number) An ordered list of label IDs associated to a particular Workflwo Job Template node. Create new labels first with `awx_label` resource type.
-- `node_id` (String) The ID of the containing workflow job template node.
+- `id` (String) The ID of the containing workflow job template node.
+- `label_ids` (List of Number) An ordered list of label IDs associated to a particular Workflow Job Template node. Create new labels first with awx_labels resource type.
 
 ## Import
 
