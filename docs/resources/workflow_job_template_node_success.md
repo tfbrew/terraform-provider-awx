@@ -14,7 +14,7 @@ Specify a node ID and then a list of node IDs that should run when this one ends
 
 ```terraform
 resource "awx_workflow_job_template_node_success" "example_node_success" {
-  node_id          = 201
+  id               = 201
   success_node_ids = [241, 914]
 }
 ```
@@ -24,8 +24,8 @@ resource "awx_workflow_job_template_node_success" "example_node_success" {
 
 ### Required
 
-- `node_id` (String) The ID of the containing workflow job template node.
-- `success_node_ids` (Set of Number) An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.
+- `id` (String) The ID of the containing workflow job template node.
+- `success_ids` (Set of Number) An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.
 
 ## Import
 

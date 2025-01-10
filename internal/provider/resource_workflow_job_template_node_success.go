@@ -30,8 +30,8 @@ type WorkflowJobTemplatesNodeSuccessResource struct {
 
 // WorkflowJobTemplatesNodeSuccessResourceModel describes the resource data model.
 type WorkflowJobTemplatesNodeSuccessResourceModel struct {
-	NodeId         types.String `tfsdk:"node_id"`
-	SuccessNodeIds types.Set    `tfsdk:"success_node_ids"`
+	Id         types.String `tfsdk:"id"`
+	SuccessIds types.Set    `tfsdk:"success_ids"`
 }
 
 func (r *WorkflowJobTemplatesNodeSuccessResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -43,11 +43,11 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Schema(ctx context.Context, re
 		Description: "Specify a node ID and then a list of node IDs that should run when this one ends in success.",
 
 		Attributes: map[string]schema.Attribute{
-			"node_id": schema.StringAttribute{
+			"id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the containing workflow job template node.",
 			},
-			"success_node_ids": schema.SetAttribute{
+			"success_ids": schema.SetAttribute{
 				Required:    true,
 				Description: "An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.",
 				ElementType: types.Int32Type,
@@ -85,18 +85,18 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Create(ctx context.Context, re
 		return
 	}
 	// set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/success_nodes/", id)
 
 	var relatedIds []int
 
-	diags := data.SuccessNodeIds.ElementsAs(ctx, &relatedIds, false)
+	diags := data.SuccessIds.ElementsAs(ctx, &relatedIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -130,11 +130,11 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req 
 	}
 
 	//set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/success_nodes", id)
@@ -205,7 +205,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req 
 	if diags.HasError() {
 		return
 	}
-	data.SuccessNodeIds = listValue
+	data.SuccessIds = listValue
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -221,9 +221,9 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, re
 		return
 	}
 
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.NodeId.ValueString()))
+		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.Id.ValueString()))
 		return
 	}
 
@@ -277,7 +277,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, re
 	}
 
 	var PlanChildIds []int
-	diags := data.SuccessNodeIds.ElementsAs(ctx, &PlanChildIds, false)
+	diags := data.SuccessIds.ElementsAs(ctx, &PlanChildIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -326,18 +326,18 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Delete(ctx context.Context, re
 		return
 	}
 	// set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/success_nodes/", id)
 
 	var RelatedIds []int
 
-	diags := data.SuccessNodeIds.ElementsAs(ctx, &RelatedIds, false)
+	diags := data.SuccessIds.ElementsAs(ctx, &RelatedIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -358,5 +358,5 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Delete(ctx context.Context, re
 }
 
 func (r *WorkflowJobTemplatesNodeSuccessResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("node_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
