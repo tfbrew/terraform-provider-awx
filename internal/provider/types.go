@@ -54,3 +54,23 @@ type OrganizationAPIModel struct {
 	DefaultEnv       int    `json:"default_environment,omitempty"`
 	MaxHosts         int    `json:"max_hosts,omitempty"`
 }
+
+type InventoryModel struct {
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Description  types.String `tfsdk:"description"`
+	Organization types.Int32  `tfsdk:"organization"`
+	Variables    types.String `tfsdk:"variables"`
+	Kind         types.String `tfsdk:"kind"`
+	HostFilter   types.String `tfsdk:"host_filter"`
+}
+
+type InventoryAPIModel struct {
+	Id           int    `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description,omitempty"`
+	Organization int    `json:"organization,omitempty"`
+	Variables    string `json:"variables,omitempty"`
+	Kind         string `json:"kind"`
+	HostFilter   string `json:"host_filter"`
+}

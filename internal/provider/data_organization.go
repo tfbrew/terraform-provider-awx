@@ -199,13 +199,6 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	data.Name = types.StringValue(responseData.Name)
 
-	if responseData.Name != "" {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)
 	}
