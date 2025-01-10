@@ -97,7 +97,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Schema(ctx context.Context, req re
 			},
 			"extra_data": schema.StringAttribute{
 				Optional:    true,
-				Description: "JSON Key/value pairs, wrap in jsonencode().",
+				Description: "JSON Key/value pairs, wrap in `jsonencode()`.",
 			},
 			"scm_branch": schema.StringAttribute{
 				Optional: true,

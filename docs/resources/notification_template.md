@@ -67,14 +67,14 @@ resource "awx_notification_template" "example" {
 ### Required
 
 - `name` (String)
-- `notification_type` (String) Only 'slack' is supported in this provider currently. Choose from: email, grafan, irc, mattermost, pagerduty, rocketchat, slack, twilio, webhook.
+- `notification_type` (String) Only `slack` is supported in this provider currently. Choose from: `email`, `grafan`, `irc`, `mattermost`, `pagerduty`, `rocketchat`, `slack`, `twilio`, `webhook`.
 - `organization` (Number)
 
 ### Optional
 
-- `description` (String) Defaults to ""
+- `description` (String) Defaults to `""`
 - `messages` (String) json
-- `notification_configuration` (String) json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah). The AWX Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.
+- `notification_configuration` (String) json. This value depends on the `notification_type` chosen. But, the value should be json. E.g. `notification_configuration = jsonencode(blah blah blah)`. The AWX Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.
 
 ### Read-Only
 

@@ -76,7 +76,7 @@ func (r *WorkflowJobTemplateApprovalNode) Schema(ctx context.Context, req resour
 			},
 			"workflow_job_template_id": schema.Int32Attribute{
 				Required:    true,
-				Description: "This the ID for the awx_workflow_job_template for which this approval node/template should be embedded.",
+				Description: "This the ID for the `awx_workflow_job_template` for which this approval node/template should be embedded.",
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -87,8 +87,8 @@ func (r *WorkflowJobTemplateApprovalNode) Schema(ctx context.Context, req resour
 				Description: "The name of this template.",
 			},
 			"timeout": schema.Int32Attribute{
-				Description: "The number of seconds for timeout.",
 				Optional:    true,
+				Description: "The number of seconds for timeout.",
 			},
 		},
 	}

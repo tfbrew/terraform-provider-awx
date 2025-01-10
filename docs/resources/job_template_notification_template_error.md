@@ -25,7 +25,7 @@ resource "awx_job_template_notification_template_error" "example" {
 ### Required
 
 - `job_template_id` (String) The ID of the containing Job Template.
-- `notif_template_ids` (List of Number) An ordered list of notification_templates IDs associated to a particular Job Template.
+- `notif_template_ids` (List of Number) An ordered list of `notification_template` IDs associated to a particular Job Template.
 
 ## Import
 

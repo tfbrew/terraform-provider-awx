@@ -31,24 +31,6 @@ type OrganizationResource struct {
 	client *AwxClient
 }
 
-// OrganizationResourceModel describes the resource data model.
-type OrganizationResourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Description      types.String `tfsdk:"description"`
-	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
-	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
-	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
-}
-
-type Organization struct {
-	Name             string `json:"name"`
-	Description      string `json:"description,omitempty"`
-	CustomVirtualEnv string `json:"custom_virtualenv,omitempty"`
-	DefaultEnv       int    `json:"default_environment,omitempty"`
-	MaxHosts         int    `json:"max_hosts,omitempty"`
-}
-
 func (r *OrganizationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_organization"
 }
@@ -108,7 +90,7 @@ func (r *OrganizationResource) Configure(ctx context.Context, req resource.Confi
 }
 
 func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data OrganizationResourceModel
+	var data OrganizationModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -119,7 +101,7 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 
 	// set url for create HTTP request
 
-	var bodyData Organization
+	var bodyData OrganizationAPIModel
 
 	if !(data.Name.IsNull()) {
 		bodyData.Name = data.Name.ValueString()
@@ -202,7 +184,7 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data OrganizationResourceModel
+	var data OrganizationModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -247,7 +229,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	var responseData Organization
+	var responseData OrganizationAPIModel
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -297,7 +279,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data OrganizationResourceModel
+	var data OrganizationModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -315,7 +297,7 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	var bodyData Organization
+	var bodyData OrganizationAPIModel
 
 	if !(data.Name.IsNull()) {
 		bodyData.Name = data.Name.ValueString()
@@ -374,7 +356,7 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 }
 
 func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data OrganizationResourceModel
+	var data OrganizationModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
