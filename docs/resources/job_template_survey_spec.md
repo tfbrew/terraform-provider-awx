@@ -63,16 +63,16 @@ Required:
 
 - `question_description` (String) Description of survey question.
 - `question_name` (String) Name of survey question.
-- `type` (String) Must be one of the following: text, textarea, password, integer, float, multiplechoice, or multiselect.
+- `type` (String) Must be one of the following: `text`, `textarea`, `password`, `integer`, `float`, `multiplechoice`, or `multiselect`.
 - `variable` (String) Variable name to store users answer to the survey question.
 
 Optional:
 
 - `choices` (List of String) List of strings which define the choices users can make for multichoice or multiselect.
 - `default` (String) Default value for the survey question.
-- `max` (Number) Maximum value, default 1024.
-- `min` (Number) Minimum value, default 1024.
-- `required` (Boolean) Set if the survey question is required, defaults to false.
+- `max` (Number) Maximum value, default `1024`.
+- `min` (Number) Minimum value, default `1024`.
+- `required` (Boolean) Set if the survey question is required, defaults to `false`.
 
 ## Import
 

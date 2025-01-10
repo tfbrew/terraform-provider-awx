@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -17,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -154,13 +157,16 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"job_type": schema.StringAttribute{
 				Optional:    true,
-				Description: "Acceptable values are a choice of: run, or check.",
+				Description: "Acceptable values are a choice of: `run`, `check`.",
 				Default:     stringdefault.StaticString("run"),
-				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"run", "check"}...),
+				},
+				Computed: true,
 			},
 			"inventory": schema.Int32Attribute{
 				Optional:    true,
-				Description: "ID number of the inventory to associate with the job template. Supply this or set ask_inventory_on_launch = true.",
+				Description: "ID number of the inventory to associate with the job template. Supply this or set `ask_inventory_on_launch = true`.",
 			},
 			"project": schema.Int32Attribute{
 				Required:    true,
@@ -194,7 +200,7 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Default:     stringdefault.StaticString("---"),
 				Computed:    true,
-				Description: "Default value is \"---\"",
+				Description: "Default value is `\"---\"`",
 			},
 			"job_tags": schema.StringAttribute{
 				Optional: true,
@@ -356,6 +362,15 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed: true,
 			},
 		},
+	}
+}
+
+func (d JobTemplateResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("inventory"),
+			path.MatchRoot("ask_inventory_on_launch"),
+		),
 	}
 }
 

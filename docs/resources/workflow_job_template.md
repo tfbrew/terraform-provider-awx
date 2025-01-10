@@ -47,24 +47,24 @@ resource "awx_workflow_job_templates" "example" {
 
 ### Optional
 
-- `allow_simultaneous` (Boolean) Defaults to false.
-- `ask_inventory_on_launch` (Boolean) Defaults to false.
-- `ask_labels_on_launch` (Boolean) Defaults to false.
-- `ask_limit_on_launch` (Boolean) Defaults to false.
-- `ask_scm_branch_on_launch` (Boolean) Defaults to false.
-- `ask_skip_tags_on_launch` (Boolean) Defaults to false.
-- `ask_tags_on_launch` (Boolean) Defaults to false.
-- `ask_variables_on_launch` (Boolean) Defaults to false.
+- `allow_simultaneous` (Boolean) Defaults to `false`.
+- `ask_inventory_on_launch` (Boolean) Prompt on launch for Inventory. Defaults to `false`.
+- `ask_labels_on_launch` (Boolean) Prompt on launch for Labels. Defaults to `false`.
+- `ask_limit_on_launch` (Boolean) Prompt on launch for Limit. Defaults to `false`.
+- `ask_scm_branch_on_launch` (Boolean) Prompt on launch for Source Control Branch. Defaults to `false`.
+- `ask_skip_tags_on_launch` (Boolean) Prompt on launch for Skip Tags. Defaults to `false`.
+- `ask_tags_on_launch` (Boolean) Prompt on launch for Ask Tags. Defaults to `false`.
+- `ask_variables_on_launch` (Boolean) Defaults to `false`.
 - `description` (String)
 - `extra_vars` (String)
-- `inventory` (Number)
-- `job_tags` (String)
-- `limit` (String)
-- `scm_branch` (String)
-- `skip_tags` (String)
-- `survey_enabled` (Boolean) Defaults to false.
+- `inventory` (Number) Inventory ID of the inventory containing the hosts you want this job to manage.
+- `job_tags` (String) Skip tags are useful when you have a large playbook, and you want to skip specific parts of a play or task. Use commas to separate multiple tags.
+- `limit` (String) Provide a host pattern to further constrain the list of hosts that will be managed or affected by the playbook. Multiple patterns are allowed.
+- `scm_branch` (String) Select a branch for the workflow. This branch is applied to all job template nodes that prompt for a branch.
+- `skip_tags` (String) Tags are useful when you have a large playbook, and you want to run a specific part of a play or task. Use commas to separate multiple tags.
+- `survey_enabled` (Boolean) Defaults to `false`.
 - `webhook_credential` (String)
-- `webhook_service` (String) Defaults to "".
+- `webhook_service` (String) Defaults to `""`.
 
 ### Read-Only
 

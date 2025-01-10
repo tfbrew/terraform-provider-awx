@@ -48,7 +48,7 @@ func (r *JobTemplateInstanceGroupsResource) Schema(ctx context.Context, req reso
 			},
 			"instance_groups_ids": schema.ListAttribute{
 				Required:    true,
-				Description: "An ordered list of instance_groups IDs associated to a particular Job Template.",
+				Description: "An ordered list of instance_group IDs associated to a particular Job Template.",
 				ElementType: types.Int32Type,
 			},
 		},

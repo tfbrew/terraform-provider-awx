@@ -48,7 +48,7 @@ func (r *JobTemplateNotifTemplErrResource) Schema(ctx context.Context, req resou
 			},
 			"notif_template_ids": schema.ListAttribute{
 				Required:    true,
-				Description: "An ordered list of notification_templates IDs associated to a particular Job Template.",
+				Description: "An ordered list of `notification_template` IDs associated to a particular Job Template.",
 				ElementType: types.Int32Type,
 			},
 		},

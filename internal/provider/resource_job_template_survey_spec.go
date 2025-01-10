@@ -10,12 +10,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -106,15 +108,18 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 					Attributes: map[string]schema.Attribute{
 						"max": schema.Int32Attribute{
 							Optional:    true,
-							Description: "Maximum value, default 1024.",
+							Description: "Maximum value, default `1024`.",
 						},
 						"min": schema.Int32Attribute{
 							Optional:    true,
-							Description: "Minimum value, default 1024.",
+							Description: "Minimum value, default `1024`.",
 						},
 						"type": schema.StringAttribute{
 							Required:    true,
-							Description: "Must be one of the following: text, textarea, password, integer, float, multiplechoice, or multiselect.",
+							Description: "Must be one of the following: `text`, `textarea`, `password`, `integer`, `float`, `multiplechoice`, or `multiselect`.",
+							Validators: []validator.String{
+								stringvalidator.OneOf([]string{"text", "textarea", "password", "integer", "float", "multiplechoice", "multiselect"}...),
+							},
 						},
 						"question_name": schema.StringAttribute{
 							Required:    true,
@@ -130,7 +135,7 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 						},
 						"required": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Set if the survey question is required, defaults to false.",
+							Description: "Set if the survey question is required, defaults to `false`.",
 						},
 						"default": schema.StringAttribute{
 							Optional:    true,

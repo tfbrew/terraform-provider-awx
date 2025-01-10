@@ -9,12 +9,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -92,18 +94,21 @@ func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource
 				Optional:    true,
 				Default:     stringdefault.StaticString(""),
 				Computed:    true,
-				Description: "Defaults to \"\"",
+				Description: "Defaults to `\"\"`",
 			},
 			"organization": schema.Int32Attribute{
 				Required: true,
 			},
 			"notification_type": schema.StringAttribute{
 				Required:    true,
-				Description: "Only 'slack' is supported in this provider currently. Choose from: email, grafan, irc, mattermost, pagerduty, rocketchat, slack, twilio, webhook.",
+				Description: "Only `slack` is supported in this provider currently. Choose from: `email`, `grafan`, `irc`, `mattermost`, `pagerduty`, `rocketchat`, `slack`, `twilio`, `webhook`.",
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"slack"}...),
+				},
 			},
 			"notification_configuration": schema.StringAttribute{
 				Optional:    true,
-				Description: "json. This value depends on the notification_type chosen. But, the value should be json. E.g. notification_configuration = jsonencode(blah blah blah). The AWX Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.",
+				Description: "json. This value depends on the `notification_type` chosen. But, the value should be json. E.g. `notification_configuration = jsonencode(blah blah blah)`. The AWX Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.",
 			},
 			"messages": schema.StringAttribute{
 				Optional:    true,

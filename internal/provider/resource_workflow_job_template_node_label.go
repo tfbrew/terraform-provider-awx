@@ -49,7 +49,7 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Schema(ctx context.Context, req 
 			},
 			"label_ids": schema.ListAttribute{
 				Required:    true,
-				Description: "An ordered list of label IDs associated to a particular Workflwo Job Template node. Create new labels first with awx_labels resource type.",
+				Description: "An ordered list of label IDs associated to a particular Workflwo Job Template node. Create new labels first with `awx_label` resource type.",
 				ElementType: types.Int32Type,
 			},
 		},

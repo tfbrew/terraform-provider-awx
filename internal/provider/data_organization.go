@@ -28,25 +28,6 @@ type OrganizationDataSource struct {
 	client *AwxClient
 }
 
-// OrganizationDataSourceModel describes the data source data model.
-type OrganizationDataSourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Description      types.String `tfsdk:"description"`
-	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
-	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
-	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
-}
-
-type OrganizationDataSourceJson struct {
-	Id               int    `json:"id"`
-	Name             string `json:"name"`
-	Description      string `json:"description"`
-	CustomVirtualEnv string `json:"custom_virtualenv"`
-	DefaultEnv       int    `json:"default_environment"`
-	MaxHosts         int    `json:"max_hosts"`
-}
-
 func (d *OrganizationDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_organization"
 }
@@ -112,7 +93,7 @@ func (d *OrganizationDataSource) Configure(ctx context.Context, req datasource.C
 }
 
 func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data OrganizationDataSourceModel
+	var data OrganizationModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -179,7 +160,7 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	var responseData OrganizationDataSourceJson
+	var responseData OrganizationAPIModel
 
 	if !data.Id.IsNull() && data.Name.IsNull() {
 		err = json.Unmarshal(body, &responseData)
@@ -193,8 +174,8 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	// If looking up by name, check that there is only one response and extract it.
 	if data.Id.IsNull() && !data.Name.IsNull() {
 		nameResult := struct {
-			Count   int                          `json:"count"`
-			Results []OrganizationDataSourceJson `json:"results"`
+			Count   int                    `json:"count"`
+			Results []OrganizationAPIModel `json:"results"`
 		}{}
 		err = json.Unmarshal(body, &nameResult)
 		if err != nil {

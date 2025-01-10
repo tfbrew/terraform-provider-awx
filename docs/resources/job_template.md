@@ -55,14 +55,14 @@ resource "awx_job_template" "example" {
 - `description` (String)
 - `diff_mode` (Boolean)
 - `execution_environment` (Number)
-- `extra_vars` (String) Default value is "---"
+- `extra_vars` (String) Default value is `"---"`
 - `force_handlers` (Boolean)
 - `forks` (Number)
 - `host_config_key` (String)
-- `inventory` (Number) ID number of the inventory to associate with the job template. Supply this or set ask_inventory_on_launch = true.
+- `inventory` (Number) ID number of the inventory to associate with the job template. Supply this or set `ask_inventory_on_launch = true`.
 - `job_slice_count` (Number)
 - `job_tags` (String)
-- `job_type` (String) Acceptable values are a choice of: run, or check.
+- `job_type` (String) Acceptable values are a choice of: `run`, `check`.
 - `limit` (String)
 - `prevent_instance_group_fallback` (Boolean)
 - `scm_branch` (String)
