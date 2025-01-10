@@ -37,7 +37,7 @@ type WorkflowJobTemplateApprovalNode struct {
 
 // WorkflowJobTemplateApprovalNodeModel describes the resource data model.
 type WorkflowJobTemplateApprovalNodeModel struct {
-	NodeId                types.String `tfsdk:"node_id"`
+	Id                    types.String `tfsdk:"id"`
 	ApprovalTemplateId    types.Int32  `tfsdk:"approval_template_id"`
 	WorkflowJobTemplateId types.Int32  `tfsdk:"workflow_job_template_id"`
 	Name                  types.String `tfsdk:"name"`
@@ -60,7 +60,7 @@ func (r *WorkflowJobTemplateApprovalNode) Schema(ctx context.Context, req resour
 		Description: "To add an approval node/step to an existing workflow job template a new node will be created and a small template will be added to that node. You'll need to create an awx_workflow_job_template_node_success resource (or always/failure) in order to make this approval node execute in the sequence you want your visualizer nodes to run.",
 
 		Attributes: map[string]schema.Attribute{
-			"node_id": schema.StringAttribute{
+			"id": schema.StringAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -195,7 +195,7 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 
 	idAsString := strconv.Itoa(tmp.Id)
 
-	data.NodeId = types.StringValue(idAsString)
+	data.Id = types.StringValue(idAsString)
 
 	////////////////////////////////////////////////////
 	// Now we create a new approval template on that node
@@ -290,11 +290,11 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 
 	/// read the node's workflow template ID first
 	//set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
@@ -485,11 +485,11 @@ func (r *WorkflowJobTemplateApprovalNode) Delete(ctx context.Context, req resour
 		return
 	}
 	// set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
@@ -527,5 +527,5 @@ func (r *WorkflowJobTemplateApprovalNode) Delete(ctx context.Context, req resour
 }
 
 func (r *WorkflowJobTemplateApprovalNode) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("node_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

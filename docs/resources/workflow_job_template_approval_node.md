@@ -37,7 +37,7 @@ resource "awx_workflow_job_template_approval_node" "example_node" {
 ### Read-Only
 
 - `approval_template_id` (Number) The unique ID for this approval template.
-- `node_id` (String) The unique ID for this node.
+- `id` (String) The unique ID for this node.
 
 ## Import
 

@@ -30,7 +30,7 @@ type WorkflowJobTemplatesNodeLabelResource struct {
 
 // WorkflowJobTemplatesNodeLabelResourceModel describes the resource data model.
 type WorkflowJobTemplatesNodeLabelResourceModel struct {
-	NodeId   types.String `tfsdk:"node_id"`
+	Id       types.String `tfsdk:"id"`
 	LabelIDs types.List   `tfsdk:"label_ids"`
 }
 
@@ -43,7 +43,7 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Schema(ctx context.Context, req 
 		Description: "Specify a node ID and then a list of the lable IDs that are associated to this node.",
 
 		Attributes: map[string]schema.Attribute{
-			"node_id": schema.StringAttribute{
+			"id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the containing workflow job template node.",
 			},
@@ -85,11 +85,11 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Create(ctx context.Context, req 
 		return
 	}
 	// set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
@@ -129,11 +129,11 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Read(ctx context.Context, req re
 	}
 
 	//set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/labels", id)
@@ -220,9 +220,9 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Update(ctx context.Context, req 
 		return
 	}
 
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.NodeId.ValueString()))
+		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.Id.ValueString()))
 		return
 	}
 
@@ -324,11 +324,11 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Delete(ctx context.Context, req 
 		return
 	}
 	// set url for create HTTP request
-	id, err := strconv.Atoi(data.NodeId.ValueString())
+	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.NodeId.ValueString()))
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/labels/", id)
@@ -356,5 +356,5 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Delete(ctx context.Context, req 
 }
 
 func (r *WorkflowJobTemplatesNodeLabelResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("node_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
