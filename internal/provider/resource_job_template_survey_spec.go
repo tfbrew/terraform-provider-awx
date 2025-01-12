@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -14,9 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -83,27 +82,15 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"name": schema.StringAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"description": schema.StringAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"spec": schema.ListNestedAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.RequiresReplace(),
-				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"max": schema.Int32Attribute{
@@ -138,8 +125,10 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 							Description: "Set if the survey question is required, defaults to `false`.",
 						},
 						"default": schema.StringAttribute{
+							Default:     stringdefault.StaticString(""),
 							Optional:    true,
-							Description: "Default value for the survey question.",
+							Computed:    true,
+							Description: "Default value for the survey question. Supply a value of \"\" when you want no default value, even for type values that are non-text-based.",
 						},
 						"choices": schema.ListAttribute{
 							ElementType: types.StringType,
@@ -266,7 +255,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -329,63 +317,73 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 		specModel.Min = types.Int32Value(int32(item.Min))
 		specModel.Type = types.StringValue(item.Type)
 
-		itemChoiceKind := reflect.TypeOf(item.Choices).Kind()
+		choiceType := reflect.TypeOf(item.Choices)
 
-		if itemChoiceKind == reflect.Slice {
+		if choiceType != nil {
 
-			choices, ok := item.Choices.([]any)
-			if !ok {
-				resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
-					"Unexpected error in resource_jobtemplate_survey",
-				)
-			}
+			itemChoiceKind := reflect.TypeOf(item.Choices).Kind()
 
-			elements := make([]string, 0, len(choices))
+			if itemChoiceKind == reflect.Slice {
 
-			for _, v := range choices {
-				if strValue, ok := v.(string); ok {
-					elements = append(elements, strValue)
-				} else {
+				choices, ok := item.Choices.([]any)
+				if !ok {
 					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
 						"Unexpected error in resource_jobtemplate_survey",
 					)
+				}
+
+				elements := make([]string, 0, len(choices))
+
+				for _, v := range choices {
+					if strValue, ok := v.(string); ok {
+						elements = append(elements, strValue)
+					} else {
+						resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+							"Unexpected error in resource_jobtemplate_survey",
+						)
+						return
+					}
+				}
+
+				listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
+				if diags.HasError() {
 					return
 				}
-			}
 
-			listValue, diags := types.ListValueFrom(ctx, types.StringType, elements)
-			if diags.HasError() {
-				return
+				specModel.Choices = listValue
+			} else {
+				specModel.Choices = types.ListNull(types.StringType)
 			}
-
-			specModel.Choices = listValue
 		} else {
 			specModel.Choices = types.ListNull(types.StringType)
 		}
 
-		itemDefaultKind := reflect.TypeOf(item.Default).Kind()
-		switch itemDefaultKind {
-		case reflect.Float64:
+		itemType := reflect.TypeOf(item.Default)
+		if itemType != nil {
 
-			if defaultValue, ok := item.Default.(float64); ok {
-				specModel.Default = types.StringValue(fmt.Sprint(defaultValue))
-			} else {
-				resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
-					"Unexpected error in resource_jobtemplate_survey",
-				)
-			}
+			itemDefaultKind := reflect.TypeOf(item.Default).Kind()
+			switch itemDefaultKind {
+			case reflect.Float64:
 
-		default:
+				if defaultValue, ok := item.Default.(float64); ok {
+					specModel.Default = types.StringValue(fmt.Sprint(defaultValue))
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+						"Unexpected error in resource_jobtemplate_survey",
+					)
+				}
 
-			if defaultValue, ok := item.Default.(string); ok {
-				specModel.Default = types.StringValue(defaultValue)
-			} else {
-				resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
-					"Unexpected error in resource_jobtemplate_survey",
-				)
+			default:
+
+				if defaultValue, ok := item.Default.(string); ok {
+					specModel.Default = types.StringValue(defaultValue)
+				} else {
+					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
+						"Unexpected error in resource_jobtemplate_survey",
+					)
+				}
 			}
 		}
-
 		specModel.Required = types.BoolValue(item.Required)
 		specModel.QuestionName = types.StringValue(item.QuestionName)
 		specModel.QuestionDescription = types.StringValue(item.QuestionDescription)
@@ -405,18 +403,101 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := r.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update example, got error: %s", err))
-	//     return
-	// }
+	// set url for create HTTP request
+	id, err := strconv.Atoi(data.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable convert id from string to int",
+			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+	}
+
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+
+	// get body data for HTTP request
+	var bodyData JobTemplateSurvey
+	bodyData.Name = data.Name.ValueString()
+	bodyData.Description = data.Description.ValueString()
+
+	var specs []SurveySpec
+	for _, spec := range data.Spec {
+
+		// convert choices to slice of strings
+		stringSlice := make([]string, 0, len(spec.Choices.Elements()))
+		diag := spec.Choices.ElementsAs(ctx, &stringSlice, true)
+		resp.Diagnostics.Append(diag...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// convert to interface{} type
+		var finalList interface{} = stringSlice
+
+		specBuilt := SurveySpec{
+			Type:                spec.Type.ValueString(),
+			QuestionName:        spec.QuestionName.ValueString(),
+			QuestionDescription: spec.QuestionDescription.ValueString(),
+			Variable:            spec.Variable.ValueString(),
+			Required:            spec.Required.ValueBool(),
+			Max:                 int(spec.Max.ValueInt32()),
+			Min:                 int(spec.Min.ValueInt32()),
+			Choices:             finalList,
+		}
+
+		stringTypes := []string{"text", "textarea", "multiplechoice", "multipleselect", "password"}
+		numberTypes := []string{"integer", "float"}
+
+		switch {
+		case slices.Contains(stringTypes, specBuilt.Type):
+			specBuilt.Default = spec.Default.ValueString()
+		case slices.Contains(numberTypes, specBuilt.Type) && spec.Default.ValueString() != "":
+			defaultNumber, err := strconv.Atoi(spec.Default.ValueString())
+			if err != nil {
+				resp.Diagnostics.AddError("uanble to convert to integer", err.Error())
+				return
+			}
+			specBuilt.Default = defaultNumber
+		default:
+			specBuilt.Default = ""
+		}
+
+		specs = append(specs, specBuilt)
+	}
+
+	bodyData.Spec = specs
+
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+	}
+
+	// create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+
+	}
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
