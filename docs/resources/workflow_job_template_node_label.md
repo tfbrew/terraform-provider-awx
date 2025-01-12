@@ -14,6 +14,7 @@ Specify a node ID and then a list of the lable IDs that are associated to this n
 
 ```terraform
 resource "awx_workflow_job_template_node_label" "example_node_label" {
+  id        = 1
   label_ids = [322, 121]
 }
 ```

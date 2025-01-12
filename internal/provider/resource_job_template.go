@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -365,14 +364,14 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 	}
 }
 
-func (d JobTemplateResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
-	return []resource.ConfigValidator{
-		resourcevalidator.ExactlyOneOf(
-			path.MatchRoot("inventory"),
-			path.MatchRoot("ask_inventory_on_launch"),
-		),
-	}
-}
+// func (d JobTemplateResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+// 	return []resource.ConfigValidator{
+// 		resourcevalidator.ExactlyOneOf(
+// 			path.MatchRoot("inventory"),
+// 			path.MatchRoot("ask_inventory_on_launch"),
+// 		),
+// 	}
+// }
 
 func (r *JobTemplateResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {

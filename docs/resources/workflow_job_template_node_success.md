@@ -14,8 +14,8 @@ Specify a node ID and then a list of node IDs that should run when this one ends
 
 ```terraform
 resource "awx_workflow_job_template_node_success" "example_node_success" {
-  id               = 201
-  success_node_ids = [241, 914]
+  id          = 201
+  success_ids = [241, 914]
 }
 ```
 
