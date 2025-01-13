@@ -198,14 +198,14 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
+			"Unable to get all data out of the http response data body",
 			fmt.Sprintf("Body got %v. ", body))
 	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshall response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 	}
 

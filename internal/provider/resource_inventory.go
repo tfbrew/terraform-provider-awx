@@ -14,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -42,6 +44,9 @@ func (r *InventoryResource) Schema(ctx context.Context, req resource.SchemaReque
 			"id": schema.StringAttribute{
 				Description: "Inventory ID.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Inventory name.",
@@ -303,7 +308,6 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 			return
 		}
 	}
-
 }
 
 func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -321,7 +325,7 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v.", data.Id))
+			fmt.Sprintf("Unable to convert id: %v.", data))
 		return
 	}
 
