@@ -364,14 +364,31 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 	}
 }
 
-// func (d JobTemplateResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
-// 	return []resource.ConfigValidator{
-// 		resourcevalidator.ExactlyOneOf(
-// 			path.MatchRoot("inventory"),
-// 			path.MatchRoot("ask_inventory_on_launch"),
-// 		),
-// 	}
-// }
+func (r JobTemplateResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data JobTemplateResourceModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If inventory is set, return without warning.
+	if !data.Inventory.IsNull() {
+		return
+	}
+
+	// If ask_inventory_on_launch is true, return without warning.
+	if data.AskInventoryOnLaunch.ValueBool() {
+		return
+	}
+
+	resp.Diagnostics.AddAttributeError(
+		path.Root("inventory"),
+		"Missing Attribute Configuration",
+		"Expected inventory to be specified or ask_inventory_on_launch = true.",
+	)
+}
 
 func (r *JobTemplateResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
@@ -645,11 +662,19 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
 		return
-
 	}
 
 	if httpResp.StatusCode == 404 {

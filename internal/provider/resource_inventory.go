@@ -9,69 +9,86 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &OrganizationResource{}
-var _ resource.ResourceWithImportState = &OrganizationResource{}
+var _ resource.Resource = &InventoryResource{}
+var _ resource.ResourceWithImportState = &InventoryResource{}
 
-func NewOrganizationResource() resource.Resource {
-	return &OrganizationResource{}
+func NewInventoryResource() resource.Resource {
+	return &InventoryResource{}
 }
 
-// OrganizationResource defines the resource implementation.
-type OrganizationResource struct {
+// InventoryResource defines the resource implementation.
+type InventoryResource struct {
 	client *AwxClient
 }
 
-func (r *OrganizationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_organization"
+func (r *InventoryResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_inventory"
 }
 
-func (r *OrganizationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *InventoryResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `Manage an AWX organization.`,
+		Description: `Manage an AWX inventory.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Inventory ID.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
+				Description: "Inventory name.",
 				Required:    true,
-				Description: "The name of the organization.",
 			},
 			"description": schema.StringAttribute{
+				Description: "Inventory description.",
 				Optional:    true,
-				Description: "Organization description.",
 			},
-			"custom_virtualenv": schema.StringAttribute{
-				Optional:    true,
-				Description: "Local absolute file path containing a custom Python virtualenv to use.",
+			"organization": schema.Int32Attribute{
+				Description: "Organization ID for the inventory to live in.",
+				Required:    true,
 			},
-			"default_environment": schema.Int32Attribute{
+			"variables": schema.StringAttribute{
+				Description: "Enter inventory variables using either JSON or YAML syntax.",
 				Optional:    true,
-				Description: "The fallback execution environment that will be used for jobs inside of this organization if not explicitly assigned at the project, job template or workflow level.",
 			},
-			"max_hosts": schema.Int32Attribute{
+			"kind": schema.StringAttribute{
+				Description: "Set to `smart` for smart inventories",
 				Optional:    true,
-				Description: "Maximum number of hosts allowed to be managed by this organization.",
-				Default:     int32default.StaticInt32(0),
-				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"smart"}...),
+				},
+			},
+			"host_filter": schema.StringAttribute{
+				Description: "Populate the hosts for this inventory by using a search filter. Example: ansible_facts__ansible_distribution:\"RedHat\".",
+				Optional:    true,
 			},
 		},
 	}
 }
 
-func (r *OrganizationResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (d InventoryResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.RequiredTogether(
+			path.MatchRoot("kind"),
+			path.MatchRoot("host_filter"),
+		),
+	}
+}
+
+func (r *InventoryResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -89,8 +106,8 @@ func (r *OrganizationResource) Configure(ctx context.Context, req resource.Confi
 	r.client = configureData
 }
 
-func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data OrganizationModel
+func (r *InventoryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data InventoryModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -101,7 +118,7 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 
 	// set url for create HTTP request
 
-	var bodyData OrganizationAPIModel
+	var bodyData InventoryAPIModel
 
 	if !(data.Name.IsNull()) {
 		bodyData.Name = data.Name.ValueString()
@@ -109,14 +126,17 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
 	}
-	if !(data.CustomVirtualEnv.IsNull()) {
-		bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
+	if !(data.Organization.IsNull()) {
+		bodyData.Organization = int(data.Organization.ValueInt32())
 	}
-	if !(data.DefaultEnv.IsNull()) {
-		bodyData.DefaultEnv = int(data.DefaultEnv.ValueInt32())
+	if !(data.Variables.IsNull()) {
+		bodyData.Variables = data.Variables.ValueString()
 	}
-	if !(data.MaxHosts.IsNull()) {
-		bodyData.MaxHosts = int(data.MaxHosts.ValueInt32())
+	if !(data.Kind.IsNull()) {
+		bodyData.Kind = data.Kind.ValueString()
+	}
+	if !(data.HostFilter.IsNull()) {
+		bodyData.HostFilter = data.HostFilter.ValueString()
 	}
 
 	jsonData, err := json.Marshal(bodyData)
@@ -127,7 +147,7 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	url := r.client.endpoint + "/api/v2/organizations/"
+	url := r.client.endpoint + "/api/v2/inventories/"
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
@@ -145,7 +165,7 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to create organization, got error: %s", err))
+			fmt.Sprintf("Unable to create inventory, got error: %s", err))
 		return
 	}
 	if httpResp.StatusCode != 201 {
@@ -163,14 +183,14 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	httpRespBodyData, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get http response body to get newly created organization ID",
+			"Unable to get http response body to get newly created inventory ID",
 			fmt.Sprintf("Error: %v", err))
 		return
 	}
 	err = json.Unmarshal(httpRespBodyData, &tmp)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to unmarshal http response to get newly created organization ID",
+			"Unable to unmarshal http response to get newly created inventory ID",
 			fmt.Sprintf("Error: %v", err))
 		return
 	}
@@ -183,8 +203,8 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data OrganizationModel
+func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data InventoryModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -201,7 +221,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 			fmt.Sprintf("Unable to convert id: %v.", data.Id))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/organizations/%d/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -219,7 +239,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to read organization, got error: %v", err))
+			fmt.Sprintf("Unable to read inventory, got error: %v", err))
 		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
@@ -243,7 +263,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	var responseData OrganizationAPIModel
+	var responseData InventoryAPIModel
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -275,25 +295,37 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 		}
 	}
 
-	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), responseData.CustomVirtualEnv)...)
+	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.DefaultEnv.IsNull() && responseData.DefaultEnv == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("default_environment"), responseData.DefaultEnv)...)
+	if !(data.Variables.IsNull() && responseData.Variables == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("variables"), responseData.Variables)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("max_hosts"), responseData.MaxHosts)...)
+	if !(data.Kind.IsNull() && responseData.Kind == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("kind"), responseData.Kind)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.HostFilter.IsNull() && responseData.HostFilter == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host_filter"), responseData.HostFilter)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
 }
 
-func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data OrganizationModel
+func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data InventoryModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -307,11 +339,11 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v.", data.Id))
+			fmt.Sprintf("Unable to convert id: %v.", data))
 		return
 	}
 
-	var bodyData OrganizationAPIModel
+	var bodyData InventoryAPIModel
 
 	if !(data.Name.IsNull()) {
 		bodyData.Name = data.Name.ValueString()
@@ -319,14 +351,17 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
 	}
-	if !(data.CustomVirtualEnv.IsNull()) {
-		bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
+	if !(data.Organization.IsNull()) {
+		bodyData.Organization = int(data.Organization.ValueInt32())
 	}
-	if !(data.DefaultEnv.IsNull()) {
-		bodyData.DefaultEnv = int(data.DefaultEnv.ValueInt32())
+	if !(data.Variables.IsNull()) {
+		bodyData.Variables = data.Variables.ValueString()
 	}
-	if !(data.MaxHosts.IsNull()) {
-		bodyData.MaxHosts = int(data.MaxHosts.ValueInt32())
+	if !(data.Kind.IsNull()) {
+		bodyData.Kind = data.Kind.ValueString()
+	}
+	if !(data.HostFilter.IsNull()) {
+		bodyData.HostFilter = data.HostFilter.ValueString()
 	}
 
 	jsonData, err := json.Marshal(bodyData)
@@ -337,7 +372,7 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/organizations/%d/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
@@ -355,7 +390,7 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to update organization, got error: %s", err))
+			fmt.Sprintf("Unable to update inventory, got error: %s", err))
 		return
 	}
 	if httpResp.StatusCode != 200 {
@@ -369,8 +404,8 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data OrganizationModel
+func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data InventoryModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -387,7 +422,7 @@ func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRe
 			fmt.Sprintf("Unable to convert id: %v.", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/organizations/%d/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
@@ -405,17 +440,19 @@ func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to delete organization, got error: %s.", err))
+			fmt.Sprintf("Unable to delete inventory, got error: %s.", err))
 		return
 	}
-	if httpResp.StatusCode != 204 {
+
+	// 202 - accepted for deletion, 204 - success
+	if httpResp.StatusCode != 202 && httpResp.StatusCode != 204 {
 		resp.Diagnostics.AddError(
 			"Bad request status code",
-			fmt.Sprintf("Expected 204, got %v.", httpResp.StatusCode))
+			fmt.Sprintf("Expected [202, 204], got %v.", httpResp.StatusCode))
 		return
 	}
 }
 
-func (r *OrganizationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *InventoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

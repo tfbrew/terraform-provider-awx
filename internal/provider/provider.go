@@ -110,14 +110,15 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewJobTemplateSurveyResource,
-		NewJobTemplateResource,
+		NewInventoryResource,
 		NewJobTemplateCredentialResource,
-		NewLabelsResource,
-		NewJobTemplateLabelsResource,
 		NewJobTemplateInstanceGroupsResource,
-		NewNotificationTemplatesResource,
+		NewJobTemplateLabelsResource,
 		NewJobTemplateNotifTemplErrResource,
+		NewJobTemplateResource,
+		NewJobTemplateSurveyResource,
+		NewLabelsResource,
+		NewNotificationTemplatesResource,
 		NewOrganizationResource,
 		NewWorkflowJobTemplatesResource,
 		NewWorkflowJobTemplatesJobNodeResource,
@@ -132,6 +133,7 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 	return []func() datasource.DataSource{
 		NewCredentialDataSource,
 		NewExecutionEnvironmentDataSource,
+		NewInventoryDataSource,
 		NewInstanceGroupDataSource,
 		NewOrganizationDataSource,
 	}
