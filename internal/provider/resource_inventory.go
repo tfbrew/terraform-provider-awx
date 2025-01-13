@@ -242,10 +242,24 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 			fmt.Sprintf("Unable to read inventory, got error: %v", err))
 		return
 	}
-	if httpResp.StatusCode != 200 {
+	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected 200, got %v.", httpResp.StatusCode))
+			"Bad request status code.",
+			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
+		return
+	}
+
+	if httpResp.StatusCode == 404 {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
@@ -429,10 +443,12 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 			fmt.Sprintf("Unable to delete inventory, got error: %s.", err))
 		return
 	}
-	if httpResp.StatusCode != 204 {
+
+	// 202 - accepted for deletion, 204 - success
+	if httpResp.StatusCode != 202 && httpResp.StatusCode != 204 {
 		resp.Diagnostics.AddError(
 			"Bad request status code",
-			fmt.Sprintf("Expected 204, got %v.", httpResp.StatusCode))
+			fmt.Sprintf("Expected [202, 204], got %v.", httpResp.StatusCode))
 		return
 	}
 }
