@@ -41,7 +41,7 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Description: "Project name.",
 				Computed:    true,
 			},
-			"organization": schema.Int64Attribute{
+			"organization": schema.Int32Attribute{
 				Description: "Organization ID for the project to live in.",
 				Computed:    true,
 			},
@@ -53,7 +53,7 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Description: "Project description.",
 				Computed:    true,
 			},
-			"allow_override": schema.StringAttribute{
+			"allow_override": schema.BoolAttribute{
 				Description: "Allow changing the Source Control branch or revision in a job template that uses this project.",
 				Computed:    true,
 			},
@@ -87,10 +87,6 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 			},
 			"scm_track_submodules": schema.BoolAttribute{
 				Description: "Track submodules latest commit on specified branch.",
-				Computed:    true,
-			},
-			"scm_update_cache_timeout": schema.Int32Attribute{
-				Description: "Cache Timeout to cache prior project syncs for a certain number of seconds. Only valid if scm_update_on_launch is to True, otherwise ignored.",
 				Computed:    true,
 			},
 			"scm_update_on_launch": schema.BoolAttribute{
@@ -206,8 +202,8 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		data.Description = types.StringValue(responseData.Description)
 	}
 
-	if responseData.AllowOverride != "" {
-		data.AllowOverride = types.StringValue(responseData.AllowOverride)
+	if responseData.AllowOverride {
+		data.AllowOverride = types.BoolValue(responseData.AllowOverride)
 	}
 
 	if responseData.Credential != 0 {
@@ -240,10 +236,6 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	if responseData.ScmTrackSubmodules {
 		data.ScmTrackSubmodules = types.BoolValue(responseData.ScmTrackSubmodules)
-	}
-
-	if responseData.ScmUpdCacheTimeout != 0 {
-		data.ScmUpdCacheTimeout = types.Int32Value(int32(responseData.ScmUpdCacheTimeout))
 	}
 
 	if responseData.ScmUpdOnLaunch {

@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -67,9 +67,11 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Description: "Project description.",
 				Optional:    true,
 			},
-			"allow_override": schema.StringAttribute{
+			"allow_override": schema.BoolAttribute{
 				Description: "Allow changing the Source Control branch or revision in a job template that uses this project.",
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
 			},
 			"credential": schema.Int32Attribute{
 				Description: "Source Control credential ID.",
@@ -90,10 +92,14 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"scm_clean": schema.BoolAttribute{
 				Description: "Remove any local modifications prior to performing an update.",
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
 			},
 			"scm_delete_on_update": schema.BoolAttribute{
 				Description: "Delete the local repository in its entirety prior to performing an update. Depending on the size of the repository this may significantly increase the amount of time required to complete an update.",
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
 			},
 			"scm_refspec": schema.StringAttribute{
 				Description: "The refspec to use for the SCM resource.",
@@ -102,20 +108,166 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"scm_track_submodules": schema.BoolAttribute{
 				Description: "Track submodules latest commit on specified branch.",
 				Optional:    true,
-			},
-			"scm_update_cache_timeout": schema.Int32Attribute{
-				Description: "Cache Timeout to cache prior project syncs for a certain number of seconds. Only valid if scm_update_on_launch is to True, otherwise ignored.",
-				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
 			},
 			"scm_update_on_launch": schema.BoolAttribute{
 				Description: "Perform an update to the local repository before launching a job with this project.",
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
+				Computed:    true,
 			},
 			"scm_url": schema.StringAttribute{
 				Description: "Example URLs for Remote Archive Source Control include: `https://github.com/username/project/archive/v0.0.1.tar.gz` `https://github.com/username/project/archive/v0.0.2.zip`",
 				Optional:    true,
 			},
 		},
+	}
+}
+
+func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data ProjectModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Required attribute validation.
+
+	// credential
+	if data.ScmType.String() == "insights" {
+		if data.Credential.String() == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("credential"),
+				"Missing Attribute Configuration",
+				"insights Source Control Type requires local_path to be set",
+			)
+		}
+	}
+
+	// local_path
+	if data.ScmType.String() == "manual" {
+		if data.LocalPath.String() == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("local_path"),
+				"Missing Attribute Configuration",
+				"manual Source Control Type requires local_path to be set",
+			)
+		}
+	}
+
+	// scm_url
+	if data.ScmType.String() == "git" || data.ScmType.String() == "svn" || data.ScmType.String() == "archive" {
+		if data.ScmUrl.String() == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("scm_url"),
+				"Missing Attribute Configuration",
+				"[git, svn, archive] Source Control Types requires scm_url to be set",
+			)
+		}
+	}
+
+	// Not allowed validation.
+
+	// allow_override
+	if data.ScmType.String() == "manual" || data.ScmType.String() == "insights" {
+		if data.AllowOverride.ValueBool() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("allow_override"),
+				"Attribute Configuration Error",
+				"allow_override should not be set for [manual, insights] Source Control Types",
+			)
+		}
+	}
+
+	// credential
+	if data.ScmType.String() == "manual" {
+		if data.Credential.String() != "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("credential"),
+				"Attribute Configuration Error",
+				"credential should not be set for Manual Source Control Type",
+			)
+		}
+	}
+
+	// local_path
+	if data.ScmType.String() == "git" || data.ScmType.String() == "svn" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
+		if data.LocalPath.String() != "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("local_path"),
+				"Attribute Configuration Error",
+				"local_path should not be set for [git, svn, insights, archive] Source Control Types",
+			)
+		}
+	}
+
+	// scm_branch
+	if data.ScmType.String() == "manual" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
+		if data.ScmBranch.String() != "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("scm_branch"),
+				"Attribute Configuration Error",
+				"scm_branch should not be set for [manual, insights, archive] Source Control Types",
+			)
+		}
+	}
+
+	// scm_clean
+	if data.ScmType.String() == "manual" {
+		if data.ScmClean.ValueBool() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("scm_clean"),
+				"Attribute Configuration Error",
+				"scm_clean should not be set for manual Source Control Type",
+			)
+		}
+	}
+
+	// scm_del_on_update
+	if data.ScmType.String() == "manual" {
+		if data.ScmDelOnUpdate.ValueBool() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("scm_del_on_update"),
+				"Attribute Configuration Error",
+				"scm_del_on_update should not be set for manual Source Control Type",
+			)
+		}
+	}
+
+	// scm_refspec
+	if data.ScmType.String() == "manual" || data.ScmType.String() == "svn" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
+		if data.ScmRefSpec.String() != "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("scm_refspec"),
+				"Attribute Configuration Error",
+				"scm_refspec should not be set for [manual, svn, insights, archive] Source Control Types",
+			)
+		}
+	}
+
+	// scm_track_submodules
+	if data.ScmType.String() == "manual" || data.ScmType.String() == "svn" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
+		if data.ScmTrackSubmodules.ValueBool() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("scm_track_submodules"),
+				"Attribute Configuration Error",
+				"scm_track_submodules should not be set for [manual, svn, insights, archive] Source Control Types",
+			)
+		}
+	}
+
+	// scm_update_on_launch
+	if data.ScmType.String() == "manual" {
+		if data.ScmUpdOnLaunch.ValueBool() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("scm_update_on_launch"),
+				"Attribute Configuration Error",
+				"scm_update_on_launch should not be set for manual Source Control Type",
+			)
+		}
 	}
 }
 
@@ -151,23 +303,45 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	var bodyData ProjectAPIModel
 
-	if !(data.Name.IsNull()) {
-		bodyData.Name = data.Name.ValueString()
-	}
+	bodyData.Name = data.Name.ValueString()
+	bodyData.Organization = int(data.Organization.ValueInt32())
+	bodyData.ScmType = data.ScmType.ValueString()
+
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
 	}
-	if !(data.Organization.IsNull()) {
-		bodyData.Organization = int(data.Organization.ValueInt32())
+	if !(data.AllowOverride.IsNull()) {
+		bodyData.AllowOverride = data.AllowOverride.ValueBool()
 	}
-	if !(data.Variables.IsNull()) {
-		bodyData.Variables = data.Variables.ValueString()
+	if !(data.Credential.IsNull()) {
+		bodyData.Credential = int(data.Credential.ValueInt32())
 	}
-	if !(data.Kind.IsNull()) {
-		bodyData.Kind = data.Kind.ValueString()
+	if !(data.DefaultEnv.IsNull()) {
+		bodyData.DefaultEnv = int(data.DefaultEnv.ValueInt32())
 	}
-	if !(data.HostFilter.IsNull()) {
-		bodyData.HostFilter = data.HostFilter.ValueString()
+	if !(data.LocalPath.IsNull()) {
+		bodyData.LocalPath = data.LocalPath.ValueString()
+	}
+	if !(data.ScmBranch.IsNull()) {
+		bodyData.ScmBranch = data.ScmBranch.ValueString()
+	}
+	if !(data.ScmClean.IsNull()) {
+		bodyData.ScmClean = data.ScmClean.ValueBool()
+	}
+	if !(data.ScmDelOnUpdate.IsNull()) {
+		bodyData.ScmDelOnUpdate = data.ScmDelOnUpdate.ValueBool()
+	}
+	if !(data.ScmRefSpec.IsNull()) {
+		bodyData.ScmRefSpec = data.ScmRefSpec.ValueString()
+	}
+	if !(data.ScmTrackSubmodules.IsNull()) {
+		bodyData.ScmTrackSubmodules = data.ScmTrackSubmodules.ValueBool()
+	}
+	if !(data.ScmUpdOnLaunch.IsNull()) {
+		bodyData.ScmUpdOnLaunch = data.ScmUpdOnLaunch.ValueBool()
+	}
+	if !(data.ScmUrl.IsNull()) {
+		bodyData.ScmUrl = data.ScmUrl.ValueString()
 	}
 
 	jsonData, err := json.Marshal(bodyData)
@@ -312,12 +486,9 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_type"), responseData.ScmType)...)
 
 	if !(data.Description.IsNull() && responseData.Description == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
@@ -326,29 +497,78 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		}
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
+	if !(data.AllowOverride.IsNull()) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_override"), responseData.AllowOverride)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Variables.IsNull() && responseData.Variables == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("variables"), responseData.Variables)...)
+	if !(data.Credential.IsNull() && responseData.Credential == 0) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("credential"), responseData.Credential)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Kind.IsNull() && responseData.Kind == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("kind"), responseData.Kind)...)
+	if !(data.DefaultEnv.IsNull() && responseData.DefaultEnv == 0) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("default_environment"), responseData.DefaultEnv)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.HostFilter.IsNull() && responseData.HostFilter == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host_filter"), responseData.HostFilter)...)
+	if !(data.LocalPath.IsNull() && responseData.LocalPath == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("local_path"), responseData.LocalPath)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.ScmBranch.IsNull() && responseData.ScmBranch == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.ScmClean.IsNull()) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_clean"), responseData.ScmClean)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.ScmDelOnUpdate.IsNull()) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_delete_on_update"), responseData.ScmDelOnUpdate)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.ScmRefSpec.IsNull() && responseData.ScmRefSpec == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_refspec"), responseData.ScmRefSpec)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.ScmTrackSubmodules.IsNull()) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_track_submodules"), responseData.ScmTrackSubmodules)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.ScmUpdOnLaunch.IsNull()) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_update_on_launch"), responseData.ScmUpdOnLaunch)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !(data.ScmUrl.IsNull() && responseData.ScmUrl == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_url"), responseData.ScmUrl)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -376,23 +596,45 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	var bodyData ProjectAPIModel
 
-	if !(data.Name.IsNull()) {
-		bodyData.Name = data.Name.ValueString()
-	}
+	bodyData.Name = data.Name.ValueString()
+	bodyData.Organization = int(data.Organization.ValueInt32())
+	bodyData.ScmType = data.ScmType.ValueString()
+
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
 	}
-	if !(data.Organization.IsNull()) {
-		bodyData.Organization = int(data.Organization.ValueInt32())
+	if !(data.AllowOverride.IsNull()) {
+		bodyData.AllowOverride = data.AllowOverride.ValueBool()
 	}
-	if !(data.Variables.IsNull()) {
-		bodyData.Variables = data.Variables.ValueString()
+	if !(data.Credential.IsNull()) {
+		bodyData.Credential = int(data.Credential.ValueInt32())
 	}
-	if !(data.Kind.IsNull()) {
-		bodyData.Kind = data.Kind.ValueString()
+	if !(data.DefaultEnv.IsNull()) {
+		bodyData.DefaultEnv = int(data.DefaultEnv.ValueInt32())
 	}
-	if !(data.HostFilter.IsNull()) {
-		bodyData.HostFilter = data.HostFilter.ValueString()
+	if !(data.LocalPath.IsNull()) {
+		bodyData.LocalPath = data.LocalPath.ValueString()
+	}
+	if !(data.ScmBranch.IsNull()) {
+		bodyData.ScmBranch = data.ScmBranch.ValueString()
+	}
+	if !(data.ScmClean.IsNull()) {
+		bodyData.ScmClean = data.ScmClean.ValueBool()
+	}
+	if !(data.ScmDelOnUpdate.IsNull()) {
+		bodyData.ScmDelOnUpdate = data.ScmDelOnUpdate.ValueBool()
+	}
+	if !(data.ScmRefSpec.IsNull()) {
+		bodyData.ScmRefSpec = data.ScmRefSpec.ValueString()
+	}
+	if !(data.ScmTrackSubmodules.IsNull()) {
+		bodyData.ScmTrackSubmodules = data.ScmTrackSubmodules.ValueBool()
+	}
+	if !(data.ScmUpdOnLaunch.IsNull()) {
+		bodyData.ScmUpdOnLaunch = data.ScmUpdOnLaunch.ValueBool()
+	}
+	if !(data.ScmUrl.IsNull()) {
+		bodyData.ScmUrl = data.ScmUrl.ValueString()
 	}
 
 	jsonData, err := json.Marshal(bodyData)

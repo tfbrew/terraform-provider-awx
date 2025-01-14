@@ -81,16 +81,15 @@ type ProjectModel struct {
 	Organization       types.Int32  `tfsdk:"organization"`
 	ScmType            types.String `tfsdk:"scm_type"`
 	Description        types.String `tfsdk:"description"`
-	AllowOverride      types.String `tfsdk:"allow_override"`
+	AllowOverride      types.Bool   `tfsdk:"allow_override"`
 	Credential         types.Int32  `tfsdk:"credential"`
 	DefaultEnv         types.Int32  `tfsdk:"default_environment"`
 	LocalPath          types.String `tfsdk:"local_path"`
-	ScmBranch          types.String `tfsdk:"kind"`
+	ScmBranch          types.String `tfsdk:"scm_branch"`
 	ScmClean           types.Bool   `tfsdk:"scm_clean"`
 	ScmDelOnUpdate     types.Bool   `tfsdk:"scm_delete_on_update"`
 	ScmRefSpec         types.String `tfsdk:"scm_refspec"`
 	ScmTrackSubmodules types.Bool   `tfsdk:"scm_track_submodules"`
-	ScmUpdCacheTimeout types.Int32  `tfsdk:"scm_update_cache_timeout"`
 	ScmUpdOnLaunch     types.Bool   `tfsdk:"scm_update_on_launch"`
 	ScmUrl             types.String `tfsdk:"scm_url"`
 }
@@ -101,7 +100,7 @@ type ProjectAPIModel struct {
 	Organization       int    `json:"organization"`
 	ScmType            string `json:"scm_type"`
 	Description        string `json:"description,omitempty"`
-	AllowOverride      string `json:"allow_override,omitempty"`
+	AllowOverride      bool   `json:"allow_override,omitempty"`
 	Credential         int    `json:"credential,omitempty"`
 	DefaultEnv         int    `json:"default_environment,omitempty"`
 	LocalPath          string `json:"local_path,omitempty"`
@@ -110,7 +109,6 @@ type ProjectAPIModel struct {
 	ScmDelOnUpdate     bool   `json:"scm_delete_on_update,omitempty"`
 	ScmRefSpec         string `json:"scm_refspec,omitempty"`
 	ScmTrackSubmodules bool   `json:"scm_track_submodules,omitempty"`
-	ScmUpdCacheTimeout int    `json:"scm_update_cache_timeout"`
 	ScmUpdOnLaunch     bool   `json:"scm_update_on_launch,omitempty"`
 	ScmUrl             string `json:"scm_url,omitempty"`
 }
