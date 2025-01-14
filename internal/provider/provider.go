@@ -136,6 +136,7 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewInventoryDataSource,
 		NewInstanceGroupDataSource,
 		NewOrganizationDataSource,
+		NewProjectDataSource,
 	}
 }
 
