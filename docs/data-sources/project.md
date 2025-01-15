@@ -31,7 +31,7 @@ data "awx_project" "example" {
 - `credential` (Number) Source Control credential ID.
 - `default_environment` (Number) The ID of the execution environment that will be used for jobs that use this project.
 - `description` (String) Project description.
-- `local_path` (String) The server playbook directory for manual projects.
+- `local_path` (String) Select from the list of directories found in the Project Base Path. Together the base path and the playbook directory provide the full path used to locate playbooks.
 - `name` (String) Project name.
 - `organization` (Number) Organization ID for the project to live in.
 - `scm_branch` (String) The branch name in source control.

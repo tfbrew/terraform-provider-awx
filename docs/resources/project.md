@@ -13,29 +13,48 @@ Manage an AWX project.
 ## Example Usage
 
 ```terraform
-data "awx_organization" "example" {
-  name = "Default"
+resource "awx_organization" "example" {
+  name        = "example"
+  description = "example"
 }
 
 resource "awx_project" "example-git" {
   name         = "example_git"
-  organization = data.awx_organization.example
+  organization = awx_organization.example.id
   scm_type     = "git"
   scm_url      = "git@github.com:user/repo.git"
 }
 
 resource "awx_project" "example-svn" {
   name         = "example_svn"
-  organization = data.awx_organization.example
+  organization = awx_organization.example.id
   scm_type     = "svn"
   scm_url      = "svn://<your_ip>/<repository_name>"
 }
 
+resource "awx_project" "example-archive" {
+  name         = "example_archive"
+  organization = awx_organization.example.id
+  scm_type     = "archive"
+  scm_url      = "https://github.com/user/repo"
+}
+
 resource "awx_project" "example-manual" {
   name         = "example_manual"
-  organization = data.awx_organization.example
+  organization = awx_organization.example.id
   scm_type     = "manual"
-  local_path   = "playbook_directory"
+  local_path   = "directory/on/awx"
+}
+
+data "awx_credential" "example-insights" {
+  id = "1"
+}
+
+resource "awx_project" "example-insights" {
+  name         = "example_insights"
+  organization = awx_organization.example.id
+  scm_type     = "insights"
+  credential   = data.awx_credential.example_insights.id
 }
 ```
 
@@ -54,7 +73,7 @@ resource "awx_project" "example-manual" {
 - `credential` (Number) Source Control credential ID.
 - `default_environment` (Number) The ID of the execution environment that will be used for jobs that use this project.
 - `description` (String) Project description.
-- `local_path` (String) The server playbook directory for manual projects.
+- `local_path` (String) Select from the list of directories found in the Project Base Path. Together the base path and the playbook directory provide the full path used to locate playbooks.
 - `scm_branch` (String) The branch name in source control.
 - `scm_clean` (Boolean) Remove any local modifications prior to performing an update.
 - `scm_delete_on_update` (Boolean) Delete the local repository in its entirety prior to performing an update. Depending on the size of the repository this may significantly increase the amount of time required to complete an update.

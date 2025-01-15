@@ -82,8 +82,12 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:    true,
 			},
 			"local_path": schema.StringAttribute{
-				Description: "The server playbook directory for manual projects.",
+				Description: "Select from the list of directories found in the Project Base Path. Together the base path and the playbook directory provide the full path used to locate playbooks.",
 				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"scm_branch": schema.StringAttribute{
 				Description: "The branch name in source control.",
@@ -120,6 +124,11 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"scm_url": schema.StringAttribute{
 				Description: "Example URLs for Remote Archive Source Control include: `https://github.com/username/project/archive/v0.0.1.tar.gz` `https://github.com/username/project/archive/v0.0.2.zip`",
 				Optional:    true,
+				//				Default:     stringdefault.StaticString("https://example.org"),
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -137,8 +146,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	// Required attribute validation.
 
 	// credential
-	if data.ScmType.String() == "insights" {
-		if data.Credential.String() == "" {
+	if data.ScmType.ValueString() == "insights" {
+		if data.Credential.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("credential"),
 				"Missing Attribute Configuration",
@@ -148,8 +157,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// local_path
-	if data.ScmType.String() == "manual" {
-		if data.LocalPath.String() == "" {
+	if data.ScmType.ValueString() == "manual" {
+		if data.LocalPath.ValueString() == "" || data.LocalPath.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("local_path"),
 				"Missing Attribute Configuration",
@@ -157,12 +166,6 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 			)
 		}
 	}
-
-	// resp.Diagnostics.AddAttributeError(
-	// 	path.Root("credential"),
-	// 	"Missing Attribute Configuration",
-	// 	fmt.Sprintf("ScmType: %v. ScmUrl %v", data.ScmType.ValueString(), data.ScmUrl),
-	// )
 
 	// scm_url
 	if data.ScmType.ValueString() == "git" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "archive" {
@@ -179,7 +182,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 
 	// allow_override
 	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "insights" {
-		if data.AllowOverride.ValueBool() {
+		if data.AllowOverride.ValueBool() || !data.AllowOverride.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("allow_override"),
 				"Attribute Configuration Error",
@@ -190,7 +193,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 
 	// credential
 	if data.ScmType.ValueString() == "manual" {
-		if data.Credential.ValueString() != "" {
+		if !data.Credential.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("credential"),
 				"Attribute Configuration Error",
@@ -201,7 +204,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 
 	// local_path
 	if data.ScmType.ValueString() == "git" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
-		if data.LocalPath.ValueString() != "" {
+		if data.LocalPath.ValueString() != "" || !data.LocalPath.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("local_path"),
 				"Attribute Configuration Error",
@@ -212,7 +215,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 
 	// scm_branch
 	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
-		if data.ScmBranch.ValueString() != "" {
+		if data.ScmBranch.ValueString() != "" || !data.ScmBranch.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_branch"),
 				"Attribute Configuration Error",
@@ -223,7 +226,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 
 	// scm_clean
 	if data.ScmType.ValueString() == "manual" {
-		if data.ScmClean.ValueBool() {
+		if data.ScmClean.ValueBool() || !data.ScmClean.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_clean"),
 				"Attribute Configuration Error",
@@ -233,8 +236,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_del_on_update
-	if data.ScmType.String() == "manual" {
-		if data.ScmDelOnUpdate.ValueBool() {
+	if data.ScmType.ValueString() == "manual" {
+		if data.ScmDelOnUpdate.ValueBool() || !data.ScmDelOnUpdate.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_del_on_update"),
 				"Attribute Configuration Error",
@@ -244,8 +247,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_refspec
-	if data.ScmType.String() == "manual" || data.ScmType.String() == "svn" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
-		if data.ScmRefSpec.String() != "" {
+	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
+		if data.ScmRefSpec.ValueString() != "" || !data.ScmRefSpec.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_refspec"),
 				"Attribute Configuration Error",
@@ -255,8 +258,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_track_submodules
-	if data.ScmType.String() == "manual" || data.ScmType.String() == "svn" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
-		if data.ScmTrackSubmodules.ValueBool() {
+	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
+		if data.ScmTrackSubmodules.ValueBool() || !data.ScmTrackSubmodules.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_track_submodules"),
 				"Attribute Configuration Error",
@@ -266,8 +269,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_update_on_launch
-	if data.ScmType.String() == "manual" {
-		if data.ScmUpdOnLaunch.ValueBool() {
+	if data.ScmType.ValueString() == "manual" {
+		if data.ScmUpdOnLaunch.ValueBool() || !data.ScmUpdOnLaunch.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_update_on_launch"),
 				"Attribute Configuration Error",
@@ -387,7 +390,9 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	tmp := struct {
-		Id int `json:"id"`
+		Id        int    `json:"id"`
+		LocalPath string `json:"local_path"` // AWX computes local_path for all scm_type except manual
+		ScmUrl    string `json:"scm_url"`    // AWX sets ScmUrl to https://example.org for scm_type insights
 	}{}
 
 	defer httpResp.Body.Close()
@@ -409,6 +414,8 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	idAsString := strconv.Itoa(tmp.Id)
 
 	data.Id = types.StringValue(idAsString)
+	data.LocalPath = types.StringValue(tmp.LocalPath)
+	data.ScmUrl = types.StringValue(tmp.ScmUrl)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

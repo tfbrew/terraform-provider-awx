@@ -16,7 +16,6 @@ Manage an AWX organization.
 resource "awx_organization" "example" {
   name        = "example"
   description = "example"
-  max_hosts   = 0
 }
 ```
 

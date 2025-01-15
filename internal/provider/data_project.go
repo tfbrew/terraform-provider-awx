@@ -66,7 +66,7 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Computed:    true,
 			},
 			"local_path": schema.StringAttribute{
-				Description: "The server playbook directory for manual projects.",
+				Description: "Select from the list of directories found in the Project Base Path. Together the base path and the playbook directory provide the full path used to locate playbooks.",
 				Computed:    true,
 			},
 			"scm_branch": schema.StringAttribute{
