@@ -142,7 +142,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 			resp.Diagnostics.AddAttributeError(
 				path.Root("credential"),
 				"Missing Attribute Configuration",
-				"insights Source Control Type requires local_path to be set",
+				"insights Source Control Type requires credential to be set",
 			)
 		}
 	}
@@ -158,9 +158,15 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 		}
 	}
 
+	// resp.Diagnostics.AddAttributeError(
+	// 	path.Root("credential"),
+	// 	"Missing Attribute Configuration",
+	// 	fmt.Sprintf("ScmType: %v. ScmUrl %v", data.ScmType.ValueString(), data.ScmUrl),
+	// )
+
 	// scm_url
-	if data.ScmType.String() == "git" || data.ScmType.String() == "svn" || data.ScmType.String() == "archive" {
-		if data.ScmUrl.String() == "" {
+	if data.ScmType.ValueString() == "git" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "archive" {
+		if data.ScmUrl.ValueString() == "" || data.ScmUrl.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_url"),
 				"Missing Attribute Configuration",
@@ -172,7 +178,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	// Not allowed validation.
 
 	// allow_override
-	if data.ScmType.String() == "manual" || data.ScmType.String() == "insights" {
+	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "insights" {
 		if data.AllowOverride.ValueBool() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("allow_override"),
@@ -183,8 +189,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// credential
-	if data.ScmType.String() == "manual" {
-		if data.Credential.String() != "" {
+	if data.ScmType.ValueString() == "manual" {
+		if data.Credential.ValueString() != "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("credential"),
 				"Attribute Configuration Error",
@@ -194,8 +200,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// local_path
-	if data.ScmType.String() == "git" || data.ScmType.String() == "svn" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
-		if data.LocalPath.String() != "" {
+	if data.ScmType.ValueString() == "git" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
+		if data.LocalPath.ValueString() != "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("local_path"),
 				"Attribute Configuration Error",
@@ -205,8 +211,8 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_branch
-	if data.ScmType.String() == "manual" || data.ScmType.String() == "insights" || data.ScmType.String() == "archive" {
-		if data.ScmBranch.String() != "" {
+	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
+		if data.ScmBranch.ValueString() != "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_branch"),
 				"Attribute Configuration Error",
@@ -216,7 +222,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_clean
-	if data.ScmType.String() == "manual" {
+	if data.ScmType.ValueString() == "manual" {
 		if data.ScmClean.ValueBool() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_clean"),
