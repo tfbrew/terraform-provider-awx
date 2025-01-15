@@ -14,8 +14,8 @@ The /api/v2/job_templates/{id}/instance_groups/ returns all instance_groups obje
 
 ```terraform
 resource "awx_job_template_instance_group" "default" {
-  instance_group_ids = [1]
-  job_template_id    = 100
+  instance_groups_ids = [1]
+  job_template_id     = 100
 }
 ```
 

@@ -13,11 +13,11 @@ Get organization datasource
 ## Example Usage
 
 ```terraform
-data "awx_instance_group" "example-id" {
+data "awx_organization" "example-id" {
   id = "1"
 }
 
-data "awx_instance_group" "example-name" {
+data "awx_organization" "example-name" {
   name = "Default"
 }
 ```
