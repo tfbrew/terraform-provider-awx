@@ -24,12 +24,12 @@ resource "awx_label" "example" {
 
 ### Required
 
-- `name` (String)
-- `organization` (Number)
+- `name` (String) Label name.
+- `organization` (Number) Organization ID for the label to live in.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Label ID.
 
 ## Import
 

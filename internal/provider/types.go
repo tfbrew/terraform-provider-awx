@@ -37,24 +37,6 @@ type LabelDissasocBody struct {
 	Disassociate bool `json:"disassociate"`
 }
 
-type OrganizationModel struct {
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Description      types.String `tfsdk:"description"`
-	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
-	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
-	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
-}
-
-type OrganizationAPIModel struct {
-	Id               int    `json:"id"`
-	Name             string `json:"name"`
-	Description      string `json:"description,omitempty"`
-	CustomVirtualEnv string `json:"custom_virtualenv,omitempty"`
-	DefaultEnv       int    `json:"default_environment,omitempty"`
-	MaxHosts         int    `json:"max_hosts,omitempty"`
-}
-
 type InventoryModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
@@ -73,6 +55,36 @@ type InventoryAPIModel struct {
 	Variables    string `json:"variables,omitempty"`
 	Kind         string `json:"kind,omitempty"`
 	HostFilter   string `json:"host_filter,omitempty"`
+}
+
+type LabelModel struct {
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Organization types.Int32  `tfsdk:"organization"`
+}
+
+type LabelAPIModel struct {
+	Id           int    `json:"id"`
+	Name         string `json:"name"`
+	Organization int    `json:"organization"`
+}
+
+type OrganizationModel struct {
+	Id               types.String `tfsdk:"id"`
+	Name             types.String `tfsdk:"name"`
+	Description      types.String `tfsdk:"description"`
+	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
+	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
+	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
+}
+
+type OrganizationAPIModel struct {
+	Id               int    `json:"id"`
+	Name             string `json:"name"`
+	Description      string `json:"description,omitempty"`
+	CustomVirtualEnv string `json:"custom_virtualenv,omitempty"`
+	DefaultEnv       int    `json:"default_environment,omitempty"`
+	MaxHosts         int    `json:"max_hosts,omitempty"`
 }
 
 type ProjectModel struct {

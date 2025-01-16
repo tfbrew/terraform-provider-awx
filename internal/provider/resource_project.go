@@ -308,8 +308,6 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	// set url for create HTTP request
-
 	var bodyData ProjectAPIModel
 
 	bodyData.Name = data.Name.ValueString()
