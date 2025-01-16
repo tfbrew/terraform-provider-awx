@@ -30,19 +30,6 @@ type LabelsResource struct {
 	client *AwxClient
 }
 
-// LabelsResourceModel describes the resource data model.
-type LabelsResourceModel struct {
-	Id           types.String `tfsdk:"id"`
-	Name         types.String `tfsdk:"name"`
-	Organization types.Int32  `tfsdk:"organization"`
-}
-
-type Label struct {
-	Id           int    `json:"id"`
-	Name         string `json:"name"`
-	Organization int    `json:"organization"`
-}
-
 func (r *LabelsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_label"
 }
@@ -53,16 +40,19 @@ func (r *LabelsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Label ID.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Label name.",
+				Required:    true,
 			},
 			"organization": schema.Int32Attribute{
-				Required: true,
+				Description: "Organization ID for the label to live in.",
+				Required:    true,
 			},
 		},
 	}
@@ -88,7 +78,7 @@ func (r *LabelsResource) Configure(ctx context.Context, req resource.ConfigureRe
 }
 
 func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data LabelsResourceModel
+	var data LabelModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -97,17 +87,8 @@ func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	// set url for create HTTP request
-	id, err := strconv.Atoi(data.Id.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable convert id from string to int",
-			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-		return
-	}
+	var bodyData LabelAPIModel
 
-	var bodyData Label
-	bodyData.Id = id
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Organization = int(data.Organization.ValueInt32())
 
@@ -118,10 +99,10 @@ func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest,
 			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/labels/%d/", id)
+	url := r.client.endpoint + "/api/v2/labels/"
 
 	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
@@ -133,22 +114,48 @@ func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to create label, got error: %s", err))
 		return
 	}
-	if httpResp.StatusCode != 200 {
+	if httpResp.StatusCode != 201 {
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			fmt.Sprintf("Expected 201, got %v.", httpResp.StatusCode))
 		return
 	}
+
+	tmp := struct {
+		Id int `json:"id"`
+	}{}
+
+	defer httpResp.Body.Close()
+	httpRespBodyData, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to get http response body to get newly created label ID",
+			fmt.Sprintf("Error: %v", err))
+		return
+	}
+	err = json.Unmarshal(httpRespBodyData, &tmp)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to unmarshal http response to get newly created label ID",
+			fmt.Sprintf("Error: %v", err))
+		return
+	}
+
+	idAsString := strconv.Itoa(tmp.Id)
+
+	data.Id = types.StringValue(idAsString)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data LabelsResourceModel
+	var data LabelModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -179,13 +186,25 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
+		resp.Diagnostics.AddError(
+			"Client Error",
+			fmt.Sprintf("Unable to read label, got error: %v", err))
+		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
+		return
 	}
 
 	if httpResp.StatusCode == 404 {
@@ -193,7 +212,7 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	var responseData Label
+	var responseData LabelAPIModel
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -205,7 +224,7 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable unmarshall response body into object",
+			"Unable to unmarshall response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 	}
 
@@ -226,7 +245,7 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data LabelsResourceModel
+	var data LabelModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -244,8 +263,8 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	var bodyData Label
-	bodyData.Id = id
+	var bodyData LabelAPIModel
+
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Organization = int(data.Organization.ValueInt32())
 
@@ -264,6 +283,7 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.AddError(
 			"Unable to generate request",
 			fmt.Sprintf("Unable to gen url: %v. ", url))
+		return
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
@@ -287,7 +307,7 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 // Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *LabelsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data LabelsResourceModel
+	var data LabelModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
