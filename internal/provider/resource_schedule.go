@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -61,6 +62,12 @@ func (r *ScheduleResource) Schema(ctx context.Context, req resource.SchemaReques
 				Description: "Schedule rrule (i.e. `DTSTART;TZID=America/Chicago:20250124T090000 RRULE:INTERVAL=1;FREQ=WEEKLY;BYDAY=TU`.",
 				Required:    true,
 			},
+			"enabled": schema.BoolAttribute{
+				Description: "Schedule enabled (defaults true).",
+				Optional:    true,
+				Default:     booldefault.StaticBool(true),
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -98,7 +105,7 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 	bodyData.Name = data.Name.ValueString()
 	bodyData.UnifiedJobTemplate = int(data.UnifiedJobTemplate.ValueInt32())
 	bodyData.Rrule = data.Rrule.ValueString()
-
+	bodyData.Enabled = data.Enabled.ValueBool()
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
 	}
@@ -248,6 +255,7 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("unified_job_template"), responseData.UnifiedJobTemplate)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("rrule"), responseData.Rrule)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("enabled"), responseData.Enabled)...)
 
 	if !(data.Description.IsNull() && responseData.Description == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
@@ -281,6 +289,7 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 	bodyData.Name = data.Name.ValueString()
 	bodyData.UnifiedJobTemplate = int(data.UnifiedJobTemplate.ValueInt32())
 	bodyData.Rrule = data.Rrule.ValueString()
+	bodyData.Enabled = data.Enabled.ValueBool()
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()

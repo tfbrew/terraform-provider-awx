@@ -32,6 +32,7 @@ resource "awx_schedule" "example" {
 ### Optional
 
 - `description` (String) Schedule description.
+- `enabled` (Boolean) Schedule enabled (defaults true).
 
 ### Read-Only
 

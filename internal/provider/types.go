@@ -131,12 +131,14 @@ type ScheduleModel struct {
 	Description        types.String `tfsdk:"description"`
 	UnifiedJobTemplate types.Int32  `tfsdk:"unified_job_template"`
 	Rrule              types.String `tfsdk:"rrule"`
+	Enabled            types.Bool   `tfsdk:"enabled"`
 }
 
 type ScheduleAPIModel struct {
 	Id                 int    `json:"id"`
 	Name               string `json:"name"`
-	Description        string `json:"description"`
+	Description        string `json:"description,omitempty"`
 	UnifiedJobTemplate int    `json:"unified_job_template"`
 	Rrule              string `json:"rrule"`
+	Enabled            bool   `json:"enabled"`
 }

@@ -53,6 +53,10 @@ func (d *ScheduleDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Description: "Schedule rrule (i.e. `DTSTART;TZID=America/Chicago:20250124T090000 RRULE:INTERVAL=1;FREQ=WEEKLY;BYDAY=TU`.",
 				Computed:    true,
 			},
+			"enabled": schema.BoolAttribute{
+				Description: "Schedule enabled (defaults true).",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -153,6 +157,7 @@ func (d *ScheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 	data.Name = types.StringValue(responseData.Name)
 	data.UnifiedJobTemplate = types.Int32Value(int32(responseData.UnifiedJobTemplate))
 	data.Rrule = types.StringValue(responseData.Rrule)
+	data.Enabled = types.BoolValue(responseData.Enabled)
 
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)

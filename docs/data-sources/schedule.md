@@ -28,6 +28,7 @@ data "awx_schedule" "example" {
 ### Read-Only
 
 - `description` (String) Schedule description.
+- `enabled` (Boolean) Schedule enabled (defaults true).
 - `name` (String) Schedule name.
 - `rrule` (String) Schedule rrule (i.e. `DTSTART;TZID=America/Chicago:20250124T090000 RRULE:INTERVAL=1;FREQ=WEEKLY;BYDAY=TU`.
 - `unified_job_template` (Number) Job template id for schedule.
