@@ -124,3 +124,19 @@ type ProjectAPIModel struct {
 	ScmUpdOnLaunch     bool   `json:"scm_update_on_launch,omitempty"`
 	ScmUrl             string `json:"scm_url,omitempty"`
 }
+
+type ScheduleModel struct {
+	Id                 types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	Description        types.String `tfsdk:"description"`
+	UnifiedJobTemplate types.Int32  `tfsdk:"unified_job_template"`
+	Rrule              types.String `tfsdk:"rrule"`
+}
+
+type ScheduleAPIModel struct {
+	Id                 int    `json:"id"`
+	Name               string `json:"name"`
+	Description        string `json:"description"`
+	UnifiedJobTemplate int    `json:"unified_job_template"`
+	Rrule              string `json:"rrule"`
+}
