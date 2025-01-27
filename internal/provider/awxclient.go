@@ -24,7 +24,7 @@ func (c *AwxClient) MakeHTTPRequestToAPI(ctx context.Context, method, url string
 		return nil, err
 	}
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	//TODO Add if body != nil, set body of http request
 
