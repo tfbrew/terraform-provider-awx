@@ -13,7 +13,7 @@ Get inventory datasource
 ## Example Usage
 
 ```terraform
-data "awx_instance_group" "example" {
+data "awx_inventory" "example" {
   id = "1"
 }
 ```

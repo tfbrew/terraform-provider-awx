@@ -14,58 +14,54 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ datasource.DataSource = &InventoryDataSource{}
+var _ datasource.DataSource = &ScheduleDataSource{}
 
-func NewInventoryDataSource() datasource.DataSource {
-	return &InventoryDataSource{}
+func NewScheduleDataSource() datasource.DataSource {
+	return &ScheduleDataSource{}
 }
 
-// InventoryDataSource defines the data source implementation.
-type InventoryDataSource struct {
+// ScheduleDataSource defines the data source implementation.
+type ScheduleDataSource struct {
 	client *AwxClient
 }
 
-func (d *InventoryDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_inventory"
+func (d *ScheduleDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_schedule"
 }
 
-func (d *InventoryDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *ScheduleDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Get inventory datasource",
+		Description: "Get schedule datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Inventory ID.",
+				Description: "Schedule ID.",
 				Required:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Inventory name.",
+				Description: "Schedule name.",
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "Inventory description.",
+				Description: "Schedule description.",
 				Computed:    true,
 			},
-			"organization": schema.Int32Attribute{
-				Description: "Organization ID for the inventory to live in.",
+			"unified_job_template": schema.Int32Attribute{
+				Description: "Job template id for schedule.",
 				Computed:    true,
 			},
-			"variables": schema.StringAttribute{
-				Description: "Enter inventory variables using either JSON or YAML syntax.",
+			"rrule": schema.StringAttribute{
+				Description: "Schedule rrule (i.e. `DTSTART;TZID=America/Chicago:20250124T090000 RRULE:INTERVAL=1;FREQ=WEEKLY;BYDAY=TU`.",
 				Computed:    true,
 			},
-			"kind": schema.StringAttribute{
-				Description: "Set to `smart` for smart inventories",
-				Computed:    true,
-			},
-			"host_filter": schema.StringAttribute{
-				Description: "Populate the hosts for this inventory by using a search filter. Example: ansible_facts__ansible_distribution:\"RedHat\".",
+			"enabled": schema.BoolAttribute{
+				Description: "Schedule enabled (defaults true).",
 				Computed:    true,
 			},
 		},
 	}
 }
 
-func (d *InventoryDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *ScheduleDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
@@ -84,8 +80,8 @@ func (d *InventoryDataSource) Configure(ctx context.Context, req datasource.Conf
 	d.client = configureData
 }
 
-func (d *InventoryDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data InventoryModel
+func (d *ScheduleDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data ScheduleModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -104,7 +100,7 @@ func (d *InventoryDataSource) Read(ctx context.Context, req datasource.ReadReque
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url = d.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
+	url = d.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -122,7 +118,7 @@ func (d *InventoryDataSource) Read(ctx context.Context, req datasource.ReadReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to read inventory, got error: %s", err))
+			fmt.Sprintf("Unable to read schedule, got error: %s", err))
 		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
@@ -145,7 +141,7 @@ func (d *InventoryDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	var responseData InventoryAPIModel
+	var responseData ScheduleAPIModel
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -159,22 +155,12 @@ func (d *InventoryDataSource) Read(ctx context.Context, req datasource.ReadReque
 	data.Id = types.StringValue(idAsString)
 
 	data.Name = types.StringValue(responseData.Name)
-	data.Organization = types.Int32Value(int32(responseData.Organization))
+	data.UnifiedJobTemplate = types.Int32Value(int32(responseData.UnifiedJobTemplate))
+	data.Rrule = types.StringValue(responseData.Rrule)
+	data.Enabled = types.BoolValue(responseData.Enabled)
 
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)
-	}
-
-	if responseData.Variables != "" {
-		data.Variables = types.StringValue(responseData.Variables)
-	}
-
-	if responseData.Kind != "" {
-		data.Kind = types.StringValue(responseData.Kind)
-	}
-
-	if responseData.HostFilter != "" {
-		data.HostFilter = types.StringValue(responseData.HostFilter)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

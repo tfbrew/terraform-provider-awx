@@ -9,86 +9,70 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &InventoryResource{}
-var _ resource.ResourceWithImportState = &InventoryResource{}
+var _ resource.Resource = &ScheduleResource{}
+var _ resource.ResourceWithImportState = &ScheduleResource{}
 
-func NewInventoryResource() resource.Resource {
-	return &InventoryResource{}
+func NewScheduleResource() resource.Resource {
+	return &ScheduleResource{}
 }
 
-// InventoryResource defines the resource implementation.
-type InventoryResource struct {
+// ScheduleResource defines the resource implementation.
+type ScheduleResource struct {
 	client *AwxClient
 }
 
-func (r *InventoryResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_inventory"
+func (r *ScheduleResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_schedule"
 }
 
-func (r *InventoryResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *ScheduleResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `Manage an AWX inventory.`,
+		Description: `Manage an AWX schedule.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Inventory ID.",
+				Description: "Schedule ID.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "Inventory name.",
+				Description: "Schedule name.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "Inventory description.",
+				Description: "Schedule description.",
 				Optional:    true,
 			},
-			"organization": schema.Int32Attribute{
-				Description: "Organization ID for the inventory to live in.",
+			"unified_job_template": schema.Int32Attribute{
+				Description: "Job template id for schedule.",
 				Required:    true,
 			},
-			"variables": schema.StringAttribute{
-				Description: "Enter inventory variables using either JSON or YAML syntax.",
-				Optional:    true,
+			"rrule": schema.StringAttribute{
+				Description: "Schedule rrule (i.e. `DTSTART;TZID=America/Chicago:20250124T090000 RRULE:INTERVAL=1;FREQ=WEEKLY;BYDAY=TU`.",
+				Required:    true,
 			},
-			"kind": schema.StringAttribute{
-				Description: "Set to `smart` for smart inventories",
+			"enabled": schema.BoolAttribute{
+				Description: "Schedule enabled (defaults true).",
 				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"smart"}...),
-				},
-			},
-			"host_filter": schema.StringAttribute{
-				Description: "Populate the hosts for this inventory by using a search filter. Example: ansible_facts__ansible_distribution:\"RedHat\".",
-				Optional:    true,
+				Default:     booldefault.StaticBool(true),
+				Computed:    true,
 			},
 		},
 	}
 }
 
-func (d InventoryResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
-	return []resource.ConfigValidator{
-		resourcevalidator.RequiredTogether(
-			path.MatchRoot("kind"),
-			path.MatchRoot("host_filter"),
-		),
-	}
-}
-
-func (r *InventoryResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *ScheduleResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -106,8 +90,8 @@ func (r *InventoryResource) Configure(ctx context.Context, req resource.Configur
 	r.client = configureData
 }
 
-func (r *InventoryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data InventoryModel
+func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data ScheduleModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -116,27 +100,14 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	// set url for create HTTP request
+	var bodyData ScheduleAPIModel
 
-	var bodyData InventoryAPIModel
-
-	if !(data.Name.IsNull()) {
-		bodyData.Name = data.Name.ValueString()
-	}
+	bodyData.Name = data.Name.ValueString()
+	bodyData.UnifiedJobTemplate = int(data.UnifiedJobTemplate.ValueInt32())
+	bodyData.Rrule = data.Rrule.ValueString()
+	bodyData.Enabled = data.Enabled.ValueBool()
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
-	}
-	if !(data.Organization.IsNull()) {
-		bodyData.Organization = int(data.Organization.ValueInt32())
-	}
-	if !(data.Variables.IsNull()) {
-		bodyData.Variables = data.Variables.ValueString()
-	}
-	if !(data.Kind.IsNull()) {
-		bodyData.Kind = data.Kind.ValueString()
-	}
-	if !(data.HostFilter.IsNull()) {
-		bodyData.HostFilter = data.HostFilter.ValueString()
 	}
 
 	jsonData, err := json.Marshal(bodyData)
@@ -147,7 +118,7 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	url := r.client.endpoint + "/api/v2/inventories/"
+	url := r.client.endpoint + "/api/v2/schedules/"
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
@@ -165,7 +136,7 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to create inventory, got error: %s", err))
+			fmt.Sprintf("Unable to create schedule, got error: %s", err))
 		return
 	}
 	if httpResp.StatusCode != 201 {
@@ -183,14 +154,14 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 	httpRespBodyData, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get http response body to get newly created inventory ID",
+			"Unable to get http response body to get newly created schedule ID",
 			fmt.Sprintf("Error: %v", err))
 		return
 	}
 	err = json.Unmarshal(httpRespBodyData, &tmp)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to unmarshal http response to get newly created inventory ID",
+			"Unable to unmarshal http response to get newly created schedule ID",
 			fmt.Sprintf("Error: %v", err))
 		return
 	}
@@ -203,8 +174,8 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data InventoryModel
+func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data ScheduleModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -221,7 +192,7 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 			fmt.Sprintf("Unable to convert id: %v.", data.Id))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -239,7 +210,7 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to read inventory, got error: %v", err))
+			fmt.Sprintf("Unable to read schedule, got error: %v", err))
 		return
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
@@ -263,7 +234,7 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	var responseData InventoryAPIModel
+	var responseData ScheduleAPIModel
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -281,12 +252,10 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("unified_job_template"), responseData.UnifiedJobTemplate)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("rrule"), responseData.Rrule)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("enabled"), responseData.Enabled)...)
 
 	if !(data.Description.IsNull() && responseData.Description == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
@@ -294,38 +263,10 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 			return
 		}
 	}
-
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if !(data.Variables.IsNull() && responseData.Variables == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("variables"), responseData.Variables)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if !(data.Kind.IsNull() && responseData.Kind == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("kind"), responseData.Kind)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if !(data.HostFilter.IsNull() && responseData.HostFilter == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host_filter"), responseData.HostFilter)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
 }
 
-func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data InventoryModel
+func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data ScheduleModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -343,25 +284,15 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	var bodyData InventoryAPIModel
+	var bodyData ScheduleAPIModel
 
-	if !(data.Name.IsNull()) {
-		bodyData.Name = data.Name.ValueString()
-	}
+	bodyData.Name = data.Name.ValueString()
+	bodyData.UnifiedJobTemplate = int(data.UnifiedJobTemplate.ValueInt32())
+	bodyData.Rrule = data.Rrule.ValueString()
+	bodyData.Enabled = data.Enabled.ValueBool()
+
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
-	}
-	if !(data.Organization.IsNull()) {
-		bodyData.Organization = int(data.Organization.ValueInt32())
-	}
-	if !(data.Variables.IsNull()) {
-		bodyData.Variables = data.Variables.ValueString()
-	}
-	if !(data.Kind.IsNull()) {
-		bodyData.Kind = data.Kind.ValueString()
-	}
-	if !(data.HostFilter.IsNull()) {
-		bodyData.HostFilter = data.HostFilter.ValueString()
 	}
 
 	jsonData, err := json.Marshal(bodyData)
@@ -372,7 +303,7 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
@@ -390,7 +321,7 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to update inventory, got error: %s", err))
+			fmt.Sprintf("Unable to update schedule, got error: %s", err))
 		return
 	}
 	if httpResp.StatusCode != 200 {
@@ -404,8 +335,8 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data InventoryModel
+func (r *ScheduleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data ScheduleModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -422,7 +353,7 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 			fmt.Sprintf("Unable to convert id: %v.", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
 	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
@@ -440,7 +371,7 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client Error",
-			fmt.Sprintf("Unable to delete inventory, got error: %s.", err))
+			fmt.Sprintf("Unable to delete schedule, got error: %s.", err))
 		return
 	}
 
@@ -453,6 +384,6 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 }
 
-func (r *InventoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *ScheduleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

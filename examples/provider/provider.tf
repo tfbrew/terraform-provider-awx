@@ -7,6 +7,12 @@ terraform {
 }
 
 provider "awx" {
-  endpoint = "http://localhost:8078"
+  endpoint = "https://tower.example.com"
   token    = "awxtoken"
+}
+
+provider "awx" {
+  endpoint = "http://tower.example.com"
+  username = "admin"
+  password = "password"
 }
