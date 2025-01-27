@@ -130,7 +130,7 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -204,7 +204,7 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -315,7 +315,7 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -365,7 +365,7 @@ func (r *ScheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {

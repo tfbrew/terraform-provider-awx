@@ -150,7 +150,7 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -229,7 +229,7 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err = r.client.client.Do(httpReq)
 	if err != nil {
@@ -309,7 +309,7 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -381,7 +381,7 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err = r.client.client.Do(httpReq)
 	if err != nil {
@@ -502,7 +502,7 @@ func (r *WorkflowJobTemplateApprovalNode) Delete(ctx context.Context, req resour
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {

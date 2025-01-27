@@ -159,7 +159,7 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -233,7 +233,7 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -384,7 +384,7 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -434,7 +434,7 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {

@@ -112,7 +112,7 @@ func (d *ScheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+d.client.token)
+	httpReq.Header.Add("Authorization", d.client.auth)
 
 	httpResp, err := d.client.client.Do(httpReq)
 	if err != nil {
