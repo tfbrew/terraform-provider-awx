@@ -2,12 +2,15 @@ package provider
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/providervalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -30,6 +33,8 @@ type awxProvider struct {
 type awxProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 	Token    types.String `tfsdk:"token"`
+	Username types.String `tfsdk:"username"`
+	Password types.String `tfsdk:"password"`
 }
 
 func (p *awxProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -42,19 +47,48 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 		Description: "**Warning**: All v0 releases are considered alpha and subject to breaking changes at any time.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-
-				Optional: true,
+				Description: "URL for AWX (i.e. https://tower.example.com)",
+				Required:    true,
 			},
 			"token": schema.StringAttribute{
-				Optional: true,
+				Description: "AWX access token (instead of username/password)",
+				Optional:    true,
+			},
+			"username": schema.StringAttribute{
+				Description: "AWX username (instead of token)",
+				Optional:    true,
+			},
+			"password": schema.StringAttribute{
+				Description: "AWX password (instead of token)",
+				Optional:    true,
 			},
 		},
+	}
+}
+
+func (p *awxProvider) ConfigValidators(ctx context.Context) []provider.ConfigValidator {
+	return []provider.ConfigValidator{
+		providervalidator.Conflicting(
+			path.MatchRoot("token"),
+			path.MatchRoot("username"),
+		),
+		providervalidator.Conflicting(
+			path.MatchRoot("token"),
+			path.MatchRoot("password"),
+		),
+		providervalidator.RequiredTogether(
+			path.MatchRoot("username"),
+			path.MatchRoot("password"),
+		),
 	}
 }
 
 func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	token := os.Getenv("TOWER_OAUTH_TOKEN")
 	endpoint := os.Getenv("TOWER_HOST")
+	username := os.Getenv("TOWER_USERNAME")
+	password := os.Getenv("TOWER_PASSWORD")
+	auth := ""
 
 	var data awxProviderModel
 
@@ -73,14 +107,12 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		token = data.Token.ValueString()
 	}
 
-	if token == "" {
-		resp.Diagnostics.AddError(
-			"Missing API Token Configuration",
-			"While configuring the provider, the API token was not found in "+
-				"the TOWER_OAUTH_TOKEN environment variable or provider "+
-				"configuration block token attribute.",
-		)
-		// Not returning early allows the logic to collect all errors.
+	if data.Username.ValueString() != "" {
+		username = data.Username.ValueString()
+	}
+
+	if data.Password.ValueString() != "" {
+		password = data.Password.ValueString()
 	}
 
 	if endpoint == "" {
@@ -93,6 +125,23 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		// Not returning early allows the logic to collect all errors.
 	}
 
+	if token != "" && (username != "" || password != "") {
+		resp.Diagnostics.AddError(
+			"Provider Configuration Error",
+			"The provider token (or TOWER_OAUTH_TOKEN) and either "+
+				"username ( or TOWER_USERNAME) or password ( or TOWER_PASSWORD) were both set.",
+		)
+		return
+	}
+
+	if token != "" {
+		auth = "Bearer" + " " + token
+	} else if username != "" && password != "" {
+		authString := username + ":" + password
+		encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
+		auth = "Basic" + " " + encodedAuth
+	}
+
 	// Example client configuration for data sources and resources
 	httpclient := &http.Client{
 		Timeout: 30 * time.Second,
@@ -102,7 +151,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 	client.client = httpclient
 	client.endpoint = endpoint
-	client.token = token
+	client.auth = auth
 
 	resp.DataSourceData = client
 	resp.ResourceData = client
@@ -110,6 +159,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewInventorySourceResource,
 		NewInventoryResource,
 		NewJobTemplateCredentialResource,
 		NewJobTemplateInstanceGroupsResource,
@@ -121,6 +171,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewNotificationTemplatesResource,
 		NewOrganizationResource,
 		NewProjectResource,
+		NewScheduleResource,
 		NewWorkflowJobTemplatesResource,
 		NewWorkflowJobTemplatesJobNodeResource,
 		NewWorkflowJobTemplatesNodeLabelResource,
@@ -135,9 +186,12 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewCredentialDataSource,
 		NewExecutionEnvironmentDataSource,
 		NewInventoryDataSource,
+		NewInventorySourceDataSource,
 		NewInstanceGroupDataSource,
+		NewJobTemplateDataSource,
 		NewOrganizationDataSource,
 		NewProjectDataSource,
+		NewScheduleDataSource,
 	}
 }
 

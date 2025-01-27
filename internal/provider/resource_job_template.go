@@ -35,102 +35,6 @@ type JobTemplateResource struct {
 	client *AwxClient
 }
 
-// JobTemplateResourceModel describes the resource data model.
-type JobTemplateResourceModel struct {
-	Id                             types.String `tfsdk:"id"`
-	Name                           types.String `tfsdk:"name"`
-	Description                    types.String `tfsdk:"description"`
-	JobType                        types.String `tfsdk:"job_type"`
-	Inventory                      types.Int32  `tfsdk:"inventory"`
-	Project                        types.Int32  `tfsdk:"project"`
-	Playbook                       types.String `tfsdk:"playbook"`
-	ScmBranch                      types.String `tfsdk:"scm_branch"`
-	Forks                          types.Int32  `tfsdk:"forks"`
-	Limit                          types.String `tfsdk:"limit"`
-	Verbosity                      types.Int32  `tfsdk:"verbosity"`
-	ExtraVars                      types.String `tfsdk:"extra_vars"`
-	JobTags                        types.String `tfsdk:"job_tags"`
-	ForceHandlers                  types.Bool   `tfsdk:"force_handlers"`
-	SkipTags                       types.String `tfsdk:"skip_tags"`
-	StartAtTask                    types.String `tfsdk:"start_at_tags"`
-	Timeout                        types.Int32  `tfsdk:"timeout"`
-	UseFactCache                   types.Bool   `tfsdk:"use_fact_cache"`
-	ExecutionEnvironment           types.Int32  `tfsdk:"execution_environment"`
-	HostConfigKey                  types.String `tfsdk:"host_config_key"`
-	AskScmBranchOnLaunch           types.Bool   `tfsdk:"ask_scm_branch_on_launch"`
-	AskDiffModeOnLaunch            types.Bool   `tfsdk:"ask_diff_mode_on_launch"`
-	AskVariablesOnLaunch           types.Bool   `tfsdk:"ask_variables_on_launch"`
-	AskLimitOnLaunch               types.Bool   `tfsdk:"ask_limit_on_launch"`
-	AskTagsOnLaunch                types.Bool   `tfsdk:"ask_tags_on_launch"`
-	AskSkipTagsOnLaunch            types.Bool   `tfsdk:"ask_skip_tags_on_launch"`
-	AskJobTypeOnLaunch             types.Bool   `tfsdk:"ask_job_type_on_launch"`
-	AskVerbosityOnLaunch           types.Bool   `tfsdk:"ask_verbosity_on_launch"`
-	AskInventoryOnLaunch           types.Bool   `tfsdk:"ask_inventory_on_launch"`
-	AskCredentialOnLaunch          types.Bool   `tfsdk:"ask_credential_on_launch"`
-	AskExecutionEnvironmenOnLaunch types.Bool   `tfsdk:"ask_execution_environment_on_launch"`
-	AskLablesOnLaunch              types.Bool   `tfsdk:"ask_labels_on_launch"`
-	AskForksOnLaunch               types.Bool   `tfsdk:"ask_forks_on_launch"`
-	AskJobSliceCountOnLaunch       types.Bool   `tfsdk:"ask_job_slice_count_on_launch"`
-	AskTimeoutOnLaunch             types.Bool   `tfsdk:"ask_timeout_on_launch"`
-	AskInstanceGroupsOnLaunch      types.Bool   `tfsdk:"ask_instance_groups_on_launch"`
-	SurveyEnabled                  types.Bool   `tfsdk:"survey_enabled"`
-	BecomeEnabled                  types.Bool   `tfsdk:"become_enabled"`
-	DiffMode                       types.Bool   `tfsdk:"diff_mode"`
-	AllowSimultaneous              types.Bool   `tfsdk:"allow_simultaneous"`
-	CustomVirtualEnv               types.String `tfsdk:"custom_virtualenv"`
-	JobSliceCount                  types.Int32  `tfsdk:"job_slice_count"`
-	WebhookService                 types.String `tfsdk:"webhook_service"`
-	WebhookCredential              types.String `tfsdk:"webhook_credential"`
-	PreventInstanceGroupFallback   types.Bool   `tfsdk:"prevent_instance_group_fallback"`
-}
-
-type JobTemplate struct {
-	Name                           string `json:"name,omitempty"`
-	Description                    string `json:"description"`
-	JobType                        string `json:"job_type,omitempty"`
-	Inventory                      int    `json:"inventory,omitempty"`
-	Project                        int    `json:"project,omitempty"`
-	Playbook                       string `json:"playbook,omitempty"`
-	ScmBranch                      string `json:"scm_branch,omitempty"`
-	Forks                          int    `json:"forks,omitempty"`
-	Limit                          string `json:"limit,omitempty"`
-	Verbosity                      int    `json:"verbosity,omitempty"`
-	ExtraVars                      string `json:"extra_vars,omitempty"`
-	JobTags                        string `json:"job_tags,omitempty"`
-	ForceHandlers                  bool   `json:"force_handlers,omitempty"`
-	SkipTags                       string `json:"skip_tags,omitempty"`
-	StartAtTask                    string `json:"start_at_tags,omitempty"`
-	Timeout                        int    `json:"timeout,omitempty"`
-	UseFactCache                   bool   `json:"use_fact_cache,omitempty"`
-	ExecutionEnvironment           int    `json:"execution_environment,omitempty"`
-	HostConfigKey                  string `json:"host_config_key,omitempty"`
-	AskScmBranchOnLaunch           bool   `json:"ask_scm_branch_on_launch,omitempty"`
-	AskDiffModeOnLaunch            bool   `json:"ask_diff_mode_on_launch,omitempty"`
-	AskVariablesOnLaunch           bool   `json:"ask_variables_on_launch,omitempty"`
-	AskLimitOnLaunch               bool   `json:"ask_limit_on_launch,omitempty"`
-	AskTagsOnLaunch                bool   `json:"ask_tags_on_launch,omitempty"`
-	AskSkipTagsOnLaunch            bool   `json:"ask_skip_tags_on_launch,omitempty"`
-	AskJobTypeOnLaunch             bool   `json:"ask_job_type_on_launch,omitempty"`
-	AskVerbosityOnLaunch           bool   `json:"ask_verbosity_on_launch,omitempty"`
-	AskInventoryOnLaunch           bool   `json:"ask_inventory_on_launch,omitempty"`
-	AskCredentialOnLaunch          bool   `json:"ask_credential_on_launch,omitempty"`
-	AskExecutionEnvironmenOnLaunch bool   `json:"ask_execution_environment_on_launch,omitempty"`
-	AskLablesOnLaunch              bool   `json:"ask_labels_on_launch,omitempty"`
-	AskForksOnLaunch               bool   `json:"ask_forks_on_launch,omitempty"`
-	AskJobSliceCountOnLaunch       bool   `json:"ask_job_slice_count_on_launch,omitempty"`
-	AskTimeoutOnLaunch             bool   `json:"ask_timeout_on_launch,omitempty"`
-	AskInstanceGroupsOnLaunch      bool   `json:"ask_instance_groups_on_launch,omitempty"`
-	SurveyEnabled                  bool   `json:"survey_enabled,omitempty"`
-	BecomeEnabled                  bool   `json:"become_enabled,omitempty"`
-	DiffMode                       bool   `json:"diff_mode,omitempty"`
-	AllowSimultaneous              bool   `json:"allow_simultaneous,omitempty"`
-	CustomVirtualEnv               any    `json:"custom_virtualenv,omitempty"` //blank is returned by api as "custom_virtual": null (not "")
-	JobSliceCount                  int    `json:"job_slice_count,omitempty"`
-	WebhookService                 string `json:"webhook_service,omitempty"`
-	WebhookCredential              any    `json:"webhook_credential,omitempty"` //blank is returned by api as "webhook_credentials": null (not "")
-	PreventInstanceGroupFallback   bool   `json:"prevent_instance_group_fallback,omitempty"`
-}
-
 func (r *JobTemplateResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_job_template"
 }
@@ -365,7 +269,7 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 }
 
 func (r JobTemplateResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var data JobTemplateResourceModel
+	var data JobTemplateModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -410,7 +314,7 @@ func (r *JobTemplateResource) Configure(ctx context.Context, req resource.Config
 }
 
 func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data JobTemplateResourceModel
+	var data JobTemplateModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -422,7 +326,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	url := r.client.endpoint + "/api/v2/job_templates/"
 
 	// get body data for HTTP request
-	var bodyData JobTemplate
+	var bodyData JobTemplateAPIModel
 	if !(data.Name.IsNull()) {
 		bodyData.Name = data.Name.ValueString()
 	}
@@ -573,7 +477,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -625,7 +529,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data JobTemplateResourceModel
+	var data JobTemplateModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -654,7 +558,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -682,7 +586,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	var responseData JobTemplate
+	var responseData JobTemplateAPIModel
 
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
@@ -1090,7 +994,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data JobTemplateResourceModel
+	var data JobTemplateModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -1099,7 +1003,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	var bodyData JobTemplate
+	var bodyData JobTemplateAPIModel
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Description = data.Description.ValueString()
 	bodyData.JobType = data.JobType.ValueString()
@@ -1173,7 +1077,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {
@@ -1192,7 +1096,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 }
 
 func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data JobTemplateResourceModel
+	var data JobTemplateModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -1221,7 +1125,7 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+r.client.token)
+	httpReq.Header.Add("Authorization", r.client.auth)
 
 	httpResp, err := r.client.client.Do(httpReq)
 	if err != nil {

@@ -12,7 +12,7 @@ import (
 type AwxClient struct {
 	client   *http.Client
 	endpoint string
-	token    string
+	auth     string
 }
 
 // A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
@@ -52,7 +52,7 @@ func (c *AwxClient) AssocJobTemplChild(ctx context.Context, body ChildResult, ur
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *AwxClient) AssocSuccessNode(ctx context.Context, body ChildAssocBody, u
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
@@ -106,7 +106,7 @@ func (c *AwxClient) DisassocJobTemplChild(ctx context.Context, body ChildDissaso
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
@@ -134,7 +134,7 @@ func (c *AwxClient) AssocJobTemplCredential(ctx context.Context, id int, body Re
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
@@ -162,7 +162,7 @@ func (c *AwxClient) DisassocJobTemplCredential(ctx context.Context, id int, body
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
@@ -190,7 +190,7 @@ func (c *AwxClient) AssocJobTemplLabel(ctx context.Context, id int, body LabelRe
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
@@ -218,7 +218,7 @@ func (c *AwxClient) DisassocJobTemplLabel(ctx context.Context, id int, body Labe
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", "Bearer"+" "+c.token)
+	httpReq.Header.Add("Authorization", c.auth)
 
 	httpResp, err := c.client.Do(httpReq)
 	if err != nil {
