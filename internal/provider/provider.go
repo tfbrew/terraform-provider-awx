@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -84,11 +85,9 @@ func (p *awxProvider) ConfigValidators(ctx context.Context) []provider.ConfigVal
 }
 
 func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	token := os.Getenv("TOWER_OAUTH_TOKEN")
-	endpoint := os.Getenv("TOWER_HOST")
-	username := os.Getenv("TOWER_USERNAME")
-	password := os.Getenv("TOWER_PASSWORD")
-	auth := ""
+	var (
+		token, endpoint, username, password, auth string
+	)
 
 	var data awxProviderModel
 
@@ -98,21 +97,10 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		return
 	}
 
-	// Configuration values are now available.
-	if data.Endpoint.ValueString() != "" {
+	if !data.Endpoint.IsNull() {
 		endpoint = data.Endpoint.ValueString()
-	}
-
-	if data.Token.ValueString() != "" {
-		token = data.Token.ValueString()
-	}
-
-	if data.Username.ValueString() != "" {
-		username = data.Username.ValueString()
-	}
-
-	if data.Password.ValueString() != "" {
-		password = data.Password.ValueString()
+	} else {
+		endpoint = os.Getenv("TOWER_HOST")
 	}
 
 	if endpoint == "" {
@@ -125,24 +113,47 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		// Not returning early allows the logic to collect all errors.
 	}
 
-	if token != "" && (username != "" || password != "") {
+	envToken, tokenExists := os.LookupEnv("TOWER_OAUTH_TOKEN")
+	envUsername, userExists := os.LookupEnv("TOWER_USERNAME")
+	envPassword, passwordExists := os.LookupEnv("TOWER_PASSWORD")
+
+	// Get token if password/username not set
+	if data.Token.IsNull() && data.Username.IsNull() && data.Password.IsNull() && tokenExists {
+		token = envToken
+	}
+
+	if data.Token.IsNull() && data.Username.IsNull() && data.Password.IsNull() && !tokenExists && userExists && passwordExists {
+		username = envUsername
+		password = envPassword
+	}
+
+	if !data.Token.IsNull() {
+		token = data.Token.ValueString()
+	}
+
+	if !data.Username.IsNull() {
+		username = data.Username.ValueString()
+	}
+
+	if data.Password.IsNull() {
+		password = data.Password.ValueString()
+	}
+
+	if (token != "" && (username != "" || password != "")) || (token == "" && (username == "" || password == "")) {
 		resp.Diagnostics.AddError(
 			"Provider Configuration Error",
-			"The provider token (or TOWER_OAUTH_TOKEN) and either "+
-				"username ( or TOWER_USERNAME) or password ( or TOWER_PASSWORD) were both set.",
-		)
+			"Specify a token (TOWER_OAUTH_TOKEN) OR username/password (TOWER_USERNAME/TOWER_PASSWORD).")
 		return
 	}
 
 	if token != "" {
 		auth = "Bearer" + " " + token
-	} else if username != "" && password != "" {
+	} else {
 		authString := username + ":" + password
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
 		auth = "Basic" + " " + encodedAuth
 	}
 
-	// Example client configuration for data sources and resources
 	httpclient := &http.Client{
 		Timeout: 30 * time.Second,
 	}
@@ -152,6 +163,15 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.client = httpclient
 	client.endpoint = endpoint
 	client.auth = auth
+
+	url := "/api/v2/me/"
+	_, err := client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"tower authentication failure",
+			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
+	}
 
 	resp.DataSourceData = client
 	resp.ResourceData = client
