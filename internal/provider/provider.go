@@ -164,11 +164,11 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.endpoint = endpoint
 	client.auth = auth
 
-	url := "/api/v2/ping/"
+	url := "/api/v2/me/"
 	_, err := client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"tower ping failure",
+			"tower authentication failure",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
