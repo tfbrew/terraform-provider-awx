@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -162,6 +163,15 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.client = httpclient
 	client.endpoint = endpoint
 	client.auth = auth
+
+	url := "/api/v2/ping/"
+	_, err := client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"tower ping failure",
+			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
+	}
 
 	resp.DataSourceData = client
 	resp.ResourceData = client

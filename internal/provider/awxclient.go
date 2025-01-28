@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,7 +34,13 @@ func (c *AwxClient) MakeHTTPRequestToAPI(ctx context.Context, method, url string
 		return nil, err
 	}
 	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		return nil, fmt.Errorf("API call's HTTP status wasn't 200 or 404, was %vd", httpResp.StatusCode)
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			return nil, errors.New("Unable read http request response body.")
+		}
+
+		return nil, fmt.Errorf("Expected 200 (or 404) http response code for API call, got %d with message %s. ", httpResp.StatusCode, body)
 	}
 
 	return httpResp, nil
