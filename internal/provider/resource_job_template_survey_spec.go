@@ -214,7 +214,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 			Choices:             finalList,
 		}
 
-		stringTypes := []string{"text", "textarea", "multiplechoice", "multipleselect", "password"}
+		stringTypes := []string{"text", "textarea", "multiplechoice", "multiselect", "password"}
 		numberTypes := []string{"integer", "float"}
 
 		switch {
@@ -467,7 +467,7 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 			Choices:             finalList,
 		}
 
-		stringTypes := []string{"text", "textarea", "multiplechoice", "multipleselect", "password"}
+		stringTypes := []string{"text", "textarea", "multiplechoice", "multiselect", "password"}
 		numberTypes := []string{"integer", "float"}
 
 		switch {
