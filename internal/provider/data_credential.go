@@ -118,31 +118,14 @@ func (d *CredentialDataSource) Read(ctx context.Context, req datasource.ReadRequ
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url = d.client.endpoint + fmt.Sprintf("/api/v2/credentials/%d/", id)
 
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	url = fmt.Sprintf("/api/v2/credentials/%d/", id)
+
+	httpResp, err := d.client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v.", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", d.client.auth)
-
-	httpResp, err := d.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to read credential, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 

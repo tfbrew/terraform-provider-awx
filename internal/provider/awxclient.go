@@ -3,7 +3,9 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -12,6 +14,36 @@ type AwxClient struct {
 	client   *http.Client
 	endpoint string
 	auth     string
+}
+
+// A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
+// headers and then makes the actual http request.
+func (c *AwxClient) MakeHTTPRequestToAPI(ctx context.Context, method, url string, body io.Reader) (*http.Response, error) {
+	url = c.endpoint + url
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
+	if err != nil {
+		return nil, err
+	}
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", c.auth)
+
+	//TODO Add if body != nil, set body of http request
+
+	httpResp, err := c.client.Do(httpReq)
+	if err != nil {
+		return nil, err
+	}
+	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			return nil, errors.New("Unable read http request response body.")
+		}
+
+		return nil, fmt.Errorf("Expected 200 (or 404) http response code for API call, got %d with message %s. ", httpResp.StatusCode, body)
+	}
+
+	return httpResp, nil
 }
 
 func (c *AwxClient) AssocJobTemplChild(ctx context.Context, body ChildResult, url string) error {
