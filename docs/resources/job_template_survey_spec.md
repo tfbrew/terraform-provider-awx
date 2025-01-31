@@ -85,7 +85,7 @@ Required:
 Optional:
 
 - `choices` (List of String) List of strings which define the choices users can make for multichoice or multiselect.
-- `default` (String) Default value for the survey question. For `multiselect` type, supply a list of valid values seperated by the characters \n, e.g., "choice1\nchoice2". Supply a value of "" when you want no default value, even for type values that are non-text-based.
+- `default` (String) Default value for the survey question. For `multiselect` type, supply a list of valid values separated by the characters \n, e.g., "choice1\nchoice2". Supply a value of "" when you want no default value, even for type values that are non-text-based.
 - `max` (Number) Maximum value, default `1024`.
 - `min` (Number) Minimum value, default `1024`.
 - `required` (Boolean) Set if the survey question is required, defaults to `false`.
