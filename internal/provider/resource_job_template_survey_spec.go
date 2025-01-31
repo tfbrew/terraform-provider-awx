@@ -81,7 +81,8 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "ID of job template to attach survey to.",
 			},
 			"name": schema.StringAttribute{
 				Required: true,
@@ -202,7 +203,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 		// convert to interface{} type
 		var finalList interface{} = stringSlice
 
-		specs = append(specs, SurveySpec{
+		specBuilt := SurveySpec{
 			Type:                spec.Type.ValueString(),
 			QuestionName:        spec.QuestionName.ValueString(),
 			QuestionDescription: spec.QuestionDescription.ValueString(),
@@ -211,8 +212,26 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 			Max:                 int(spec.Max.ValueInt32()),
 			Min:                 int(spec.Min.ValueInt32()),
 			Choices:             finalList,
-			Default:             spec.Default,
-		})
+		}
+
+		stringTypes := []string{"text", "textarea", "multiplechoice", "multiselect", "password"}
+		numberTypes := []string{"integer", "float"}
+
+		switch {
+		case slices.Contains(stringTypes, specBuilt.Type):
+			specBuilt.Default = spec.Default.ValueString()
+		case slices.Contains(numberTypes, specBuilt.Type) && spec.Default.ValueString() != "":
+			defaultNumber, err := strconv.Atoi(spec.Default.ValueString())
+			if err != nil {
+				resp.Diagnostics.AddError("uanble to convert to integer", err.Error())
+				return
+			}
+			specBuilt.Default = defaultNumber
+		default:
+			specBuilt.Default = ""
+		}
+
+		specs = append(specs, specBuilt)
 	}
 
 	bodyData.Spec = specs
@@ -448,7 +467,7 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 			Choices:             finalList,
 		}
 
-		stringTypes := []string{"text", "textarea", "multiplechoice", "multipleselect", "password"}
+		stringTypes := []string{"text", "textarea", "multiplechoice", "multiselect", "password"}
 		numberTypes := []string{"integer", "float"}
 
 		switch {
