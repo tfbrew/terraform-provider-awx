@@ -27,25 +27,36 @@ resource "awx_job_template_survey_spec" "example" {
   name        = ""
   spec = [
     {
-      choices              = ["stop", "start", "status", "restart"]
-      default              = "status"
+      choices              = ["choice1", "choice2", "choice3"]
+      default              = "choice2\nchoice3"
       max                  = 1024
       min                  = 0
       question_description = "example question 1"
       question_name        = "example_question_1"
       required             = true
-      type                 = "multiplechoice"
+      type                 = "multiselect"
       variable             = "examplevar1"
+    },
+    {
+      choices              = ["stop", "start", "status", "restart"]
+      default              = "status"
+      max                  = 1024
+      min                  = 0
+      question_description = "example question 2"
+      question_name        = "example_question_2"
+      required             = true
+      type                 = "multiplechoice"
+      variable             = "examplevar2"
     },
     {
       default              = jsonencode(15)
       max                  = 1024
       min                  = 1
-      question_description = "example question 2"
-      question_name        = "Example question 1"
+      question_description = "example question 3"
+      question_name        = "Example question 3"
       required             = true
       type                 = "integer"
-      variable             = "example_2_var"
+      variable             = "example_3_var"
     },
   ]
 }
@@ -74,7 +85,7 @@ Required:
 Optional:
 
 - `choices` (List of String) List of strings which define the choices users can make for multichoice or multiselect.
-- `default` (String) Default value for the survey question. Supply a value of "" when you want no default value, even for type values that are non-text-based.
+- `default` (String) Default value for the survey question. For `multiselect` type, supply a list of valid values seperated by the characters \n, e.g., "choice1\nchoice2". Supply a value of "" when you want no default value, even for type values that are non-text-based.
 - `max` (Number) Maximum value, default `1024`.
 - `min` (Number) Minimum value, default `1024`.
 - `required` (Boolean) Set if the survey question is required, defaults to `false`.
