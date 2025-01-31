@@ -129,7 +129,7 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 							Default:     stringdefault.StaticString(""),
 							Optional:    true,
 							Computed:    true,
-							Description: "Default value for the survey question. Supply a value of \"\" when you want no default value, even for type values that are non-text-based.",
+							Description: "Default value for the survey question. For `multiselect` type, supply a list of valid values separated by the characters \\n, e.g., \"choice1\\nchoice2\". Supply a value of \"\" when you want no default value, even for type values that are non-text-based.",
 						},
 						"choices": schema.ListAttribute{
 							ElementType: types.StringType,
