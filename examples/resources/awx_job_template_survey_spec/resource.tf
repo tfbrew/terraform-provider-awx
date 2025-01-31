@@ -1,6 +1,14 @@
-resource "awx_job_templates_survey_spec" "example" {
+resource "awx_job_template" "example" {
+  job_type  = "run"
+  name      = "test"
+  inventory = 1
+  project   = 1
+  playbook  = "test.yml"
+}
+
+resource "awx_job_template_survey_spec" "example" {
   description = "example description"
-  id          = 100
+  id          = awx_job_template.example.id
   name        = ""
   spec = [
     {

@@ -13,9 +13,17 @@ Associate survey specs to an existing Job Template.
 ## Example Usage
 
 ```terraform
-resource "awx_job_templates_survey_spec" "example" {
+resource "awx_job_template" "example" {
+  job_type  = "run"
+  name      = "test"
+  inventory = 1
+  project   = 1
+  playbook  = "test.yml"
+}
+
+resource "awx_job_template_survey_spec" "example" {
   description = "example description"
-  id          = 100
+  id          = awx_job_template.example.id
   name        = ""
   spec = [
     {
@@ -49,12 +57,9 @@ resource "awx_job_templates_survey_spec" "example" {
 ### Required
 
 - `description` (String)
+- `id` (String) ID of job template to attach survey to.
 - `name` (String)
 - `spec` (Attributes List) (see [below for nested schema](#nestedatt--spec))
-
-### Read-Only
-
-- `id` (String) The ID of this resource.
 
 <a id="nestedatt--spec"></a>
 ### Nested Schema for `spec`
