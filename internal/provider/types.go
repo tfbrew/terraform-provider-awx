@@ -282,3 +282,22 @@ type JobTemplateAPIModel struct {
 	WebhookCredential              any    `json:"webhook_credential,omitempty"` //blank is returned by api as "webhook_credentials": null (not "")
 	PreventInstanceGroupFallback   bool   `json:"prevent_instance_group_fallback,omitempty"`
 }
+
+// JobTemplateSurveyResourceModel describes the resource data model.
+type CredentialTypeModel struct {
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Inputs      types.String `tfsdk:"inputs"`
+	Injectors   types.String `tfsdk:"injectors"`
+	Kind        types.String `tfsdk:"kind"`
+}
+
+type CredentialTypeAPIModel struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Inputs      any    `json:"inputs,omitempty"`
+	Injectors   any    `json:"injectors,omitempty"`
+	Kind        string `json:"kind"`
+}

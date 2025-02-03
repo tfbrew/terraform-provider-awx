@@ -179,6 +179,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewCredentialTypeResource,
 		NewInventorySourceResource,
 		NewInventoryResource,
 		NewJobTemplateCredentialResource,
@@ -203,6 +204,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 
 func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		NewCredentialTypeDataSource,
 		NewCredentialDataSource,
 		NewExecutionEnvironmentDataSource,
 		NewInventoryDataSource,
