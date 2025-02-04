@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -140,6 +141,9 @@ func (r *InventorySourceResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Default:     int32default.StaticInt32(1),
 				Computed:    true,
+				Validators: []validator.Int32{
+					int32validator.Between(0, 2),
+				},
 			},
 		},
 	}

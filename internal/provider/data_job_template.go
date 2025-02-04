@@ -35,17 +35,19 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 		Description: "Get job_template datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Optional: true,
+				Required:    true,
+				Description: "Job template ID.",
 			},
 			"name": schema.StringAttribute{
-				Optional: true,
+				Computed:    true,
+				Description: "Job template name.",
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Computed:    true,
+				Description: "Job template description.",
 			},
 			"job_type": schema.StringAttribute{
-				Description: "Acceptable values are a choice of: `run`, `check`.",
+				Description: "Acceptable values are a choice of: `run`, `check`. For job templates, select run to execute the playbook. Select check to only check playbook syntax, test environment setup, and report problems without executing the playbook.",
 				Computed:    true,
 			},
 			"inventory": schema.Int32Attribute{
@@ -61,34 +63,41 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 				Description: "Playbook name to be executed by this job",
 			},
 			"scm_branch": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true.",
 			},
 			"forks": schema.Int32Attribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The number of parallel or simultaneous processes to use while executing the playbook. An empty value, or a value less than 1 will use the Ansible default which is usually 5. The default number of forks can be overwritten with a change to ansible.cfg.",
 			},
 			"limit": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Provide a host pattern to further constrain the list of hosts that will be managed or affected by the playbook. Multiple patterns are allowed.",
 			},
 			"verbosity": schema.Int32Attribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Control the level of output ansible will produce as the playbook executes. `0 - Normal`, `1 - Verbose`, `2 - More Verbose`, `3 - Debug`, `4 - r.client.auth Debug`, `5 - WinRM Debug`",
 			},
 			"extra_vars": schema.StringAttribute{
 				Computed: true,
 			},
 			"job_tags": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Tags are useful when you have a large playbook, and you want to run a specific part of a play or task. Use commas to separate multiple tags.",
 			},
 			"force_handlers": schema.BoolAttribute{
 				Computed: true,
 			},
 			"skip_tags": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Skip tags are useful when you have a large playbook, and you want to skip specific parts of a play or task. Use commas to separate multiple tags.",
 			},
 			"start_at_tags": schema.StringAttribute{
 				Computed: true,
 			},
 			"timeout": schema.Int32Attribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The amount of time (in seconds) to run before the job is canceled. Defaults to 0 for no job timeout.",
 			},
 			"use_fact_cache": schema.BoolAttribute{
 				Computed: true,
@@ -151,10 +160,12 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed: true,
 			},
 			"become_enabled": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "If enabled, run this playbook as an administrator.",
 			},
 			"diff_mode": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "If enabled, show the changes made by Ansible tasks, where supported. This is equivalent to Ansible's `--diff` mode.",
 			},
 			"allow_simultaneous": schema.BoolAttribute{
 				Computed: true,
@@ -163,7 +174,8 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed: true,
 			},
 			"job_slice_count": schema.Int32Attribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Divide the work done by this job template into the specified number of job slices, each running the same tasks against a portion of the inventory.",
 			},
 			"webhook_service": schema.StringAttribute{
 				Computed: true,
@@ -172,7 +184,8 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed: true,
 			},
 			"prevent_instance_group_fallback": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "If enabled, the job template will prevent adding any inventory or organization instance groups to the list of preferred instances groups to run on. Note: If this setting is enabled and you provided an empty list, the global instance groups will be applied.",
 			},
 		},
 	}

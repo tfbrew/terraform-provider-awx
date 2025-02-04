@@ -359,61 +359,19 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	url := r.client.endpoint + "/api/v2/projects/"
-
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	url := "/api/v2/projects/"
+	successCodes := []int{201}
+	returnedData, err := r.client.MakeHTTPCreateRequestToAPI(ctx, url, jsonData, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate create request",
-			fmt.Sprintf("url: %v, data: %+v ", url, jsonData))
+			"error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to create project, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 201 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected 201, got %v.", httpResp.StatusCode))
-		return
-	}
-
-	tmp := struct {
-		Id        int    `json:"id"`
-		LocalPath string `json:"local_path"` // AWX computes local_path for all scm_type except manual
-		ScmUrl    string `json:"scm_url"`    // AWX sets ScmUrl to https://example.org for scm_type insights
-	}{}
-
-	defer httpResp.Body.Close()
-	httpRespBodyData, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get http response body to get newly created project ID",
-			fmt.Sprintf("Error: %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRespBodyData, &tmp)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to unmarshal http response to get newly created project ID",
-			fmt.Sprintf("Error: %v", err))
-		return
-	}
-
-	idAsString := strconv.Itoa(tmp.Id)
-
-	data.Id = types.StringValue(idAsString)
-	data.LocalPath = types.StringValue(tmp.LocalPath)
-	data.ScmUrl = types.StringValue(tmp.ScmUrl)
+	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
+	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
+	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
