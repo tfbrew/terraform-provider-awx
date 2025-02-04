@@ -37,13 +37,61 @@ func (c *AwxClient) MakeHTTPRequestToAPI(ctx context.Context, method, url string
 		defer httpResp.Body.Close()
 		body, err := io.ReadAll(httpResp.Body)
 		if err != nil {
-			return nil, errors.New("Unable read http request response body.")
+			return nil, errors.New("unable to read http request response body")
 		}
 
-		return nil, fmt.Errorf("Expected 200 (or 404) http response code for API call, got %d with message %s. ", httpResp.StatusCode, body)
+		return nil, fmt.Errorf("expected 200 (or 404) http response code for API call, got %d with message %s", httpResp.StatusCode, body)
 	}
 
 	return httpResp, nil
+}
+
+func (c *AwxClient) MakeHTTPCreateRequestToAPI(ctx context.Context, url string, body []byte, successCodes []int) (returnedData map[string]any, errorMessage error) {
+	url = c.endpoint + url
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(body)))
+	if err != nil {
+		errorMessage = fmt.Errorf("error generating http request: %v", err)
+		return
+	}
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", c.auth)
+
+	httpResp, err := c.client.Do(httpReq)
+	if err != nil {
+		errorMessage = fmt.Errorf("error doing http request: %v", err)
+		return
+	}
+
+	defer httpResp.Body.Close()
+
+	var success bool
+	for _, successCode := range successCodes {
+		if httpResp.StatusCode == successCode {
+			success = true
+		}
+	}
+
+	if !success {
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			errorMessage = errors.New("unable to read http request response body to retrieve error message")
+			return
+		}
+		errorMessage = fmt.Errorf("expected %v http response code for API call, got %d with message %s", successCodes, httpResp.StatusCode, body)
+		return
+	}
+
+	httpRespBodyData, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		errorMessage = errors.New("unable to read http request response body to retrieve id")
+		return
+	}
+	err = json.Unmarshal(httpRespBodyData, &returnedData)
+	if err != nil {
+		errorMessage = errors.New("unable to unmarshall http request response body to retrieve returnedData")
+		return
+	}
+	return
 }
 
 func (c *AwxClient) AssocJobTemplChild(ctx context.Context, body ChildResult, url string) error {
