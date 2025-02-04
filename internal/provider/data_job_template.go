@@ -9,8 +9,10 @@ import (
 	urlParser "net/url"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -35,11 +37,11 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 		Description: "Get job_template datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "Job template ID.",
 			},
 			"name": schema.StringAttribute{
-				Computed:    true,
+				Optional:    true,
 				Description: "Job template name.",
 			},
 			"description": schema.StringAttribute{
@@ -188,6 +190,15 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 				Description: "If enabled, the job template will prevent adding any inventory or organization instance groups to the list of preferred instances groups to run on. Note: If this setting is enabled and you provided an empty list, the global instance groups will be applied.",
 			},
 		},
+	}
+}
+
+func (d JobTemplateDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+		),
 	}
 }
 
