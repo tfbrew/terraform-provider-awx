@@ -24,7 +24,7 @@ resource "awx_job_template_credential" "example" {
 
 ### Required
 
-- `credential_ids` (List of Number) An ordered list of credential IDs associated to a particular Job Template.
+- `credential_ids` (Set of Number) An unordered list of credential IDs associated to a particular Job Template.
 - `job_template_id` (String) The ID of the containing Job Template.
 
 ## Import

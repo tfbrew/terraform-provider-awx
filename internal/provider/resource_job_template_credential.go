@@ -31,7 +31,7 @@ type JobTemplateCredentialResource struct {
 // JobTemplateCredentialResourceModel describes the resource data model.
 type JobTemplateCredentialResourceModel struct {
 	JobTemplateId types.String `tfsdk:"job_template_id"`
-	CredentialIds types.List   `tfsdk:"credential_ids"`
+	CredentialIds types.Set    `tfsdk:"credential_ids"`
 }
 
 type JTCredentialAPIRead struct {
@@ -60,9 +60,9 @@ func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource
 				Required:    true,
 				Description: "The ID of the containing Job Template.",
 			},
-			"credential_ids": schema.ListAttribute{
+			"credential_ids": schema.SetAttribute{
 				Required:    true,
-				Description: "An ordered list of credential IDs associated to a particular Job Template.",
+				Description: "An unordered list of credential IDs associated to a particular Job Template.",
 				ElementType: types.Int32Type,
 			},
 		},
@@ -196,7 +196,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		tfCredIds = append(tfCredIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfCredIds)
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfCredIds)
 	if diags.HasError() {
 		return
 	}
