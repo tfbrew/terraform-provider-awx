@@ -1,8 +1,8 @@
-data "awx_project" "example" {
+data "awx_project" "example-id" {
   id = "1"
 }
 
 
-data "awx_project" "example2" {
-  name = "our_project_name"
+data "awx_project" "example-name" {
+  name = "Default"
 }
