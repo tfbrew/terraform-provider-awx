@@ -31,7 +31,7 @@ type WorkflowJobTemplatesNodeLabelResource struct {
 // WorkflowJobTemplatesNodeLabelResourceModel describes the resource data model.
 type WorkflowJobTemplatesNodeLabelResourceModel struct {
 	Id       types.String `tfsdk:"id"`
-	LabelIDs types.List   `tfsdk:"label_ids"`
+	LabelIDs types.Set    `tfsdk:"label_ids"`
 }
 
 func (r *WorkflowJobTemplatesNodeLabelResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -47,9 +47,9 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Schema(ctx context.Context, req 
 				Required:    true,
 				Description: "The ID of the containing workflow job template node.",
 			},
-			"label_ids": schema.ListAttribute{
+			"label_ids": schema.SetAttribute{
 				Required:    true,
-				Description: "An ordered list of label IDs associated to a particular Workflwo Job Template node. Create new labels first with `awx_label` resource type.",
+				Description: "An unordered list of label IDs associated to a particular Workflwo Job Template node. Create new labels first with `awx_label` resource type.",
 				ElementType: types.Int32Type,
 			},
 		},
@@ -200,7 +200,7 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Read(ctx context.Context, req re
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
 	if diags.HasError() {
 		return
 	}

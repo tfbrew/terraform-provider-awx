@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	urlParser "net/url"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -34,12 +37,12 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 		Description: "Get project datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Project ID.",
-				Required:    true,
+				Description: "A valid project ID. You must specify either the `id` or `name` field, but not both. ",
+				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Project name.",
-				Computed:    true,
+				Description: "Project name. You must specify either the `id` or `name` field, but not both.",
+				Optional:    true,
 			},
 			"organization": schema.Int32Attribute{
 				Description: "Organization ID for the project to live in.",
@@ -101,6 +104,19 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 	}
 }
 
+func (d *ProjectDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.Conflicting(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+		),
+		datasourcevalidator.AtLeastOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+		),
+	}
+}
+
 func (d *ProjectDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
@@ -132,15 +148,19 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	var url string
 
-	// set url for read by id HTTP request
-	id, err := strconv.Atoi(data.Id.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable convert id from string to int.",
-			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-		return
+	if !data.Id.IsNull() {
+		id, err := strconv.Atoi(data.Id.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable convert id from string to int.",
+				fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
+			return
+		}
+		url = fmt.Sprintf("/api/v2/projects/?id=%d", id)
 	}
-	url = fmt.Sprintf("/api/v2/projects/%d/", id)
+	if !data.Name.IsNull() {
+		url = fmt.Sprintf("/api/v2/projects/?name=%s", urlParser.QueryEscape(data.Name.ValueString()))
+	}
 
 	httpResp, err := d.client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -165,11 +185,24 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	var responseData ProjectAPIModel
 
-	err = json.Unmarshal(body, &responseData)
+	countResult := struct {
+		Count   int               `json:"count"`
+		Results []ProjectAPIModel `json:"results"`
+	}{}
+
+	err = json.Unmarshal(body, &countResult)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to unmarshall response body into object",
-			fmt.Sprintf("Error =  %v.", err.Error()))
+			fmt.Sprintf("Error:  %v.", err.Error()))
+		return
+	}
+	if countResult.Count == 1 {
+		responseData = countResult.Results[0]
+	} else {
+		resp.Diagnostics.AddError(
+			"Incorrect number of projects returned",
+			fmt.Sprintf("Unable to read project as API returned %v projects.", countResult.Count))
 		return
 	}
 
