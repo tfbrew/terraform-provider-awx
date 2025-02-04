@@ -25,7 +25,7 @@ resource "awx_job_template_label" "example" {
 ### Required
 
 - `job_template_id` (String) The ID of the containing Job Template.
-- `label_ids` (List of Number) An ordered list of label IDs associated to a particular Job Template. Create new labels first with `awx_label` resource type.
+- `label_ids` (Set of Number) An unordered list of label IDs associated to a particular Job Template. Create new labels first with `awx_label` resource type.
 
 ## Import
 

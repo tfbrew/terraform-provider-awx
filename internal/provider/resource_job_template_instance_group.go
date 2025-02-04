@@ -31,7 +31,7 @@ type JobTemplateInstanceGroupsResource struct {
 // JobTemplateInstanceGroupsResourceModel describes the resource data model.
 type JobTemplateInstanceGroupsResourceModel struct {
 	JobTemplateId     types.String `tfsdk:"job_template_id"`
-	InstanceGroupsIDs types.List   `tfsdk:"instance_groups_ids"`
+	InstanceGroupsIDs types.Set    `tfsdk:"instance_groups_ids"`
 }
 
 func (r *JobTemplateInstanceGroupsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -46,9 +46,9 @@ func (r *JobTemplateInstanceGroupsResource) Schema(ctx context.Context, req reso
 				Required:    true,
 				Description: "The ID of the containing Job Template.",
 			},
-			"instance_groups_ids": schema.ListAttribute{
+			"instance_groups_ids": schema.SetAttribute{
 				Required:    true,
-				Description: "An ordered list of instance_group IDs associated to a particular Job Template.",
+				Description: "An unordered list of instance_group IDs associated to a particular Job Template.",
 				ElementType: types.Int32Type,
 			},
 		},
@@ -184,7 +184,7 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
 	if diags.HasError() {
 		return
 	}

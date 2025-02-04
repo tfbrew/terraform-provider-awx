@@ -24,7 +24,7 @@ resource "awx_job_template_instance_group" "default" {
 
 ### Required
 
-- `instance_groups_ids` (List of Number) An ordered list of instance_group IDs associated to a particular Job Template.
+- `instance_groups_ids` (Set of Number) An unordered list of instance_group IDs associated to a particular Job Template.
 - `job_template_id` (String) The ID of the containing Job Template.
 
 ## Import

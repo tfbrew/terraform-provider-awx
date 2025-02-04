@@ -31,7 +31,7 @@ type JobTemplateNotifTemplErrResource struct {
 // JobTemplateNotifTemplErrResourceModel describes the resource data model.
 type JobTemplateNotifTemplErrResourceModel struct {
 	JobTemplateId    types.String `tfsdk:"job_template_id"`
-	NotifTEmplateIDs types.List   `tfsdk:"notif_template_ids"`
+	NotifTEmplateIDs types.Set    `tfsdk:"notif_template_ids"`
 }
 
 func (r *JobTemplateNotifTemplErrResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -46,9 +46,9 @@ func (r *JobTemplateNotifTemplErrResource) Schema(ctx context.Context, req resou
 				Required:    true,
 				Description: "The ID of the containing Job Template.",
 			},
-			"notif_template_ids": schema.ListAttribute{
+			"notif_template_ids": schema.SetAttribute{
 				Required:    true,
-				Description: "An ordered list of `notification_template` IDs associated to a particular Job Template.",
+				Description: "An unordered list of `awx_notification_template` IDs associated to a particular Job Template.",
 				ElementType: types.Int32Type,
 			},
 		},
@@ -184,7 +184,7 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
 	if diags.HasError() {
 		return
 	}
