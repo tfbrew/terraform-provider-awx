@@ -65,7 +65,7 @@ func (d *CredentialTypeDataSource) Schema(ctx context.Context, req datasource.Sc
 	}
 }
 
-func (d CredentialTypeResource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
+func (d CredentialTypeDataSource) ConfigValidators(ctx context.Context) []datasource.ConfigValidator {
 	return []datasource.ConfigValidator{
 		datasourcevalidator.Conflicting(
 			path.MatchRoot("id"),
