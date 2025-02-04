@@ -3,12 +3,12 @@
 page_title: "awx_instance_group Data Source - awx"
 subcategory: ""
 description: |-
-  Manage Instance Groups
+  Get Instance Groups.
 ---
 
 # awx_instance_group (Data Source)
 
-Manage Instance Groups
+Get Instance Groups.
 
 ## Example Usage
 

@@ -3,28 +3,12 @@
 page_title: "awx_job_template_label Resource - awx"
 subcategory: ""
 description: |-
-  The /api/v2/job_templates/{id}/labels/ returns all label objects associated to the template. But, when asked to associate a label or
-  dissassociate a label, you must post a request once per label name.Therefore, I couldn't find a way to limit this resource to the 'one api call'
-  principle. Instead, the terraform schema stores a list of associated labels. And, when creating or deleting or updated, it will make one api call PER
-  list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way
-  then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the
-  -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this
-  provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means
-  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done.
-  So you'll perhaps have to use refresh state functions in tf cli to resolve.
+  Associate label(s) to a job template.
 ---
 
 # awx_job_template_label (Resource)
 
-The /api/v2/job_templates/{id}/labels/ returns all label objects associated to the template. But, when asked to associate a label or 
-                              dissassociate a label, you must post a request once per label name.Therefore, I couldn't find a way to limit this resource to the 'one api call' 
-                              principle. Instead, the terraform schema stores a list of associated labels. And, when creating or deleting or updated, it will make one api call PER 
-                              list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way 
-                              then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the 
-                              -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this 
-                              provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means 
-							  if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. 
-							  So you'll perhaps have to use refresh state functions in tf cli to resolve.
+Associate label(s) to a job template.
 
 ## Example Usage
 

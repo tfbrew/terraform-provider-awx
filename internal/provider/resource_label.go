@@ -36,7 +36,7 @@ func (r *LabelsResource) Metadata(ctx context.Context, req resource.MetadataRequ
 
 func (r *LabelsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Create a label resource. NOTE, the AWX Tower API does NOT contain a delete method for labels. Therefore, any terraform destroy actions will succeed in terraform and remove them from your state, but will NOT have actually removed the label from the AWX Tower instance.",
+		Description: "Create a label resource. NOTE, the AWX Tower API does NOT contain a delete method for labels. Therefore, any terraform destroy actions will succeed in terraform and remove them from your state, but will not have necessarily removed the label from the AWX Tower instance.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
