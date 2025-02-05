@@ -61,7 +61,7 @@ type WorkflowJobTemplateAPIModel struct {
 	Id                   int    `json:"id"`
 	Name                 string `json:"name"`
 	Description          any    `json:"description,omitempty"`
-	ExtraVars            any    `json:"extra_vars,omitempty"`
+	ExtraVars            string `json:"extra_vars"`
 	Organization         int    `json:"organization"`
 	SurveyEnabled        bool   `json:"survey_enabled"`
 	AllowSimultaneous    bool   `json:"allow_simultaneous"`
@@ -452,17 +452,24 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	if !(data.ExtraVars.IsNull() && responseData.ExtraVars == nil) {
-		castString, ok := responseData.ExtraVars.(string)
-		if !ok {
-			resp.Diagnostics.AddError("uanble to cast extravaras as string.", "unable to cast as string.")
-			return
-		}
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), castString)...)
+	if !(data.ExtraVars.IsNull() && responseData.ExtraVars == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), responseData.ExtraVars)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
+
+	// if !(data.ExtraVars.IsNull() && responseData.ExtraVars == nil) {
+	// 	castString, ok := responseData.ExtraVars.(string)
+	// 	if !ok {
+	// 		resp.Diagnostics.AddError("uanble to cast extravaras as string.", "unable to cast as string.")
+	// 		return
+	// 	}
+	// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), castString)...)
+	// 	if resp.Diagnostics.HasError() {
+	// 		return
+	// 	}
+	// }
 
 	if !(data.Organization.IsNull() && responseData.Organization == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)

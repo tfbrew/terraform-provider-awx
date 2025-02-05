@@ -51,11 +51,11 @@ type WorkflowJobTemplatesJobNodeResourceModel struct {
 }
 
 type WorkflowJobTemplateNodeAPIModel struct {
-	Id                     int    `json:"id"`
+	// Id                     int    `json:"id"`
 	WorkflowJobId          int    `json:"workflow_job_template"`
 	UnifiedJobTemplateId   int    `json:"unified_job_template"`
-	Inventory              int    `json:"inventory"`
-	ExtraData              any    `json:"extra_data,omitempty"`
+	Inventory              int    `json:"inventory,omitempty"`
+	ExtraData              any    `json:"extra_data"`
 	ScmBranch              string `json:"scm_branch,omitempty"`
 	JobType                string `json:"job_type,omitempty"`
 	JobTags                string `json:"job_tags,omitempty"`
@@ -64,7 +64,7 @@ type WorkflowJobTemplateNodeAPIModel struct {
 	DiffMode               bool   `json:"diff_mode,omitempty"`
 	Verbosity              int    `json:"verbosity,omitempty"`
 	AllParentsMustConverge bool   `json:"all_parents_must_converge"`
-	Identifier             string `json:"identifier"`
+	Identifier             string `json:"identifier,omitempty"`
 }
 
 func (r *WorkflowJobTemplatesJobNodeResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -262,7 +262,8 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 	}
 
 	tmp := struct {
-		Id int `json:"id"`
+		Id         int    `json:"id"`
+		Identifier string `json:"identifier`
 	}{}
 
 	defer httpResp.Body.Close()
@@ -284,6 +285,10 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 	idAsString := strconv.Itoa(tmp.Id)
 
 	data.Id = types.StringValue(idAsString)
+
+	if data.Identifier.IsUnknown() {
+		data.Identifier = types.StringValue(tmp.Identifier)
+	}
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
