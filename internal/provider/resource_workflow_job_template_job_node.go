@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &WorkflowJobTemplatesJobNodeResource{}
 var _ resource.ResourceWithImportState = &WorkflowJobTemplatesJobNodeResource{}
 
@@ -27,12 +26,10 @@ func NewWorkflowJobTemplatesJobNodeResource() resource.Resource {
 	return &WorkflowJobTemplatesJobNodeResource{}
 }
 
-// WorkflowJobTemplatesJobNodeResource defines the resource implementation.
 type WorkflowJobTemplatesJobNodeResource struct {
 	client *AwxClient
 }
 
-// WorkflowJobTemplatesJobNodeResourceModel describes the resource data model.
 type WorkflowJobTemplatesJobNodeResourceModel struct {
 	Id                     types.String `tfsdk:"id"`
 	WorkflowJobId          types.Int32  `tfsdk:"workflow_job_template_id"`
@@ -51,7 +48,6 @@ type WorkflowJobTemplatesJobNodeResourceModel struct {
 }
 
 type WorkflowJobTemplateNodeAPIModel struct {
-	// Id                     int    `json:"id"`
 	WorkflowJobId          int    `json:"workflow_job_template"`
 	UnifiedJobTemplateId   int    `json:"unified_job_template"`
 	Inventory              int    `json:"inventory,omitempty"`
@@ -160,7 +156,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Configure(ctx context.Context, req
 func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -228,7 +223,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 
 	url := r.client.endpoint + "/api/v2/workflow_job_template_nodes/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -290,21 +284,18 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 		data.Identifier = types.StringValue(tmp.Identifier)
 	}
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	//set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -314,7 +305,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -403,11 +393,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 		}
 
 		if len(rawExtraData) != 0 {
-			// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), "{}")...)
-			// 	if resp.Diagnostics.HasError() {
-			// 		return
-			// 	}
-			// } else {
 			tempMap := make(map[string]any, len(rawExtraData))
 			for k, v := range rawExtraData {
 				tempMap[k] = v
@@ -496,12 +481,12 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			return
 		}
 	}
-	// if !(data.AllParentsMustConverge.IsNull() && (responseData.AllParentsMustConverge)) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("all_parents_must_converge"), responseData.AllParentsMustConverge)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
+
 	if !(data.Identifier.IsNull() && (responseData.Identifier == "")) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identifier"), responseData.Identifier)...)
 		if resp.Diagnostics.HasError() {
@@ -514,14 +499,12 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -568,7 +551,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -601,21 +583,18 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *WorkflowJobTemplatesJobNodeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// set url for create HTTP request
+
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -624,7 +603,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Delete(ctx context.Context, req re
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(

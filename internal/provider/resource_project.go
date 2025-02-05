@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &ProjectResource{}
 var _ resource.ResourceWithImportState = &ProjectResource{}
 
@@ -27,7 +26,6 @@ func NewProjectResource() resource.Resource {
 	return &ProjectResource{}
 }
 
-// ProjectResource defines the resource implementation.
 type ProjectResource struct {
 	client *AwxClient
 }
@@ -300,7 +298,6 @@ func (r *ProjectResource) Configure(ctx context.Context, req resource.ConfigureR
 func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data ProjectModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -372,21 +369,18 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
 	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data ProjectModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -520,14 +514,12 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data ProjectModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -600,21 +592,18 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
 	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data ProjectModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for delete HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

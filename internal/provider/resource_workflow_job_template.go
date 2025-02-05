@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &WorkflowJobTemplatesResource{}
 var _ resource.ResourceWithImportState = &WorkflowJobTemplatesResource{}
 
@@ -27,12 +26,10 @@ func NewWorkflowJobTemplatesResource() resource.Resource {
 	return &WorkflowJobTemplatesResource{}
 }
 
-// WorkflowJobTemplatesResource defines the resource implementation.
 type WorkflowJobTemplatesResource struct {
 	client *AwxClient
 }
 
-// WorkflowJobTemplatesResourceModel describes the resource data model.
 type WorkflowJobTemplatesResourceModel struct {
 	Id                   types.String `tfsdk:"id"`
 	Name                 types.String `tfsdk:"name"`
@@ -217,7 +214,6 @@ func (r *WorkflowJobTemplatesResource) Configure(ctx context.Context, req resour
 func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data WorkflowJobTemplatesResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -296,7 +292,6 @@ func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.
 
 	url := r.client.endpoint + "/api/v2/workflow_job_templates/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -352,21 +347,18 @@ func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.
 
 	data.Id = types.StringValue(idAsString)
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data WorkflowJobTemplatesResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -375,7 +367,6 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -459,18 +450,6 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	// if !(data.ExtraVars.IsNull() && responseData.ExtraVars == nil) {
-	// 	castString, ok := responseData.ExtraVars.(string)
-	// 	if !ok {
-	// 		resp.Diagnostics.AddError("uanble to cast extravaras as string.", "unable to cast as string.")
-	// 		return
-	// 	}
-	// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), castString)...)
-	// 	if resp.Diagnostics.HasError() {
-	// 		return
-	// 	}
-	// }
-
 	if !(data.Organization.IsNull() && responseData.Organization == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
@@ -478,25 +457,21 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	// if !(data.SurveyEnabled.IsNull() && responseData.SurveyEnabled) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("survey_enabled"), responseData.SurveyEnabled)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// if !(data.AllowSimultaneous.IsNull() && responseData.AllowSimultaneous) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_simultaneous"), responseData.AllowSimultaneous)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-	// if !(data.AskVariablesOnLaunch.IsNull() && responseData.AskVariablesOnLaunch) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_variables_on_launch"), responseData.AskVariablesOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
+
 	if !(data.Inventory.IsNull() && responseData.Inventory == nil) {
 		convertInt, ok := responseData.Inventory.(float64)
 		if !ok {
@@ -521,54 +496,49 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 			return
 		}
 	}
-	// if !(data.AskInventoryOnLaunch.IsNull() && responseData.AskInventoryOnLaunch) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_inventory_on_launch"), responseData.AskInventoryOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-	// if !(data.AskScmBranchOnLaunch.IsNull() && responseData.AskScmBranchOnLaunch) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_scm_branch_on_launch"), responseData.AskScmBranchOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-	// if !(data.AskLimitOnLaunch.IsNull() && responseData.AskLimitOnLaunch) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_limit_on_launch"), responseData.AskLimitOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-	// if !(data.WebhookService.IsNull() && responseData.WebhookService == "") {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_service"), responseData.WebhookService)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
+
 	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), responseData.WebhookCredential)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	// if !(data.AskLabelsOnLaunch.IsNull() && responseData.AskLabelsOnLaunch) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_labels_on_launch"), responseData.AskLabelsOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-	// if !(data.AskSkipTagsOnLaunch.IsNull() && responseData.AskSkipTagsOnLaunch) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_skip_tags_on_launch"), responseData.AskSkipTagsOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-	// if !(data.AskTagsOnLaunch.IsNull() && responseData.AskTagsOnLaunch) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_tags_on_launch"), responseData.AskTagsOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
+
 	if !(data.SkipTags.IsNull() && responseData.SkipTags == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_tags"), responseData.SkipTags)...)
 		if resp.Diagnostics.HasError() {
@@ -587,14 +557,12 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data WorkflowJobTemplatesResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -641,7 +609,6 @@ func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -674,21 +641,17 @@ func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *WorkflowJobTemplatesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data WorkflowJobTemplatesResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -697,7 +660,6 @@ func (r *WorkflowJobTemplatesResource) Delete(ctx context.Context, req resource.
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
