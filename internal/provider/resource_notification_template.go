@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &NotificationTemplatesResource{}
 var _ resource.ResourceWithImportState = &NotificationTemplatesResource{}
 
@@ -28,12 +27,10 @@ func NewNotificationTemplatesResource() resource.Resource {
 	return &NotificationTemplatesResource{}
 }
 
-// NotificationTemplatesResource defines the resource implementation.
 type NotificationTemplatesResource struct {
 	client *AwxClient
 }
 
-// NotificationTemplatesResourceModel describes the resource data model.
 type NotificationTemplatesResourceModel struct {
 	Id                        types.String `tfsdk:"id"`
 	Name                      types.String `tfsdk:"name"`
@@ -241,23 +238,18 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 
 	data.Id = types.StringValue(idAsString)
 
-	// Once this object is created, the token value in the NotificationConfiguration field will never be returned as anythong
-	// other than blank by the AWX Tower API. So, let's
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data NotificationTemplatesResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -267,7 +259,6 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/notification_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -320,12 +311,10 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		}
 	}
 
-	// if !(data.Description.IsNull() && responseData.Description == "") {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
 	if !(data.Organization.IsNull() && responseData.Organization == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)

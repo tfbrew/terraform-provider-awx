@@ -17,14 +17,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &CredentialTypeDataSource{}
 
 func NewCredentialTypeDataSource() datasource.DataSource {
 	return &CredentialTypeDataSource{}
 }
 
-// CredentialTypeDataSource defines the data source implementation.
 type CredentialTypeDataSource struct {
 	client *AwxClient
 }
@@ -83,7 +81,6 @@ func (d CredentialTypeDataSource) ConfigValidators(ctx context.Context) []dataso
 }
 
 func (d *CredentialTypeDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -104,7 +101,6 @@ func (d *CredentialTypeDataSource) Configure(ctx context.Context, req datasource
 func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data CredentialTypeModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -118,7 +114,7 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 		id, err := strconv.Atoi(data.Id.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable convert id from string to int.",
+				"Can't generate read() url with Id.",
 				fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 			return
 		}
@@ -158,7 +154,7 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 		err = json.Unmarshal(body, &responseData)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to unmarshall response body into object",
+				"Unable to unmarshal response body into object",
 				fmt.Sprintf("Error =  %v.", err.Error()))
 			return
 		}
@@ -172,7 +168,7 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 		err = json.Unmarshal(body, &nameResult)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to unmarshall response body into object",
+				"Unable to unmarshal response body into result object",
 				fmt.Sprintf("Error:  %v.", err.Error()))
 			return
 		}
@@ -214,7 +210,7 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 				}
 				tmpInputsJson, err := json.Marshal(tmpInputsMap)
 				if err != nil {
-					resp.Diagnostics.AddError("marshall issue", "Unable to marshall Inputs into json for storage.")
+					resp.Diagnostics.AddError("Marshal issue", "Unable to marshal Inputs into json for storage.")
 					return
 				}
 				data.Inputs = types.StringValue(string(tmpInputsJson))
@@ -239,7 +235,7 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 				}
 				tmpInjectorsJson, err := json.Marshal(tmpInjectorsMap)
 				if err != nil {
-					resp.Diagnostics.AddError("marshall issue", "Unable to marshall Injectors into json for storage.")
+					resp.Diagnostics.AddError("Marshal issue", "Unable to marshall Injectors into json for storage.")
 					return
 				}
 				data.Injectors = types.StringValue(string(tmpInjectorsJson))

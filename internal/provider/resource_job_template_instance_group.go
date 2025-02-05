@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &JobTemplateInstanceGroupsResource{}
 var _ resource.ResourceWithImportState = &JobTemplateInstanceGroupsResource{}
 
@@ -23,12 +22,10 @@ func NewJobTemplateInstanceGroupsResource() resource.Resource {
 	return &JobTemplateInstanceGroupsResource{}
 }
 
-// JobTemplateInstanceGroupsResource defines the resource implementation.
 type JobTemplateInstanceGroupsResource struct {
 	client *AwxClient
 }
 
-// JobTemplateInstanceGroupsResourceModel describes the resource data model.
 type JobTemplateInstanceGroupsResourceModel struct {
 	JobTemplateId     types.String `tfsdk:"job_template_id"`
 	InstanceGroupsIDs types.Set    `tfsdk:"instance_groups_ids"`
@@ -56,7 +53,6 @@ func (r *JobTemplateInstanceGroupsResource) Schema(ctx context.Context, req reso
 }
 
 func (r *JobTemplateInstanceGroupsResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -78,14 +74,12 @@ func (r *JobTemplateInstanceGroupsResource) Configure(ctx context.Context, req r
 func (r *JobTemplateInstanceGroupsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data JobTemplateInstanceGroupsResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -114,21 +108,18 @@ func (r *JobTemplateInstanceGroupsResource) Create(ctx context.Context, req reso
 		}
 	}
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data JobTemplateInstanceGroupsResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.JobTemplateId.ValueString()))
@@ -137,7 +128,6 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -191,14 +181,12 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 
 	data.InstanceGroupsIDs = listValue
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateInstanceGroupsResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -213,7 +201,6 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -294,21 +281,18 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 		}
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateInstanceGroupsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data JobTemplateInstanceGroupsResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

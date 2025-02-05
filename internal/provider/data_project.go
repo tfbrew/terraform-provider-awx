@@ -16,14 +16,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &ProjectDataSource{}
 
 func NewProjectDataSource() datasource.DataSource {
 	return &ProjectDataSource{}
 }
 
-// ProjectDataSource defines the data source implementation.
 type ProjectDataSource struct {
 	client *AwxClient
 }
@@ -118,7 +116,6 @@ func (d *ProjectDataSource) ConfigValidators(ctx context.Context) []datasource.C
 }
 
 func (d *ProjectDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -139,7 +136,6 @@ func (d *ProjectDataSource) Configure(ctx context.Context, req datasource.Config
 func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data ProjectModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
