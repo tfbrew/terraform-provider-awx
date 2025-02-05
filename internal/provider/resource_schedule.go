@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &ScheduleResource{}
 var _ resource.ResourceWithImportState = &ScheduleResource{}
 
@@ -26,7 +25,6 @@ func NewScheduleResource() resource.Resource {
 	return &ScheduleResource{}
 }
 
-// ScheduleResource defines the resource implementation.
 type ScheduleResource struct {
 	client *AwxClient
 }
@@ -93,7 +91,6 @@ func (r *ScheduleResource) Configure(ctx context.Context, req resource.Configure
 func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data ScheduleModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -120,7 +117,6 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 
 	url := r.client.endpoint + "/api/v2/schedules/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -170,21 +166,18 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 
 	data.Id = types.StringValue(idAsString)
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data ScheduleModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -194,7 +187,6 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -268,7 +260,6 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data ScheduleModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -305,7 +296,6 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -331,21 +321,18 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *ScheduleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data ScheduleModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -355,7 +342,6 @@ func (r *ScheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
