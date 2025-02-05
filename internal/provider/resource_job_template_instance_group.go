@@ -31,7 +31,7 @@ type JobTemplateInstanceGroupsResource struct {
 // JobTemplateInstanceGroupsResourceModel describes the resource data model.
 type JobTemplateInstanceGroupsResourceModel struct {
 	JobTemplateId     types.String `tfsdk:"job_template_id"`
-	InstanceGroupsIDs types.List   `tfsdk:"instance_groups_ids"`
+	InstanceGroupsIDs types.Set    `tfsdk:"instance_groups_ids"`
 }
 
 func (r *JobTemplateInstanceGroupsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -40,15 +40,15 @@ func (r *JobTemplateInstanceGroupsResource) Metadata(ctx context.Context, req re
 
 func (r *JobTemplateInstanceGroupsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `The /api/v2/job_templates/{id}/instance_groups/ returns all instance_groups objects associated to the template. But, when asked to associate an instance_group or principle. Instead, the terraform schema stores a list of associated instance_groups. And, when creating or deleting or updated, it will make one api call PER list element. This allows the import function to work by only needing to pass in one job template ID to fill out the entire resource. If this was not done this way then when someone tries to to use the terraform plan -generate-config-out=./file.tf functionality it will create the resource block correctly. Otherwise, the -generate-config-out function would have to generate several resource blocks per template id and it's not set up to do that, per my current awareness. As I'm writing this provider specifically so we can use the -generate-config-out option, I felt this was worth the price of breaking this principle. The downside seems to be that this means if one of the list element's api calls succeeds, but a subsequent list element's fails, the success of the first element's call is not magially un-done. So you'll perpas have to use refresh state functions in tf cli to resolve.`,
+		Description: "Associate instance group(s) to a job template.",
 		Attributes: map[string]schema.Attribute{
 			"job_template_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the containing Job Template.",
 			},
-			"instance_groups_ids": schema.ListAttribute{
+			"instance_groups_ids": schema.SetAttribute{
 				Required:    true,
-				Description: "An ordered list of instance_group IDs associated to a particular Job Template.",
+				Description: "An unordered list of instance_group IDs associated to a particular Job Template.",
 				ElementType: types.Int32Type,
 			},
 		},
@@ -184,7 +184,7 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.ListValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
 	if diags.HasError() {
 		return
 	}

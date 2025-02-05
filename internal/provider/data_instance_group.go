@@ -53,7 +53,7 @@ func (d *InstanceGroupDataSource) Metadata(ctx context.Context, req datasource.M
 
 func (d *InstanceGroupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manage Instance Groups",
+		Description: "Get Instance Groups.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
