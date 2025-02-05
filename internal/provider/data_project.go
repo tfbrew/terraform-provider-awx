@@ -162,7 +162,6 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		url = fmt.Sprintf("/api/v2/projects/?name=%s", urlParser.QueryEscape(data.Name.ValueString()))
 	}
 
-	url = fmt.Sprintf("/api/v2/projects/%d/", id)
 	successCodes := []int{200, 404}
 	httpResp, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
