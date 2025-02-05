@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &JobTemplateResource{}
 var _ resource.ResourceWithImportState = &JobTemplateResource{}
 
@@ -31,7 +30,6 @@ func NewJobTemplateResource() resource.Resource {
 	return &JobTemplateResource{}
 }
 
-// JobTemplateResource defines the resource implementation.
 type JobTemplateResource struct {
 	client *AwxClient
 }
@@ -363,7 +361,6 @@ func (r *JobTemplateResource) Configure(ctx context.Context, req resource.Config
 func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data JobTemplateModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -372,7 +369,6 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 
 	url := r.client.endpoint + "/api/v2/job_templates/"
 
-	// get body data for HTTP request
 	var bodyData JobTemplateAPIModel
 	if !(data.Name.IsNull()) {
 		bodyData.Name = data.Name.ValueString()
@@ -514,7 +510,6 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -571,21 +566,18 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 
 	data.Id = types.StringValue(idAsString)
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data JobTemplateModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -595,7 +587,6 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -662,25 +653,12 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// if !(data.Description.IsNull() && responseData.Description == "") {
-	// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
-	// 	if resp.Diagnostics.HasError() {
-	// 		return
-	// 	}
-	// }
 
-	//data.JobType = types.StringValue(responseData.JobType)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_type"), responseData.JobType)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// if !(data.JobType.IsNull() && responseData.JobType == "") {
-	// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_type"), responseData.JobType)...)
-	// 	if resp.Diagnostics.HasError() {
-	// 		return
-	// 	}
-	// }
-	//data.Inventory = types.Int32Value(int32(responseData.Inventory))
+
 	if !(data.Inventory.IsNull() && responseData.Inventory == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
 		if resp.Diagnostics.HasError() {
@@ -688,7 +666,6 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 
-	//data.Project = types.Int32Value(int32(responseData.Project))
 	if !(data.Project.IsNull() && responseData.Project == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), responseData.Project)...)
 		if resp.Diagnostics.HasError() {
@@ -696,7 +673,6 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 
-	//data.Playbook = types.StringValue(responseData.Playbook)
 	if !(data.Playbook.IsNull() && responseData.Playbook == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("playbook"), responseData.Playbook)...)
 		if resp.Diagnostics.HasError() {
@@ -704,99 +680,61 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 
-	// data.ScmBranch = types.StringValue(responseData.ScmBranch)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// if !(data.ScmBranch.IsNull() && responseData.ScmBranch == "") {
-	// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
-	// 	if resp.Diagnostics.HasError() {
-	// 		return
-	// 	}
-	// }
 
-	// data.Forks = types.Int32Value(int32(responseData.Forks))
-	//if !(data.Forks.IsNull() && responseData.Forks == 0) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("forks"), responseData.Forks)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	//	}
 
-	// data.Limit = types.StringValue(responseData.Limit)
-	// if !(data.Limit.IsNull() && responseData.Limit == "") {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("limit"), responseData.Limit)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.Verbosity = types.Int32Value(int32(responseData.Verbosity))
-	// if !(data.Verbosity.IsNull() && responseData.Verbosity == 0) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("verbosity"), responseData.Verbosity)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.ExtraVars = types.StringValue(responseData.ExtraVars)
-	// if !(data.ExtraVars.IsNull() && responseData.ExtraVars == "") {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), responseData.ExtraVars)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.JobTags = types.StringValue(responseData.JobTags)
-	// if !(data.JobTags.IsNull() && responseData.JobTags == "") {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_tags"), responseData.JobTags)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.ForceHandlers = types.BoolValue(responseData.ForceHandlers)
-	// if !(data.ForceHandlers.IsNull() && data.ForceHandlers.ValueBool() == responseData.ForceHandlers) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("force_handlers"), responseData.ForceHandlers)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	//data.SkipTags = types.StringValue(responseData.SkipTags)
-	// if !(data.SkipTags.IsNull() && responseData.SkipTags == "") {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_tags"), responseData.SkipTags)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	//data.StartAtTask = types.StringValue(responseData.StartAtTask)
-	// if !(data.StartAtTask.IsNull() && responseData.StartAtTask == "") {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("start_at_task"), responseData.StartAtTask)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.Timeout = types.Int32Value(int32(responseData.Timeout))
-	// if !(data.Timeout.IsNull() && responseData.Timeout == 0) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), responseData.Timeout)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.UseFactCache = types.BoolValue(responseData.UseFactCache)
-	// if !(data.UseFactCache.IsNull() && data.UseFactCache.ValueBool() == responseData.UseFactCache) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("use_fact_cache"), responseData.UseFactCache)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.ExecutionEnvironment = types.Int32Value(int32(responseData.ExecutionEnvironment))
 	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), responseData.ExecutionEnvironment)...)
 		if resp.Diagnostics.HasError() {
@@ -804,175 +742,111 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 
-	// data.HostConfigKey = types.StringValue(responseData.HostConfigKey)
-	// if !(data.HostConfigKey.IsNull() && responseData.HostConfigKey == "") {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host_config_key"), responseData.HostConfigKey)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskScmBranchOnLaunch = types.BoolValue(responseData.AskScmBranchOnLaunch)
-	// if !(data.AskScmBranchOnLaunch.IsNull() && data.AskScmBranchOnLaunch.ValueBool() == responseData.AskScmBranchOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_scm_branch_on_launch"), responseData.AskScmBranchOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskDiffModeOnLaunch = types.BoolValue(responseData.AskDiffModeOnLaunch)
-	// if !(data.AskDiffModeOnLaunch.IsNull() && data.AskDiffModeOnLaunch.ValueBool() == responseData.AskDiffModeOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_diff_mode_on_launch"), responseData.AskDiffModeOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskVariablesOnLaunch = types.BoolValue(responseData.AskVariablesOnLaunch)
-	// if !(data.AskVariablesOnLaunch.IsNull() && data.AskVariablesOnLaunch.ValueBool() == responseData.AskVariablesOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_variables_on_launch"), responseData.AskVariablesOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	//data.AskLimitOnLaunch = types.BoolValue(responseData.AskLimitOnLaunch)
-	// if !(data.AskLimitOnLaunch.IsNull() && data.AskLimitOnLaunch.ValueBool() == responseData.AskLimitOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_limit_on_launch"), responseData.AskLimitOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskTagsOnLaunch = types.BoolValue(responseData.AskTagsOnLaunch)
-	// if !(data.AskTagsOnLaunch.IsNull() && data.AskTagsOnLaunch.ValueBool() == responseData.AskTagsOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_tags_on_launch"), responseData.AskTagsOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskSkipTagsOnLaunch = types.BoolValue(responseData.AskSkipTagsOnLaunch)
-	// if !(data.AskSkipTagsOnLaunch.IsNull() && data.AskSkipTagsOnLaunch.ValueBool() == responseData.AskSkipTagsOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_skip_tags_on_launch"), responseData.AskSkipTagsOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskJobTypeOnLaunch = types.BoolValue(responseData.AskJobTypeOnLaunch)
-	// if !(data.AskJobTypeOnLaunch.IsNull() && data.AskJobTypeOnLaunch.ValueBool() == responseData.AskJobTypeOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_job_type_on_launch"), responseData.AskJobTypeOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskVerbosityOnLaunch = types.BoolValue(responseData.AskVerbosityOnLaunch)
-	// if !(data.AskVerbosityOnLaunch.IsNull() && data.AskVerbosityOnLaunch.ValueBool() == responseData.AskVerbosityOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_verbosity_on_launch"), responseData.AskVerbosityOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskInventoryOnLaunch = types.BoolValue(responseData.AskInventoryOnLaunch)
-	// if !(data.AskInventoryOnLaunch.IsNull() && data.AskInventoryOnLaunch.ValueBool() == responseData.AskInventoryOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_inventory_on_launch"), responseData.AskInventoryOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskCredentialOnLaunch = types.BoolValue(responseData.AskCredentialOnLaunch)
-	// if !(data.AskCredentialOnLaunch.IsNull() && data.AskCredentialOnLaunch.ValueBool() == responseData.AskCredentialOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_credential_on_launch"), responseData.AskCredentialOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskExecutionEnvironmenOnLaunch = types.BoolValue(responseData.AskExecutionEnvironmenOnLaunch)
-	// if !(data.AskExecutionEnvironmenOnLaunch.IsNull() && data.AskExecutionEnvironmenOnLaunch.ValueBool() == responseData.AskExecutionEnvironmenOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_execution_environment_on_launch"), responseData.AskExecutionEnvironmenOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskLablesOnLaunch = types.BoolValue(responseData.AskLablesOnLaunch)
-	// if !(data.AskLablesOnLaunch.IsNull() && data.AskLablesOnLaunch.ValueBool() == responseData.AskLablesOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_labels_on_launch"), responseData.AskLablesOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskForksOnLaunch = types.BoolValue(responseData.AskForksOnLaunch)
-	// if !(data.AskForksOnLaunch.IsNull() && data.AskForksOnLaunch.ValueBool() == responseData.AskForksOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_forks_on_launch"), responseData.AskForksOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskJobSliceCountOnLaunch = types.BoolValue(responseData.AskJobSliceCountOnLaunch)
-	// if !(data.AskJobSliceCountOnLaunch.IsNull() && data.AskJobSliceCountOnLaunch.ValueBool() == responseData.AskJobSliceCountOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_job_slice_count_on_launch"), responseData.AskJobSliceCountOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AskTimeoutOnLaunch = types.BoolValue(responseData.AskTimeoutOnLaunch)
-	// if !(data.AskTimeoutOnLaunch.IsNull() && data.AskTimeoutOnLaunch.ValueBool() == responseData.AskTimeoutOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_timeout_on_launch"), responseData.AskTimeoutOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	//data.AskInstanceGroupsOnLaunch = types.BoolValue(responseData.AskInstanceGroupsOnLaunch)
-	// if !(data.AskInstanceGroupsOnLaunch.IsNull() && data.AskInstanceGroupsOnLaunch.ValueBool() == responseData.AskInstanceGroupsOnLaunch) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_instance_groups_on_launch"), responseData.AskInstanceGroupsOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.SurveyEnabled = types.BoolValue(responseData.SurveyEnabled)
-	// if !(data.SurveyEnabled.IsNull() && data.SurveyEnabled.ValueBool() == responseData.SurveyEnabled) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("survey_enabled"), responseData.SurveyEnabled)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.BecomeEnabled = types.BoolValue(responseData.BecomeEnabled)
-	// if !(data.BecomeEnabled.IsNull() && data.BecomeEnabled.ValueBool() == responseData.BecomeEnabled) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("become_enabled"), responseData.BecomeEnabled)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.DiffMode = types.BoolValue(responseData.DiffMode)
-	// if !(data.DiffMode.IsNull() && data.DiffMode.ValueBool() == responseData.DiffMode) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), responseData.DiffMode)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.AllowSimultaneous = types.BoolValue(responseData.AllowSimultaneous)
-	// if !(data.AllowSimultaneous.IsNull() && data.AllowSimultaneous.ValueBool() == responseData.AllowSimultaneous) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_simultaneous"), responseData.AllowSimultaneous)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	// data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv)
 	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == nil) {
 		if data.CustomVirtualEnv.ValueString() == "" && responseData.CustomVirtualEnv == nil {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), "")...)
@@ -992,22 +866,17 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 			return
 		}
 	}
-	// data.JobSliceCount = types.Int32Value(int32(responseData.JobSliceCount))
-	// if !(data.JobSliceCount.IsNull() && responseData.JobSliceCount == 1) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_slice_count"), responseData.JobSliceCount)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-	//data.WebhookService = types.StringValue(responseData.WebhookService)
-	// if !(data.WebhookService.IsNull() && responseData.WebhookService == "") {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_service"), responseData.WebhookService)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
 
-	//data.WebhookCredential = types.StringValue(responseData.WebhookCredential.(string))
 	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == nil) {
 		if data.WebhookCredential.ValueString() == "" && responseData.WebhookCredential == nil {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), "")...)
@@ -1028,22 +897,15 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		}
 	}
 
-	//data.PreventInstanceGroupFallback = types.BoolValue(responseData.PreventInstanceGroupFallback)
-	// if !(data.PreventInstanceGroupFallback.IsNull() && data.PreventInstanceGroupFallback.ValueBool() == responseData.PreventInstanceGroupFallback) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("prevent_instance_group_fallback"), responseData.PreventInstanceGroupFallback)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
-
-	// Save updated data into Terraform state
-	//resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -1104,7 +966,6 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -1114,7 +975,6 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -1138,21 +998,18 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data JobTemplateModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -1162,7 +1019,6 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &JobTemplateLabelsResource{}
 var _ resource.ResourceWithImportState = &JobTemplateLabelsResource{}
 
@@ -23,12 +22,10 @@ func NewJobTemplateLabelsResource() resource.Resource {
 	return &JobTemplateLabelsResource{}
 }
 
-// JobTemplateLabelsResource defines the resource implementation.
 type JobTemplateLabelsResource struct {
 	client *AwxClient
 }
 
-// JobTemplateLabelsResourceModel describes the resource data model.
 type JobTemplateLabelsResourceModel struct {
 	JobTemplateId types.String `tfsdk:"job_template_id"`
 	LabelIDs      types.Set    `tfsdk:"label_ids"`
@@ -56,7 +53,6 @@ func (r *JobTemplateLabelsResource) Schema(ctx context.Context, req resource.Sch
 }
 
 func (r *JobTemplateLabelsResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -78,14 +74,12 @@ func (r *JobTemplateLabelsResource) Configure(ctx context.Context, req resource.
 func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data JobTemplateLabelsResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -112,21 +106,18 @@ func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.Cre
 		}
 	}
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data JobTemplateLabelsResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.JobTemplateId.ValueString()))
@@ -135,7 +126,6 @@ func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadR
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -189,14 +179,12 @@ func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadR
 
 	data.LabelIDs = listValue
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateLabelsResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -211,7 +199,6 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -292,7 +279,6 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 		}
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -306,7 +292,6 @@ func (r *JobTemplateLabelsResource) Delete(ctx context.Context, req resource.Del
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

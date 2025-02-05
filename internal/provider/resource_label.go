@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &LabelsResource{}
 var _ resource.ResourceWithImportState = &LabelsResource{}
 
@@ -25,7 +24,6 @@ func NewLabelsResource() resource.Resource {
 	return &LabelsResource{}
 }
 
-// LabelsResource defines the resource implementation.
 type LabelsResource struct {
 	client *AwxClient
 }
@@ -80,7 +78,6 @@ func (r *LabelsResource) Configure(ctx context.Context, req resource.ConfigureRe
 func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data LabelModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -101,7 +98,6 @@ func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	url := r.client.endpoint + "/api/v2/labels/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -150,21 +146,18 @@ func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	data.Id = types.StringValue(idAsString)
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data LabelModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -173,7 +166,6 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/labels/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -247,14 +239,12 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data LabelModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -277,7 +267,6 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/labels/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -301,7 +290,6 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -309,9 +297,7 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 func (r *LabelsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data LabelModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}

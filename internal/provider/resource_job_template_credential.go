@@ -203,15 +203,12 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 
 	data.CredentialIds = listValue
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers.
 func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateCredentialResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -226,7 +223,6 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -307,21 +303,18 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 		}
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateCredentialResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data JobTemplateCredentialResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

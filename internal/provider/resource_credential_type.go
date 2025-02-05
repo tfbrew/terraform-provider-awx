@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &CredentialTypeResource{}
 var _ resource.ResourceWithImportState = &CredentialTypeResource{}
 
@@ -27,7 +26,6 @@ func NewCredentialTypeResource() resource.Resource {
 	return &CredentialTypeResource{}
 }
 
-// CredentialTypeResource defines the resource implementation.
 type CredentialTypeResource struct {
 	client *AwxClient
 }
@@ -94,14 +92,11 @@ func (r *CredentialTypeResource) Configure(ctx context.Context, req resource.Con
 func (r *CredentialTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data CredentialTypeModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// set url for create HTTP request
 
 	var bodyData CredentialTypeAPIModel
 
@@ -149,7 +144,6 @@ func (r *CredentialTypeResource) Create(ctx context.Context, req resource.Create
 
 	url := r.client.endpoint + "/api/v2/credential_types/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -199,21 +193,18 @@ func (r *CredentialTypeResource) Create(ctx context.Context, req resource.Create
 
 	data.Id = types.StringValue(idAsString)
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *CredentialTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data CredentialTypeModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -223,7 +214,6 @@ func (r *CredentialTypeResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/credential_types/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -365,14 +355,12 @@ func (r *CredentialTypeResource) Read(ctx context.Context, req resource.ReadRequ
 func (r *CredentialTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data CredentialTypeModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -425,7 +413,6 @@ func (r *CredentialTypeResource) Update(ctx context.Context, req resource.Update
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/credential_types/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -451,21 +438,18 @@ func (r *CredentialTypeResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *CredentialTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data CredentialTypeModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -475,7 +459,6 @@ func (r *CredentialTypeResource) Delete(ctx context.Context, req resource.Delete
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/credential_types/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(

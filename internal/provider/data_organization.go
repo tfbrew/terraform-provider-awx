@@ -16,14 +16,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &OrganizationDataSource{}
 
 func NewOrganizationDataSource() datasource.DataSource {
 	return &OrganizationDataSource{}
 }
 
-// OrganizationDataSource defines the data source implementation.
 type OrganizationDataSource struct {
 	client *AwxClient
 }
@@ -74,7 +72,6 @@ func (d OrganizationDataSource) ConfigValidators(ctx context.Context) []datasour
 }
 
 func (d *OrganizationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -95,7 +92,6 @@ func (d *OrganizationDataSource) Configure(ctx context.Context, req datasource.C
 func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data OrganizationModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {

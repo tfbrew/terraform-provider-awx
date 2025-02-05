@@ -24,7 +24,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &InventorySourceResource{}
 var _ resource.ResourceWithImportState = &InventorySourceResource{}
 
@@ -32,7 +31,6 @@ func NewInventorySourceResource() resource.Resource {
 	return &InventorySourceResource{}
 }
 
-// InventorySourceResource defines the resource implementation.
 type InventorySourceResource struct {
 	client *AwxClient
 }
@@ -159,7 +157,6 @@ func (r InventorySourceResource) ValidateConfig(ctx context.Context, req resourc
 	}
 
 	// Required attribute for scm.
-
 	if data.Source.ValueString() == "scm" {
 		if data.SourcePath.IsNull() {
 			resp.Diagnostics.AddAttributeError(
@@ -178,7 +175,6 @@ func (r InventorySourceResource) ValidateConfig(ctx context.Context, req resourc
 	}
 
 	// Not allowed for all sources except scm.
-
 	if data.Source.ValueString() != "scm" {
 		if data.SourcePath.ValueString() != "" || !data.SourcePath.IsNull() {
 			resp.Diagnostics.AddAttributeError(
@@ -226,7 +222,6 @@ func (r *InventorySourceResource) Configure(ctx context.Context, req resource.Co
 func (r *InventorySourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data InventorySourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -295,7 +290,6 @@ func (r *InventorySourceResource) Create(ctx context.Context, req resource.Creat
 
 	url := r.client.endpoint + "/api/v2/inventory_sources/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -345,21 +339,18 @@ func (r *InventorySourceResource) Create(ctx context.Context, req resource.Creat
 
 	data.Id = types.StringValue(idAsString)
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data InventorySourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -369,7 +360,6 @@ func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadReq
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventory_sources/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -540,14 +530,12 @@ func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadReq
 func (r *InventorySourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data InventorySourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -618,7 +606,6 @@ func (r *InventorySourceResource) Update(ctx context.Context, req resource.Updat
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventory_sources/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -644,21 +631,18 @@ func (r *InventorySourceResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *InventorySourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data InventorySourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -668,7 +652,6 @@ func (r *InventorySourceResource) Delete(ctx context.Context, req resource.Delet
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventory_sources/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
