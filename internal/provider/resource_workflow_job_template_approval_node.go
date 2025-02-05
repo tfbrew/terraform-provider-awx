@@ -485,13 +485,6 @@ func (r *WorkflowJobTemplateApprovalNode) Update(ctx context.Context, req resour
 		return
 	}
 
-	// id, err := strconv.Atoi(data.Id.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Unable convert id from string to int",
-	// 		fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-	// }
-
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", data.ApprovalTemplateId.ValueInt32())
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, strings.NewReader(string(jsonData)))
