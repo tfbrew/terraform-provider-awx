@@ -88,7 +88,8 @@ func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource
 				},
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "Notification template name.",
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
@@ -97,7 +98,8 @@ func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource
 				Description: "Defaults to `\"\"`",
 			},
 			"organization": schema.Int32Attribute{
-				Required: true,
+				Required:    true,
+				Description: "Organization ID for the notification template.",
 			},
 			"notification_type": schema.StringAttribute{
 				Required:    true,

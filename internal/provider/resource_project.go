@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -361,10 +360,10 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	url := "/api/v2/projects/"
 	successCodes := []int{201}
-	returnedData, err := r.client.MakeHTTPCreateRequestToAPI(ctx, url, jsonData, successCodes)
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, jsonData, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"error making API http request",
+			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
@@ -395,40 +394,14 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 			fmt.Sprintf("Unable to convert id: %v.", data.Id))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/projects/%d/", id)
 
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	url := fmt.Sprintf("/api/v2/projects/%d/", id)
+	successCodes := []int{200, 404}
+	httpResp, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate read request",
-			fmt.Sprintf("url: %v.", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to read project, got error: %v", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
@@ -614,33 +587,18 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/projects/%d/", id)
-
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	url := fmt.Sprintf("/api/v2/projects/%d/", id)
+	successCodes := []int{200}
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, jsonData, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate update request",
-			fmt.Sprintf("url: %v, data: %+v ", url, jsonData))
+			"Error making API update request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to update project, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected 200, got %v.", httpResp.StatusCode))
-		return
-	}
+	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
+	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -656,7 +614,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	// set url for create HTTP request
+	// set url for delete HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -664,33 +622,14 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 			fmt.Sprintf("Unable to convert id: %v.", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/projects/%d/", id)
+	url := fmt.Sprintf("/api/v2/projects/%d/", id)
 
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	successCodes := []int{202, 204}
+	_, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate delete request",
-			fmt.Sprintf("url: %v", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to delete project, got error: %s.", err))
-		return
-	}
-
-	// 202 - accepted for deletion, 204 - success
-	if httpResp.StatusCode != 202 && httpResp.StatusCode != 204 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected [202, 204], got %v.", httpResp.StatusCode))
+			"Error making API delete request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 }

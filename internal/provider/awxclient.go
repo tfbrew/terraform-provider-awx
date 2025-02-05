@@ -18,37 +18,46 @@ type AwxClient struct {
 
 // A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
 // headers and then makes the actual http request.
-func (c *AwxClient) MakeHTTPRequestToAPI(ctx context.Context, method, url string, body io.Reader) (*http.Response, error) {
+func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, body []byte, successCodes []int) (httpResp *http.Response, errorMessage error) {
 	url = c.endpoint + url
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(body)))
 	if err != nil {
-		return nil, err
+		errorMessage = fmt.Errorf("error generating http request: %v", err)
+		return
 	}
 	httpReq.Header.Add("Content-Type", "application/json")
 	httpReq.Header.Add("Authorization", c.auth)
 
-	//TODO Add if body != nil, set body of http request
-
-	httpResp, err := c.client.Do(httpReq)
+	httpResp, err = c.client.Do(httpReq)
 	if err != nil {
-		return nil, err
+		errorMessage = fmt.Errorf("error doing http request: %v", err)
+		return
 	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			return nil, errors.New("unable to read http request response body")
+
+	var success bool
+	for _, successCode := range successCodes {
+		if httpResp.StatusCode == successCode {
+			success = true
 		}
-
-		return nil, fmt.Errorf("expected 200 (or 404) http response code for API call, got %d with message %s", httpResp.StatusCode, body)
 	}
 
-	return httpResp, nil
+	if !success {
+		body, err := io.ReadAll(httpResp.Body)
+		defer httpResp.Body.Close()
+		if err != nil {
+			errorMessage = errors.New("unable to read http request response body to retrieve error message")
+			return
+		}
+		errorMessage = fmt.Errorf("expected %v http response code for API call, got %d with message %s", successCodes, httpResp.StatusCode, body)
+		return
+	}
+
+	return
 }
 
-func (c *AwxClient) MakeHTTPCreateRequestToAPI(ctx context.Context, url string, body []byte, successCodes []int) (returnedData map[string]any, errorMessage error) {
+func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, body []byte, successCodes []int) (returnedData map[string]any, errorMessage error) {
 	url = c.endpoint + url
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(body)))
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(body)))
 	if err != nil {
 		errorMessage = fmt.Errorf("error generating http request: %v", err)
 		return
@@ -62,8 +71,6 @@ func (c *AwxClient) MakeHTTPCreateRequestToAPI(ctx context.Context, url string, 
 		return
 	}
 
-	defer httpResp.Body.Close()
-
 	var success bool
 	for _, successCode := range successCodes {
 		if httpResp.StatusCode == successCode {
@@ -73,6 +80,7 @@ func (c *AwxClient) MakeHTTPCreateRequestToAPI(ctx context.Context, url string, 
 
 	if !success {
 		body, err := io.ReadAll(httpResp.Body)
+		defer httpResp.Body.Close()
 		if err != nil {
 			errorMessage = errors.New("unable to read http request response body to retrieve error message")
 			return

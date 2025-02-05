@@ -66,9 +66,9 @@ resource "awx_notification_template" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) Notification template name.
 - `notification_type` (String) Only `slack` is supported in this provider currently. Choose from: `email`, `grafan`, `irc`, `mattermost`, `pagerduty`, `rocketchat`, `slack`, `twilio`, `webhook`.
-- `organization` (Number)
+- `organization` (Number) Organization ID for the notification template.
 
 ### Optional
 

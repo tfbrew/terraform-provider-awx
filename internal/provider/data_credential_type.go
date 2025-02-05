@@ -130,11 +130,11 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 		kind := urlParser.QueryEscape(data.Kind.ValueString())
 		url = fmt.Sprintf("/api/v2/credential_types/?name=%s&kind=%s", name, kind)
 	}
-
-	httpResp, err := d.client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
+	successCodes := []int{200, 404}
+	httpResp, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"error making API http request",
+			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}

@@ -67,9 +67,9 @@ resource "awx_job_template_survey_spec" "example" {
 
 ### Required
 
-- `description` (String)
+- `description` (String) Job template survey spec description.
 - `id` (String) ID of job template to attach survey to.
-- `name` (String)
+- `name` (String) Job template survey spec name.
 - `spec` (Attributes List) (see [below for nested schema](#nestedatt--spec))
 
 <a id="nestedatt--spec"></a>

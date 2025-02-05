@@ -152,12 +152,13 @@ func (d *InventorySourceDataSource) Read(ctx context.Context, req datasource.Rea
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url = fmt.Sprintf("/api/v2/inventory_sources/%d/", id)
 
-	httpResp, err := d.client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
+	url = fmt.Sprintf("/api/v2/inventory_sources/%d/", id)
+	successCodes := []int{200, 404}
+	httpResp, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"error making API http request",
+			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
