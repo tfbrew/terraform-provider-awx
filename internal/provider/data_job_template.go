@@ -81,85 +81,108 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 				Description: "Control the level of output ansible will produce as the playbook executes. `0 - Normal`, `1 - Verbose`, `2 - More Verbose`, `3 - Debug`, `4 - r.client.auth Debug`, `5 - WinRM Debug`",
 			},
 			"extra_vars": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Specify `extra_vars` for the template.",
 			},
 			"job_tags": schema.StringAttribute{
 				Computed:    true,
 				Description: "Tags are useful when you have a large playbook, and you want to run a specific part of a play or task. Use commas to separate multiple tags.",
 			},
 			"force_handlers": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Enable forcing playbook handlers to run even if a task fails.",
 			},
 			"skip_tags": schema.StringAttribute{
 				Computed:    true,
 				Description: "Skip tags are useful when you have a large playbook, and you want to skip specific parts of a play or task. Use commas to separate multiple tags.",
 			},
-			"start_at_tags": schema.StringAttribute{
-				Computed: true,
+			"start_at_task": schema.StringAttribute{
+				Computed:    true,
+				Description: "Start the playbook at the task matching this name.",
 			},
 			"timeout": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The amount of time (in seconds) to run before the job is canceled. Defaults to 0 for no job timeout.",
 			},
 			"use_fact_cache": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Enable use of fact caching for the job template.",
 			},
 			"execution_environment": schema.Int32Attribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Execution Environment ID to use for the job template.",
 			},
 			"host_config_key": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Allow provisioning callbacks using this host config key.",
 			},
 			"ask_scm_branch_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for scm branch on launch.",
 			},
 			"ask_diff_mode_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user to enable diff mode (show changes) to files when supported by modules.",
 			},
 			"ask_variables_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for variables on launch.",
 			},
 			"ask_limit_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for limit on launch.",
 			},
 			"ask_tags_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for tags on launch.",
 			},
 			"ask_skip_tags_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for skip tags on launch.",
 			},
 			"ask_job_type_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for job type on launch.",
 			},
 			"ask_verbosity_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for verbosity on launch.",
 			},
 			"ask_inventory_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for inventory on launch.",
 			},
 			"ask_credential_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for credential on launch.",
 			},
 			"ask_execution_environment_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for execution environment on launch.",
 			},
 			"ask_labels_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for labels on launch.",
 			},
 			"ask_forks_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for forks on launch.",
 			},
 			"ask_job_slice_count_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for job slice count on launch.",
 			},
 			"ask_timeout_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for timeout on launch.",
 			},
 			"ask_instance_groups_on_launch": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Prompt user for instance groups on launch.",
 			},
 			"survey_enabled": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Enable a survey on the job template.",
 			},
 			"become_enabled": schema.BoolAttribute{
 				Computed:    true,
@@ -170,20 +193,24 @@ func (d *JobTemplateDataSource) Schema(ctx context.Context, req datasource.Schem
 				Description: "If enabled, show the changes made by Ansible tasks, where supported. This is equivalent to Ansible's `--diff` mode.",
 			},
 			"allow_simultaneous": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Allow simultaneous runs of the job template.",
 			},
 			"custom_virtualenv": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Local absolute file path containing a custom Python virtualenv to use. Only compatible with older versions of AWX/Tower. Deprecated, will be removed in the future",
 			},
 			"job_slice_count": schema.Int32Attribute{
 				Computed:    true,
 				Description: "Divide the work done by this job template into the specified number of job slices, each running the same tasks against a portion of the inventory.",
 			},
 			"webhook_service": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Service that webhook requests will be accepted from. Either `\"\"`, `bitbucket_dc`, `github`, or `gitlab`",
 			},
 			"webhook_credential": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Personal Access Token for posting back the status to the service API",
 			},
 			"prevent_instance_group_fallback": schema.BoolAttribute{
 				Computed:    true,
@@ -250,10 +277,11 @@ func (d *JobTemplateDataSource) Read(ctx context.Context, req datasource.ReadReq
 		url = fmt.Sprintf("/api/v2/job_templates/?name=%s", name)
 	}
 
-	httpResp, err := d.client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
+	successCodes := []int{200, 404}
+	httpResp, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"error making API http request",
+			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}

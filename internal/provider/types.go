@@ -203,7 +203,7 @@ type JobTemplateModel struct {
 	JobTags                        types.String `tfsdk:"job_tags"`
 	ForceHandlers                  types.Bool   `tfsdk:"force_handlers"`
 	SkipTags                       types.String `tfsdk:"skip_tags"`
-	StartAtTask                    types.String `tfsdk:"start_at_tags"`
+	StartAtTask                    types.String `tfsdk:"start_at_task"`
 	Timeout                        types.Int32  `tfsdk:"timeout"`
 	UseFactCache                   types.Bool   `tfsdk:"use_fact_cache"`
 	ExecutionEnvironment           types.Int32  `tfsdk:"execution_environment"`
@@ -251,7 +251,7 @@ type JobTemplateAPIModel struct {
 	JobTags                        string `json:"job_tags,omitempty"`
 	ForceHandlers                  bool   `json:"force_handlers,omitempty"`
 	SkipTags                       string `json:"skip_tags,omitempty"`
-	StartAtTask                    string `json:"start_at_tags,omitempty"`
+	StartAtTask                    string `json:"start_at_task,omitempty"`
 	Timeout                        int    `json:"timeout,omitempty"`
 	UseFactCache                   bool   `json:"use_fact_cache,omitempty"`
 	ExecutionEnvironment           int    `json:"execution_environment,omitempty"`

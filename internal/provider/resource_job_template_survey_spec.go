@@ -85,10 +85,12 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 				Description: "ID of job template to attach survey to.",
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "Job template survey spec name.",
 			},
 			"description": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "Job template survey spec description.",
 			},
 			"spec": schema.ListNestedAttribute{
 				Required: true,

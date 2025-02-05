@@ -162,10 +162,11 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		url = fmt.Sprintf("/api/v2/projects/?name=%s", urlParser.QueryEscape(data.Name.ValueString()))
 	}
 
-	httpResp, err := d.client.MakeHTTPRequestToAPI(ctx, http.MethodGet, url, nil)
+	successCodes := []int{200, 404}
+	httpResp, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"error making API http request",
+			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
