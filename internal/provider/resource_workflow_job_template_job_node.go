@@ -51,20 +51,20 @@ type WorkflowJobTemplatesJobNodeResourceModel struct {
 }
 
 type WorkflowJobTemplateNodeAPIModel struct {
-	Id                     int    `json:"id"`
+	// Id                     int    `json:"id"`
 	WorkflowJobId          int    `json:"workflow_job_template"`
 	UnifiedJobTemplateId   int    `json:"unified_job_template"`
-	Inventory              int    `json:"inventory"`
+	Inventory              int    `json:"inventory,omitempty"`
 	ExtraData              any    `json:"extra_data,omitempty"`
 	ScmBranch              string `json:"scm_branch,omitempty"`
 	JobType                string `json:"job_type,omitempty"`
 	JobTags                string `json:"job_tags,omitempty"`
 	SkipTags               string `json:"skip_tags,omitempty"`
 	Limit                  string `json:"limit,omitempty"`
-	DiffMode               bool   `json:"diff_mode,omitempty"`
+	DiffMode               any    `json:"diff_mode,omitempty"`
 	Verbosity              int    `json:"verbosity,omitempty"`
 	AllParentsMustConverge bool   `json:"all_parents_must_converge"`
-	Identifier             string `json:"identifier"`
+	Identifier             string `json:"identifier,omitempty"`
 }
 
 func (r *WorkflowJobTemplatesJobNodeResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -262,7 +262,8 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 	}
 
 	tmp := struct {
-		Id int `json:"id"`
+		Id         int    `json:"id"`
+		Identifier string `json:"identifier"`
 	}{}
 
 	defer httpResp.Body.Close()
@@ -284,6 +285,10 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 	idAsString := strconv.Itoa(tmp.Id)
 
 	data.Id = types.StringValue(idAsString)
+
+	if data.Identifier.IsUnknown() {
+		data.Identifier = types.StringValue(tmp.Identifier)
+	}
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -397,12 +402,12 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			return
 		}
 
-		if len(rawExtraData) == 0 {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), "{}")...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-		} else {
+		if len(rawExtraData) != 0 {
+			// 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), "{}")...)
+			// 	if resp.Diagnostics.HasError() {
+			// 		return
+			// 	}
+			// } else {
 			tempMap := make(map[string]any, len(rawExtraData))
 			for k, v := range rawExtraData {
 				tempMap[k] = v
@@ -468,10 +473,21 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			return
 		}
 	}
-	if !(data.DiffMode.IsNull() && (responseData.DiffMode)) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), responseData.DiffMode)...)
-		if resp.Diagnostics.HasError() {
+
+	diffModeType := reflect.TypeOf(responseData.DiffMode)
+
+	if diffModeType != nil && diffModeType.Kind() == reflect.Bool {
+		boolValue, ok := responseData.DiffMode.(bool)
+		if !ok {
+			resp.Diagnostics.AddError("unable to cast DiffMode as bool", "Unable to convert diff_mode to boolean")
 			return
+		}
+
+		if !data.DiffMode.IsNull() && boolValue {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), boolValue)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 		}
 	}
 	if !(data.Verbosity.IsNull() && (responseData.Verbosity == 0)) {
@@ -521,16 +537,17 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 
 	// Generate a go type that fits into the any var so that when ALL
 	//  bodyData fields are set with go types, we call Marshall to generate entire JSON
-	extraDataMap := new(map[string]any)
-	err = json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable unmarshal map to json",
-			fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
-		return
+	if !data.ExtraData.IsNull() {
+		extraDataMap := new(map[string]any)
+		err = json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable unmarshal map to json",
+				fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
+			return
+		}
+		bodyData.ExtraData = extraDataMap
 	}
-	bodyData.ExtraData = extraDataMap
-
 	bodyData.ScmBranch = data.ScmBranch.ValueString()
 	bodyData.JobType = data.JobType.ValueString()
 	bodyData.JobTags = data.JobTags.ValueString()
