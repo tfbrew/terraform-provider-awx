@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	urlParser "net/url"
 	"reflect"
@@ -127,7 +126,7 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 		url = fmt.Sprintf("/api/v2/credential_types/?name=%s&kind=%s", name, kind)
 	}
 	successCodes := []int{200, 404}
-	httpResp, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
+	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -135,16 +134,8 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
-		return
-	}
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to read the http response data body",
-			fmt.Sprintf("Body: %v.", body))
 		return
 	}
 

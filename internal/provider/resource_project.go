@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -299,7 +298,6 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	var data ProjectModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -365,6 +363,16 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
+	returnedValues := []string{"id", "local_path", "scm_url"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
+	}
+
 	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
 	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
 	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
@@ -376,7 +384,6 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	var data ProjectModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -391,7 +398,7 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	url := fmt.Sprintf("/api/v2/projects/%d/", id)
 	successCodes := []int{200, 404}
-	httpResp, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -399,20 +406,12 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	var responseData ProjectAPIModel
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to read the http response data body",
-			fmt.Sprintf("Body: %v.", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -515,7 +514,6 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	var data ProjectModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -589,6 +587,16 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	returnedValues := []string{"local_path", "scm_url"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
+	}
+
 	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
 	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
 
@@ -599,7 +607,6 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	var data ProjectModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -614,7 +621,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	url := fmt.Sprintf("/api/v2/projects/%d/", id)
 
 	successCodes := []int{202, 204}
-	_, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

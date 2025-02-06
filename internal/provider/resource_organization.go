@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -90,7 +89,6 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	var data OrganizationModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -140,7 +138,6 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 	var data OrganizationModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -155,7 +152,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 
 	url := fmt.Sprintf("/api/v2/organizations/%d/", id)
 	successCodes := []int{200, 404}
-	httpResp, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -163,20 +160,12 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	var responseData OrganizationAPIModel
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to read the http response data body",
-			fmt.Sprintf("Body: %v.", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -221,7 +210,6 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	var data OrganizationModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -277,7 +265,6 @@ func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRe
 	var data OrganizationModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -292,7 +279,7 @@ func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRe
 	url := fmt.Sprintf("/api/v2/organizations/%d/", id)
 
 	successCodes := []int{202, 204}
-	_, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

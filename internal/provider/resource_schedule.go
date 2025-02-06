@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -92,7 +90,6 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 	var data ScheduleModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -115,56 +112,27 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	url := r.client.endpoint + "/api/v2/schedules/"
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	url := "/api/v2/schedules/"
+	successCodes := []int{201}
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, jsonData, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate create request",
-			fmt.Sprintf("url: %v, data: %+v ", url, jsonData))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to create schedule, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 201 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected 201, got %v.", httpResp.StatusCode))
-		return
+	returnedValues := []string{"id"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
 	}
 
-	tmp := struct {
-		Id int `json:"id"`
-	}{}
-
-	defer httpResp.Body.Close()
-	httpRespBodyData, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get http response body to get newly created schedule ID",
-			fmt.Sprintf("Error: %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRespBodyData, &tmp)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to unmarshal http response to get newly created schedule ID",
-			fmt.Sprintf("Error: %v", err))
-		return
-	}
-
-	idAsString := strconv.Itoa(tmp.Id)
-
-	data.Id = types.StringValue(idAsString)
+	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -173,7 +141,6 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 	var data ScheduleModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -185,56 +152,23 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 			fmt.Sprintf("Unable to convert id: %v.", data.Id))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	url := fmt.Sprintf("/api/v2/schedules/%d/", id)
+	successCodes := []int{200, 404}
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate read request",
-			fmt.Sprintf("url: %v.", url))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to read schedule, got error: %v", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-		return
-	}
-
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	var responseData ScheduleAPIModel
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to read the http response data body",
-			fmt.Sprintf("Body: %v.", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -261,12 +195,10 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 	var data ScheduleModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -294,30 +226,13 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	url := fmt.Sprintf("/api/v2/schedules/%d/", id)
+	successCodes := []int{200}
+	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, jsonData, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate update request",
-			fmt.Sprintf("url: %v, data: %+v ", url, jsonData))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to update schedule, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected 200, got %v.", httpResp.StatusCode))
+			"Error making API update request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
@@ -328,7 +243,6 @@ func (r *ScheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 	var data ScheduleModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -340,32 +254,15 @@ func (r *ScheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 			fmt.Sprintf("Unable to convert id: %v.", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/schedules/%d/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	url := fmt.Sprintf("/api/v2/schedules/%d/", id)
+
+	successCodes := []int{202, 204}
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate delete request",
-			fmt.Sprintf("url: %v", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to delete schedule, got error: %s.", err))
-		return
-	}
-
-	// 202 - accepted for deletion, 204 - success
-	if httpResp.StatusCode != 202 && httpResp.StatusCode != 204 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected [202, 204], got %v.", httpResp.StatusCode))
+			"Error making API delete request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 }
