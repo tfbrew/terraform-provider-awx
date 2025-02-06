@@ -150,6 +150,16 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
+	returnedValues := []string{"id"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
+	}
+
 	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

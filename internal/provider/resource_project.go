@@ -363,6 +363,16 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
+	returnedValues := []string{"id", "local_path", "scm_url"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
+	}
+
 	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
 	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
 	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
@@ -575,6 +585,16 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 			"Error making API update request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
+	}
+
+	returnedValues := []string{"local_path", "scm_url"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
 	}
 
 	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
