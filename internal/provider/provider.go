@@ -166,7 +166,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 	url := "/api/v2/me/"
 	successCodes := []int{200}
-	_, err := client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
+	_, _, err := client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"tower authentication failure",

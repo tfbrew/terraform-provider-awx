@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -20,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &InventoryResource{}
 var _ resource.ResourceWithImportState = &InventoryResource{}
 
@@ -28,7 +25,6 @@ func NewInventoryResource() resource.Resource {
 	return &InventoryResource{}
 }
 
-// InventoryResource defines the resource implementation.
 type InventoryResource struct {
 	client *AwxClient
 }
@@ -109,14 +105,11 @@ func (r *InventoryResource) Configure(ctx context.Context, req resource.Configur
 func (r *InventoryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data InventoryModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// set url for create HTTP request
 
 	var bodyData InventoryAPIModel
 
@@ -147,73 +140,29 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	url := r.client.endpoint + "/api/v2/inventories/"
-
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	url := "/api/v2/inventories/"
+	successCodes := []int{201}
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, jsonData, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate create request",
-			fmt.Sprintf("url: %v, data: %+v ", url, jsonData))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
+	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
 
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to create inventory, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 201 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected 201, got %v.", httpResp.StatusCode))
-		return
-	}
-
-	tmp := struct {
-		Id int `json:"id"`
-	}{}
-
-	defer httpResp.Body.Close()
-	httpRespBodyData, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get http response body to get newly created inventory ID",
-			fmt.Sprintf("Error: %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRespBodyData, &tmp)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to unmarshal http response to get newly created inventory ID",
-			fmt.Sprintf("Error: %v", err))
-		return
-	}
-
-	idAsString := strconv.Itoa(tmp.Id)
-
-	data.Id = types.StringValue(idAsString)
-
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data InventoryModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -221,57 +170,23 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 			fmt.Sprintf("Unable to convert id: %v.", data.Id))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
 
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	url := fmt.Sprintf("/api/v2/inventories/%d/", id)
+	successCodes := []int{200, 404}
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate read request",
-			fmt.Sprintf("url: %v.", url))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to read inventory, got error: %v", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-		return
-	}
-
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	var responseData InventoryAPIModel
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to read the http response data body",
-			fmt.Sprintf("Body: %v.", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -327,14 +242,11 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data InventoryModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -372,49 +284,27 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
-
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	url := fmt.Sprintf("/api/v2/inventories/%d/", id)
+	successCodes := []int{200}
+	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, jsonData, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate update request",
-			fmt.Sprintf("url: %v, data: %+v ", url, jsonData))
+			"Error making API update request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to update inventory, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected 200, got %v.", httpResp.StatusCode))
-		return
-	}
-
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data InventoryModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -422,33 +312,15 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 			fmt.Sprintf("Unable to convert id: %v.", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/inventories/%d/", id)
 
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	url := fmt.Sprintf("/api/v2/inventories/%d/", id)
+
+	successCodes := []int{202, 204}
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate delete request",
-			fmt.Sprintf("url: %v", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Client Error",
-			fmt.Sprintf("Unable to delete inventory, got error: %s.", err))
-		return
-	}
-
-	// 202 - accepted for deletion, 204 - success
-	if httpResp.StatusCode != 202 && httpResp.StatusCode != 204 {
-		resp.Diagnostics.AddError(
-			"Bad request status code",
-			fmt.Sprintf("Expected [202, 204], got %v.", httpResp.StatusCode))
+			"Error making API delete request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 }
