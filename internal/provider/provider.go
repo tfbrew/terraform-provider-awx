@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure awxProvider satisfies various provider interfaces.
+// Ensure Provider satisfies various provider interfaces.
 var _ provider.Provider = &awxProvider{}
 var _ provider.ProviderWithFunctions = &awxProvider{}
 

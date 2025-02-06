@@ -12,14 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &InventorySourceDataSource{}
 
 func NewInventorySourceDataSource() datasource.DataSource {
 	return &InventorySourceDataSource{}
 }
 
-// InventorySourceDataSource defines the data source implementation.
 type InventorySourceDataSource struct {
 	client *AwxClient
 }
@@ -113,7 +111,6 @@ func (d *InventorySourceDataSource) Schema(ctx context.Context, req datasource.S
 }
 
 func (d *InventorySourceDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -134,7 +131,6 @@ func (d *InventorySourceDataSource) Configure(ctx context.Context, req datasourc
 func (d *InventorySourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data InventorySourceModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -143,7 +139,6 @@ func (d *InventorySourceDataSource) Read(ctx context.Context, req datasource.Rea
 
 	var url string
 
-	// set url for read by id HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

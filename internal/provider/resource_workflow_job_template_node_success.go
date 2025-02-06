@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &WorkflowJobTemplatesNodeSuccessResource{}
 var _ resource.ResourceWithImportState = &WorkflowJobTemplatesNodeSuccessResource{}
 
@@ -23,12 +22,10 @@ func NewWorkflowJobTemplatesNodeSuccessResource() resource.Resource {
 	return &WorkflowJobTemplatesNodeSuccessResource{}
 }
 
-// WorkflowJobTemplatesNodeSuccessResource defines the resource implementation.
 type WorkflowJobTemplatesNodeSuccessResource struct {
 	client *AwxClient
 }
 
-// WorkflowJobTemplatesNodeSuccessResourceModel describes the resource data model.
 type WorkflowJobTemplatesNodeSuccessResourceModel struct {
 	Id         types.String `tfsdk:"id"`
 	SuccessIds types.Set    `tfsdk:"success_ids"`
@@ -78,13 +75,11 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Configure(ctx context.Context,
 func (r *WorkflowJobTemplatesNodeSuccessResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data WorkflowJobTemplatesNodeSuccessResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -114,7 +109,6 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Create(ctx context.Context, re
 		}
 	}
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 }
@@ -122,14 +116,12 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Create(ctx context.Context, re
 func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data WorkflowJobTemplatesNodeSuccessResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	//set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -139,7 +131,6 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req 
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/success_nodes", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -207,14 +198,12 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req 
 	}
 	data.SuccessIds = listValue
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data WorkflowJobTemplatesNodeSuccessResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -229,7 +218,6 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, re
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/success_nodes/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -311,21 +299,18 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, re
 		}
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *WorkflowJobTemplatesNodeSuccessResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data WorkflowJobTemplatesNodeSuccessResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// set url for create HTTP request
+
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

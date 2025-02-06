@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &JobTemplateSurveyResource{}
 var _ resource.ResourceWithImportState = &JobTemplateSurveyResource{}
 
@@ -28,12 +27,10 @@ func NewJobTemplateSurveyResource() resource.Resource {
 	return &JobTemplateSurveyResource{}
 }
 
-// JobTemplateSurveyResource defines the resource implementation.
 type JobTemplateSurveyResource struct {
 	client *AwxClient
 }
 
-// JobTemplateSurveyResourceModel describes the resource data model.
 type JobTemplateSurveyResourceModel struct {
 	Id          types.String      `tfsdk:"id"`
 	Name        types.String      `tfsdk:"name"`
@@ -146,7 +143,6 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 }
 
 func (r *JobTemplateSurveyResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -168,14 +164,12 @@ func (r *JobTemplateSurveyResource) Configure(ctx context.Context, req resource.
 func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data JobTemplateSurveyResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -185,7 +179,6 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
-	// get body data for HTTP request
 	var bodyData JobTemplateSurvey
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Description = data.Description.ValueString()
@@ -245,7 +238,6 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
 	}
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -267,20 +259,17 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 
 	}
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data JobTemplateSurveyResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -290,7 +279,6 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -414,21 +402,17 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 	data.Spec = dataSpecs
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left intentinally "blank" (as initialized by clone of template scaffold) as these resources is replace by schema plan modifiers.
 func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data JobTemplateSurveyResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -438,7 +422,6 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
-	// get body data for HTTP request
 	var bodyData JobTemplateSurvey
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Description = data.Description.ValueString()
@@ -498,7 +481,6 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
 	}
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -520,21 +502,18 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateSurveyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data JobTemplateSurveyResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -544,7 +523,6 @@ func (r *JobTemplateSurveyResource) Delete(ctx context.Context, req resource.Del
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(

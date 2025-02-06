@@ -15,14 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &JobTemplateDataSource{}
 
 func NewJobTemplateDataSource() datasource.DataSource {
 	return &JobTemplateDataSource{}
 }
 
-// JobTemplateDataSource defines the data source implementation.
 type JobTemplateDataSource struct {
 	client *AwxClient
 }
@@ -229,7 +227,6 @@ func (d JobTemplateDataSource) ConfigValidators(ctx context.Context) []datasourc
 }
 
 func (d *JobTemplateDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -250,7 +247,6 @@ func (d *JobTemplateDataSource) Configure(ctx context.Context, req datasource.Co
 func (d *JobTemplateDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data JobTemplateModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {

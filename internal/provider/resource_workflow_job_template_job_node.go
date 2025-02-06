@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &WorkflowJobTemplatesJobNodeResource{}
 var _ resource.ResourceWithImportState = &WorkflowJobTemplatesJobNodeResource{}
 
@@ -27,12 +26,10 @@ func NewWorkflowJobTemplatesJobNodeResource() resource.Resource {
 	return &WorkflowJobTemplatesJobNodeResource{}
 }
 
-// WorkflowJobTemplatesJobNodeResource defines the resource implementation.
 type WorkflowJobTemplatesJobNodeResource struct {
 	client *AwxClient
 }
 
-// WorkflowJobTemplatesJobNodeResourceModel describes the resource data model.
 type WorkflowJobTemplatesJobNodeResourceModel struct {
 	Id                     types.String `tfsdk:"id"`
 	WorkflowJobId          types.Int32  `tfsdk:"workflow_job_template_id"`
@@ -51,20 +48,19 @@ type WorkflowJobTemplatesJobNodeResourceModel struct {
 }
 
 type WorkflowJobTemplateNodeAPIModel struct {
-	Id                     int    `json:"id"`
 	WorkflowJobId          int    `json:"workflow_job_template"`
 	UnifiedJobTemplateId   int    `json:"unified_job_template"`
-	Inventory              int    `json:"inventory"`
+	Inventory              int    `json:"inventory,omitempty"`
 	ExtraData              any    `json:"extra_data,omitempty"`
 	ScmBranch              string `json:"scm_branch,omitempty"`
 	JobType                string `json:"job_type,omitempty"`
 	JobTags                string `json:"job_tags,omitempty"`
 	SkipTags               string `json:"skip_tags,omitempty"`
 	Limit                  string `json:"limit,omitempty"`
-	DiffMode               bool   `json:"diff_mode,omitempty"`
+	DiffMode               any    `json:"diff_mode,omitempty"`
 	Verbosity              int    `json:"verbosity,omitempty"`
 	AllParentsMustConverge bool   `json:"all_parents_must_converge"`
-	Identifier             string `json:"identifier"`
+	Identifier             string `json:"identifier,omitempty"`
 }
 
 func (r *WorkflowJobTemplatesJobNodeResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -160,7 +156,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Configure(ctx context.Context, req
 func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -228,7 +223,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 
 	url := r.client.endpoint + "/api/v2/workflow_job_template_nodes/"
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -262,7 +256,8 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 	}
 
 	tmp := struct {
-		Id int `json:"id"`
+		Id         int    `json:"id"`
+		Identifier string `json:"identifier"`
 	}{}
 
 	defer httpResp.Body.Close()
@@ -285,21 +280,22 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 
 	data.Id = types.StringValue(idAsString)
 
-	// Save data into Terraform state
+	if data.Identifier.IsUnknown() {
+		data.Identifier = types.StringValue(tmp.Identifier)
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	//set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -309,7 +305,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -397,12 +392,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			return
 		}
 
-		if len(rawExtraData) == 0 {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), "{}")...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-		} else {
+		if len(rawExtraData) != 0 {
 			tempMap := make(map[string]any, len(rawExtraData))
 			for k, v := range rawExtraData {
 				tempMap[k] = v
@@ -468,10 +458,21 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			return
 		}
 	}
-	if !(data.DiffMode.IsNull() && (responseData.DiffMode)) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), responseData.DiffMode)...)
-		if resp.Diagnostics.HasError() {
+
+	diffModeType := reflect.TypeOf(responseData.DiffMode)
+
+	if diffModeType != nil && diffModeType.Kind() == reflect.Bool {
+		boolValue, ok := responseData.DiffMode.(bool)
+		if !ok {
+			resp.Diagnostics.AddError("unable to cast DiffMode as bool", "Unable to convert diff_mode to boolean")
 			return
+		}
+
+		if !data.DiffMode.IsNull() && boolValue {
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), boolValue)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 		}
 	}
 	if !(data.Verbosity.IsNull() && (responseData.Verbosity == 0)) {
@@ -480,12 +481,12 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			return
 		}
 	}
-	// if !(data.AllParentsMustConverge.IsNull() && (responseData.AllParentsMustConverge)) {
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("all_parents_must_converge"), responseData.AllParentsMustConverge)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// }
+
 	if !(data.Identifier.IsNull() && (responseData.Identifier == "")) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identifier"), responseData.Identifier)...)
 		if resp.Diagnostics.HasError() {
@@ -498,14 +499,12 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -521,16 +520,17 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 
 	// Generate a go type that fits into the any var so that when ALL
 	//  bodyData fields are set with go types, we call Marshall to generate entire JSON
-	extraDataMap := new(map[string]any)
-	err = json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable unmarshal map to json",
-			fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
-		return
+	if !data.ExtraData.IsNull() {
+		extraDataMap := new(map[string]any)
+		err = json.Unmarshal([]byte(data.ExtraData.ValueString()), &extraDataMap)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable unmarshal map to json",
+				fmt.Sprintf("Unable to convert id: %+v. ", data.ExtraData))
+			return
+		}
+		bodyData.ExtraData = extraDataMap
 	}
-	bodyData.ExtraData = extraDataMap
-
 	bodyData.ScmBranch = data.ScmBranch.ValueString()
 	bodyData.JobType = data.JobType.ValueString()
 	bodyData.JobTags = data.JobTags.ValueString()
@@ -551,7 +551,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -584,21 +583,18 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *WorkflowJobTemplatesJobNodeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data WorkflowJobTemplatesJobNodeResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// set url for create HTTP request
+
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -607,7 +603,6 @@ func (r *WorkflowJobTemplatesJobNodeResource) Delete(ctx context.Context, req re
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(

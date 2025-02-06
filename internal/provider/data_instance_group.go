@@ -15,19 +15,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &InstanceGroupDataSource{}
 
 func NewInstanceGroupDataSource() datasource.DataSource {
 	return &InstanceGroupDataSource{}
 }
 
-// InstanceGroupDataSource defines the data source implementation.
 type InstanceGroupDataSource struct {
 	client *AwxClient
 }
 
-// InstanceGroupDataSourceModel describes the data source data model.
 type InstanceGroupDataSourceModel struct {
 	Id                       types.String `tfsdk:"id"`
 	Name                     types.String `tfsdk:"name"`
@@ -93,7 +90,6 @@ func (d InstanceGroupDataSource) ConfigValidators(ctx context.Context) []datasou
 }
 
 func (d *InstanceGroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -114,7 +110,6 @@ func (d *InstanceGroupDataSource) Configure(ctx context.Context, req datasource.
 func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data InstanceGroupDataSourceModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {

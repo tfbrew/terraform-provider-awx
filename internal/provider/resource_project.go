@@ -367,7 +367,6 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	data.LocalPath = types.StringValue(fmt.Sprintf("%v", returnedData["local_path"]))
 	data.ScmUrl = types.StringValue(fmt.Sprintf("%v", returnedData["scm_url"]))
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

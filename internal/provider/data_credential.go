@@ -12,19 +12,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &CredentialDataSource{}
 
 func NewCredentialDataSource() datasource.DataSource {
 	return &CredentialDataSource{}
 }
 
-// CredentialDataSource defines the data source implementation.
 type CredentialDataSource struct {
 	client *AwxClient
 }
 
-// CredentialDataSourceModel describes the data source data model.
 type CredentialDataSourceModel struct {
 	Id             types.String `tfsdk:"id"`
 	Name           types.String `tfsdk:"name"`
@@ -80,7 +77,6 @@ func (d *CredentialDataSource) Schema(ctx context.Context, req datasource.Schema
 }
 
 func (d *CredentialDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}

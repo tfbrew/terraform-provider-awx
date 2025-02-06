@@ -12,14 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &ScheduleDataSource{}
 
 func NewScheduleDataSource() datasource.DataSource {
 	return &ScheduleDataSource{}
 }
 
-// ScheduleDataSource defines the data source implementation.
 type ScheduleDataSource struct {
 	client *AwxClient
 }
@@ -61,7 +59,6 @@ func (d *ScheduleDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 }
 
 func (d *ScheduleDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -82,7 +79,6 @@ func (d *ScheduleDataSource) Configure(ctx context.Context, req datasource.Confi
 func (d *ScheduleDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data ScheduleModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -91,7 +87,6 @@ func (d *ScheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	var url string
 
-	// set url for read by id HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

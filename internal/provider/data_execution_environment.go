@@ -15,19 +15,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ datasource.DataSource = &ExecutionEnvironmentDataSource{}
 
 func NewExecutionEnvironmentDataSource() datasource.DataSource {
 	return &ExecutionEnvironmentDataSource{}
 }
 
-// ExecutionEnvironmentDataSource defines the data source implementation.
 type ExecutionEnvironmentDataSource struct {
 	client *AwxClient
 }
 
-// ExecutionEnvironmentDataSourceModel describes the data source data model.
 type ExecutionEnvironmentDataSourceModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
@@ -98,7 +95,6 @@ func (d ExecutionEnvironmentDataSource) ConfigValidators(ctx context.Context) []
 }
 
 func (d *ExecutionEnvironmentDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -119,7 +115,6 @@ func (d *ExecutionEnvironmentDataSource) Configure(ctx context.Context, req data
 func (d *ExecutionEnvironmentDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data ExecutionEnvironmentDataSourceModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {

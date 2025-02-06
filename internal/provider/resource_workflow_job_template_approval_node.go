@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &WorkflowJobTemplateApprovalNode{}
 var _ resource.ResourceWithImportState = &WorkflowJobTemplateApprovalNode{}
 
@@ -26,16 +25,10 @@ func NewWorkflowJobTemplateApprovalNodeResource() resource.Resource {
 	return &WorkflowJobTemplateApprovalNode{}
 }
 
-// WorkflowJobTemplateApprovalNode defines the resource implementation.
 type WorkflowJobTemplateApprovalNode struct {
 	client *AwxClient
 }
 
-// type WorkflowJobTemplateApprovalNodeAPIMode struct {
-// 	WorkflowJobTemplateID int `json:"workflow_job_template"`
-// }
-
-// WorkflowJobTemplateApprovalNodeModel describes the resource data model.
 type WorkflowJobTemplateApprovalNodeModel struct {
 	Id                    types.String `tfsdk:"id"`
 	ApprovalTemplateId    types.Int32  `tfsdk:"approval_template_id"`
@@ -116,7 +109,6 @@ func (r *WorkflowJobTemplateApprovalNode) Configure(ctx context.Context, req res
 func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data WorkflowJobTemplateApprovalNodeModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -274,14 +266,12 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 
 	data.ApprovalTemplateId = types.Int32Value(int32(tmp.Id))
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data WorkflowJobTemplateApprovalNodeModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -289,7 +279,6 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 	}
 
 	/// read the node's workflow template ID first
-	//set url for create HTTP request
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -299,7 +288,6 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -371,7 +359,6 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 
 	url = r.client.endpoint + fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", getNameFromResponse.ApprovalTemplateId)
 
-	// create HTTP request
 	httpReq, err = http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -463,28 +450,72 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 func (r *WorkflowJobTemplateApprovalNode) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data WorkflowJobTemplateApprovalNodeModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save updated data into Terraform state
+	var bodyData WorkflowJobTmplNodeApprvCreateAPIModel
+
+	bodyData.Name = data.Name.ValueString()
+
+	bodyData.Description = data.Description.ValueString()
+	bodyData.Timeout = int(data.Timeout.ValueInt32())
+
+	jsonData, err := json.Marshal(bodyData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable marshal json",
+			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+		return
+	}
+
+	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", data.ApprovalTemplateId.ValueInt32())
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, strings.NewReader(string(jsonData)))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to generate delete request",
+			fmt.Sprintf("Unable to gen url: %v. ", url))
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add("Authorization", r.client.auth)
+
+	httpResp, err := r.client.client.Do(httpReq)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
+	}
+	if httpResp.StatusCode != 200 {
+		defer httpResp.Body.Close()
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable read http request response body.",
+				err.Error())
+			return
+		}
+
+		resp.Diagnostics.AddError(
+			"Bad request status code.",
+			fmt.Sprintf("Expected 204, got %v with message %s. ", httpResp.StatusCode, body))
+		return
+
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a label.
 func (r *WorkflowJobTemplateApprovalNode) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data WorkflowJobTemplateApprovalNodeModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// set url for create HTTP request
+
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -493,7 +524,6 @@ func (r *WorkflowJobTemplateApprovalNode) Delete(ctx context.Context, req resour
 	}
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	// create HTTP request
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
