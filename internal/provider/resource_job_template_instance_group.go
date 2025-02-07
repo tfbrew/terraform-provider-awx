@@ -151,12 +151,14 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-	if diags.HasError() {
-		return
-	}
+	if !SetAndResponseMatch(data.InstanceGroupsIDs, tfRelatedIds) {
 
-	data.InstanceGroupsIDs = listValue
+		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
+		if diags.HasError() {
+			return
+		}
+		data.InstanceGroupsIDs = listValue
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

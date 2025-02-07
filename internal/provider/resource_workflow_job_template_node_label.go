@@ -158,12 +158,14 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Read(ctx context.Context, req re
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-	if diags.HasError() {
-		return
-	}
+	if !SetAndResponseMatch(data.LabelIDs, tfRelatedIds) {
 
-	data.LabelIDs = listValue
+		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
+		if diags.HasError() {
+			return
+		}
+		data.LabelIDs = listValue
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

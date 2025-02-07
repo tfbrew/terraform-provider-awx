@@ -160,11 +160,14 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Read(ctx context.Context, req r
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-	if diags.HasError() {
-		return
+	if !SetAndResponseMatch(data.AlwaysNodeIds, tfRelatedIds) {
+
+		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
+		if diags.HasError() {
+			return
+		}
+		data.AlwaysNodeIds = listValue
 	}
-	data.AlwaysNodeIds = listValue
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

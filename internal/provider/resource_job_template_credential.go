@@ -165,12 +165,14 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		tfCredIds = append(tfCredIds, v.Id)
 	}
 
-	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfCredIds)
-	if diags.HasError() {
-		return
-	}
+	if !SetAndResponseMatch(data.CredentialIds, tfCredIds) {
 
-	data.CredentialIds = listValue
+		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfCredIds)
+		if diags.HasError() {
+			return
+		}
+		data.CredentialIds = listValue
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
