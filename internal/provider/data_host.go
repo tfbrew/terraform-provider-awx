@@ -140,7 +140,7 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		err = json.Unmarshal(body, &responseData)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to unmarshall response body into object",
+				"Unable to unmarshal response body into object",
 				fmt.Sprintf("Error =  %v.", err.Error()))
 			return
 		}
@@ -154,7 +154,7 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		err = json.Unmarshal(body, &nameResult)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to unmarshall response body into object",
+				"Unable to unmarshal response body into object",
 				fmt.Sprintf("Error:  %v.", err.Error()))
 			return
 		}

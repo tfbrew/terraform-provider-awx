@@ -216,7 +216,7 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to unmarshall response body into object",
+			"Unable to unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 	}
 

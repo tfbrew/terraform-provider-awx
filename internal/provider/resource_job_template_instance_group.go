@@ -140,7 +140,7 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -193,7 +193,7 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}

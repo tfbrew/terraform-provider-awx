@@ -180,7 +180,7 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 	err = json.Unmarshal(httpRespBodyData, &tmp)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get unmarshall http response to grab ID",
+			"Unable to get unmarshal http response to grab ID",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -259,7 +259,7 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 	err = json.Unmarshal(httpRespBodyData, &tmp)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get unmarshall http response to grab ID",
+			"Unable to get unmarshal http response to grab ID",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -341,7 +341,7 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 	err = json.Unmarshal(httpRespBodyData, &getNameFromResponse)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get unmarshall http response to grab ID",
+			"Unable to get unmarshal http response to grab ID",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -409,7 +409,7 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 	err = json.Unmarshal(httpRespBodyData, &readAPIResponse)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get unmarshall http response to grab ID",
+			"Unable to get unmarshal http response to grab ID",
 			fmt.Sprintf("error was %v", err))
 		return
 	}

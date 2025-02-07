@@ -149,7 +149,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Read(ctx context.Context, req r
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -202,7 +202,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Update(ctx context.Context, req
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}

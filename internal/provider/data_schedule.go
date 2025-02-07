@@ -115,7 +115,7 @@ func (d *ScheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to unmarshall response body into object",
+			"Unable to unmarshal response body into object",
 			fmt.Sprintf("Error =  %v.", err.Error()))
 		return
 	}

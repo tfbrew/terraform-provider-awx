@@ -124,7 +124,7 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	}
 	err = json.Unmarshal(httpRespBodyData, &returnedData)
 	if err != nil {
-		errorMessage = errors.New("unable to unmarshall http request response body to retrieve returnedData")
+		errorMessage = errors.New("unable to unmarshal http request response body to retrieve returnedData")
 		return
 	}
 	return
