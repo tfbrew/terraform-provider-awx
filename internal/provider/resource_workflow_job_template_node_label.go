@@ -87,7 +87,7 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Create(ctx context.Context, req 
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := fmt.Sprintf("/api/v2/job_templates/%d/instance_groups/", id)
+	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/labels/", id)
 
 	var relatedIds []int
 

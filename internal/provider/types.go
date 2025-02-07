@@ -64,7 +64,6 @@ type LabelModel struct {
 }
 
 type LabelAPIModel struct {
-	Id           int    `json:"id"`
 	Name         string `json:"name"`
 	Organization int    `json:"organization"`
 }
