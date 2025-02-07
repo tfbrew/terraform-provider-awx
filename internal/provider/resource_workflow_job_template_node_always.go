@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"slices"
 	"strconv"
@@ -88,7 +87,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Create(ctx context.Context, req
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
+	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
 
 	var relatedIds []int
 
@@ -103,7 +102,13 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Create(ctx context.Context, req
 		bodyData.Id = val
 		bodyData.Associate = true
 
-		err := r.client.AssocSuccessNode(ctx, bodyData, url)
+		jsonData, err := json.Marshal(bodyData)
+		if err != nil {
+			resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+			return
+		}
+
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
@@ -130,54 +135,22 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Read(ctx context.Context, req r
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
+	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-		return
-	}
-
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	var responseData JTCredentialAPIRead
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -217,39 +190,17 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Update(ctx context.Context, req
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
+	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
 	var responseData JTChildAPIRead
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -278,7 +229,13 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Update(ctx context.Context, req
 			var bodyData ChildDissasocBody
 			bodyData.Id = v
 
-			err := r.client.DisassocJobTemplChild(ctx, bodyData, url)
+			jsonData, err := json.Marshal(bodyData)
+			if err != nil {
+				resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+				return
+			}
+
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
@@ -292,7 +249,13 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Update(ctx context.Context, req
 			bodyData.Id = v
 			bodyData.Associate = true
 
-			err := r.client.AssocSuccessNode(ctx, bodyData, url)
+			jsonData, err := json.Marshal(bodyData)
+			if err != nil {
+				resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+				return
+			}
+
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
@@ -319,7 +282,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Delete(ctx context.Context, req
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
+	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/always_nodes/", id)
 
 	var RelatedIds []int
 
@@ -330,12 +293,18 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Delete(ctx context.Context, req
 
 	for _, val := range RelatedIds {
 
-		var body ChildDissasocBody
+		var bodyData ChildDissasocBody
 
-		body.Id = val
-		body.Disassociate = true
+		bodyData.Id = val
+		bodyData.Disassociate = true
 
-		err := r.client.DisassocJobTemplChild(ctx, body, url)
+		jsonData, err := json.Marshal(bodyData)
+		if err != nil {
+			resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+			return
+		}
+
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 			return

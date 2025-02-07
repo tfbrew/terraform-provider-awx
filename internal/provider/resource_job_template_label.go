@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"slices"
 	"strconv"
@@ -87,6 +86,8 @@ func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.Cre
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
+	url := fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
+
 	var relatedIds []int
 
 	diags := data.LabelIDs.ElementsAs(ctx, &relatedIds, false)
@@ -99,9 +100,15 @@ func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.Cre
 		var bodyData LabelResult
 		bodyData.Id = val
 
-		err := r.client.AssocJobTemplLabel(ctx, id, bodyData)
+		jsonData, err := json.Marshal(bodyData)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to associate label.", err.Error())
+			resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+			return
+		}
+
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
 		}
 	}
@@ -124,39 +131,17 @@ func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
 	var responseData JTCredentialAPIRead
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -197,39 +182,17 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
 	var responseData JTLabelsAPIRead
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -258,9 +221,15 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 			var bodyData LabelDissasocBody
 			bodyData.Id = v
 
-			err := r.client.DisassocJobTemplLabel(ctx, id, bodyData)
+			jsonData, err := json.Marshal(bodyData)
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to disassociate label.", err.Error())
+				resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+				return
+			}
+
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
 			}
 		}
@@ -271,9 +240,15 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 			var bodyData LabelResult
 			bodyData.Id = v
 
-			err := r.client.AssocJobTemplLabel(ctx, id, bodyData)
+			jsonData, err := json.Marshal(bodyData)
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to associate label.", err.Error())
+				resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+				return
+			}
+
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
 			}
 		}
@@ -285,7 +260,6 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 func (r *JobTemplateLabelsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var data JobTemplateLabelsResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -299,6 +273,8 @@ func (r *JobTemplateLabelsResource) Delete(ctx context.Context, req resource.Del
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
+	url := fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
+
 	var RelatedIds []int
 
 	diags := data.LabelIDs.ElementsAs(ctx, &RelatedIds, false)
@@ -308,14 +284,20 @@ func (r *JobTemplateLabelsResource) Delete(ctx context.Context, req resource.Del
 
 	for _, val := range RelatedIds {
 
-		var body LabelDissasocBody
+		var bodyData LabelDissasocBody
 
-		body.Id = val
-		body.Disassociate = true
+		bodyData.Id = val
+		bodyData.Disassociate = true
 
-		err := r.client.DisassocJobTemplLabel(ctx, id, body)
+		jsonData, err := json.Marshal(bodyData)
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to disassociate label.", err.Error())
+			resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
+			return
+		}
+
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
 		}
 	}
