@@ -283,7 +283,6 @@ type JobTemplateAPIModel struct {
 	PreventInstanceGroupFallback   bool   `json:"prevent_instance_group_fallback,omitempty"`
 }
 
-// JobTemplateSurveyResourceModel describes the resource data model.
 type CredentialTypeModel struct {
 	Id          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
@@ -300,4 +299,22 @@ type CredentialTypeAPIModel struct {
 	Inputs      any    `json:"inputs,omitempty"`
 	Injectors   any    `json:"injectors,omitempty"`
 	Kind        string `json:"kind"`
+}
+
+type HostModel struct {
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Enabled     types.Bool   `tfsdk:"enabled"`
+	Inventory   types.Int32  `tfsdk:"inventory"`
+	Variables   types.String `tfsdk:"variables"`
+}
+
+type HostAPIModel struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Enabled     bool   `json:"enabled"`
+	Inventory   int    `json:"inventory"`
+	Variables   string `json:"variables,omitempty"`
 }
