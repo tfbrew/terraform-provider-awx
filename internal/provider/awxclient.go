@@ -24,13 +24,13 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 	var body io.Reader
 
 	if requestBody != nil {
-		byteBody, ok := requestBody.([]byte)
-		if !ok {
-			errorMessage = fmt.Errorf("couldn't cast requestBody as []byte. body: %v", requestBody)
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			errorMessage = fmt.Errorf("unable to marshal requestBody into json: %s", err.Error())
 			return
 		}
 
-		body = strings.NewReader(string(byteBody))
+		body = strings.NewReader(string(jsonData))
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
@@ -76,13 +76,13 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	var body io.Reader
 
 	if requestBody != nil {
-		byteBody, ok := requestBody.([]byte)
-		if !ok {
-			errorMessage = fmt.Errorf("couldn't cast requestBody as []byte. body: %v", requestBody)
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			errorMessage = fmt.Errorf("unable to marshal requestBody into json: %s", err.Error())
 			return
 		}
 
-		body = strings.NewReader(string(byteBody))
+		body = strings.NewReader(string(jsonData))
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
