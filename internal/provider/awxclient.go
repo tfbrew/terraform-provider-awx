@@ -18,9 +18,22 @@ type AwxClient struct {
 
 // A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
 // headers and then makes the actual http request.
-func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody []byte, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
+func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
 	url = c.endpoint + url
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(requestBody)))
+
+	var body io.Reader
+
+	if requestBody != nil {
+		byteBody, ok := requestBody.([]byte)
+		if !ok {
+			errorMessage = fmt.Errorf("couldn't cast requestBody as []byte. body: %v", requestBody)
+			return
+		}
+
+		body = strings.NewReader(string(byteBody))
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		errorMessage = fmt.Errorf("error generating http request: %v", err)
 		return
@@ -57,9 +70,22 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 	return
 }
 
-func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, body []byte, successCodes []int) (returnedData map[string]any, errorMessage error) {
+func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, errorMessage error) {
 	url = c.endpoint + url
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(body)))
+
+	var body io.Reader
+
+	if requestBody != nil {
+		byteBody, ok := requestBody.([]byte)
+		if !ok {
+			errorMessage = fmt.Errorf("couldn't cast requestBody as []byte. body: %v", requestBody)
+			return
+		}
+
+		body = strings.NewReader(string(byteBody))
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		errorMessage = fmt.Errorf("error generating http request: %v", err)
 		return

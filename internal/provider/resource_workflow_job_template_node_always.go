@@ -102,13 +102,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Create(ctx context.Context, req
 		bodyData.Id = val
 		bodyData.Associate = true
 
-		jsonData, err := json.Marshal(bodyData)
-		if err != nil {
-			resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
-			return
-		}
-
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
@@ -229,13 +223,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Update(ctx context.Context, req
 			var bodyData ChildDissasocBody
 			bodyData.Id = v
 
-			jsonData, err := json.Marshal(bodyData)
-			if err != nil {
-				resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
-				return
-			}
-
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
@@ -249,13 +237,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Update(ctx context.Context, req
 			bodyData.Id = v
 			bodyData.Associate = true
 
-			jsonData, err := json.Marshal(bodyData)
-			if err != nil {
-				resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
-				return
-			}
-
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
@@ -298,13 +280,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Delete(ctx context.Context, req
 		bodyData.Id = val
 		bodyData.Disassociate = true
 
-		jsonData, err := json.Marshal(bodyData)
-		if err != nil {
-			resp.Diagnostics.AddError("Unable to marshal ID into json", err.Error())
-			return
-		}
-
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, jsonData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 			return
