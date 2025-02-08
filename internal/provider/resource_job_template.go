@@ -537,7 +537,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	url := fmt.Sprintf("/api/v2/job_tempates/%d/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/", id)
 	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
