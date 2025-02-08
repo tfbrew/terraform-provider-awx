@@ -37,6 +37,42 @@ type LabelDissasocBody struct {
 	Disassociate bool `json:"disassociate"`
 }
 
+type CredentialTypeModel struct {
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Inputs      types.String `tfsdk:"inputs"`
+	Injectors   types.String `tfsdk:"injectors"`
+	Kind        types.String `tfsdk:"kind"`
+}
+
+type CredentialTypeAPIModel struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Inputs      any    `json:"inputs,omitempty"`
+	Injectors   any    `json:"injectors,omitempty"`
+	Kind        string `json:"kind"`
+}
+
+type HostModel struct {
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Enabled     types.Bool   `tfsdk:"enabled"`
+	Inventory   types.Int32  `tfsdk:"inventory"`
+	Variables   types.String `tfsdk:"variables"`
+}
+
+type HostAPIModel struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Enabled     bool   `json:"enabled"`
+	Inventory   int    `json:"inventory"`
+	Variables   string `json:"variables,omitempty"`
+}
+
 type InventoryModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
@@ -55,91 +91,6 @@ type InventoryAPIModel struct {
 	Variables    string `json:"variables,omitempty"`
 	Kind         string `json:"kind,omitempty"`
 	HostFilter   string `json:"host_filter,omitempty"`
-}
-
-type LabelModel struct {
-	Id           types.String `tfsdk:"id"`
-	Name         types.String `tfsdk:"name"`
-	Organization types.Int32  `tfsdk:"organization"`
-}
-
-type LabelAPIModel struct {
-	Name         string `json:"name"`
-	Organization int    `json:"organization"`
-}
-
-type OrganizationModel struct {
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Description      types.String `tfsdk:"description"`
-	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
-	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
-	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
-}
-
-type OrganizationAPIModel struct {
-	Id               int    `json:"id"`
-	Name             string `json:"name"`
-	Description      string `json:"description,omitempty"`
-	CustomVirtualEnv string `json:"custom_virtualenv,omitempty"`
-	DefaultEnv       int    `json:"default_environment,omitempty"`
-	MaxHosts         int    `json:"max_hosts,omitempty"`
-}
-
-type ProjectModel struct {
-	Id                 types.String `tfsdk:"id"`
-	Name               types.String `tfsdk:"name"`
-	Organization       types.Int32  `tfsdk:"organization"`
-	ScmType            types.String `tfsdk:"scm_type"`
-	Description        types.String `tfsdk:"description"`
-	AllowOverride      types.Bool   `tfsdk:"allow_override"`
-	Credential         types.Int32  `tfsdk:"credential"`
-	DefaultEnv         types.Int32  `tfsdk:"default_environment"`
-	LocalPath          types.String `tfsdk:"local_path"`
-	ScmBranch          types.String `tfsdk:"scm_branch"`
-	ScmClean           types.Bool   `tfsdk:"scm_clean"`
-	ScmDelOnUpdate     types.Bool   `tfsdk:"scm_delete_on_update"`
-	ScmRefSpec         types.String `tfsdk:"scm_refspec"`
-	ScmTrackSubmodules types.Bool   `tfsdk:"scm_track_submodules"`
-	ScmUpdOnLaunch     types.Bool   `tfsdk:"scm_update_on_launch"`
-	ScmUrl             types.String `tfsdk:"scm_url"`
-}
-
-type ProjectAPIModel struct {
-	Id                 int    `json:"id"`
-	Name               string `json:"name"`
-	Organization       int    `json:"organization"`
-	ScmType            string `json:"scm_type"`
-	Description        string `json:"description,omitempty"`
-	AllowOverride      bool   `json:"allow_override,omitempty"`
-	Credential         int    `json:"credential,omitempty"`
-	DefaultEnv         int    `json:"default_environment,omitempty"`
-	LocalPath          string `json:"local_path,omitempty"`
-	ScmBranch          string `json:"scm_branch,omitempty"`
-	ScmClean           bool   `json:"scm_clean,omitempty"`
-	ScmDelOnUpdate     bool   `json:"scm_delete_on_update,omitempty"`
-	ScmRefSpec         string `json:"scm_refspec,omitempty"`
-	ScmTrackSubmodules bool   `json:"scm_track_submodules,omitempty"`
-	ScmUpdOnLaunch     bool   `json:"scm_update_on_launch,omitempty"`
-	ScmUrl             string `json:"scm_url,omitempty"`
-}
-
-type ScheduleModel struct {
-	Id                 types.String `tfsdk:"id"`
-	Name               types.String `tfsdk:"name"`
-	Description        types.String `tfsdk:"description"`
-	UnifiedJobTemplate types.Int32  `tfsdk:"unified_job_template"`
-	Rrule              types.String `tfsdk:"rrule"`
-	Enabled            types.Bool   `tfsdk:"enabled"`
-}
-
-type ScheduleAPIModel struct {
-	Id                 int    `json:"id"`
-	Name               string `json:"name"`
-	Description        string `json:"description,omitempty"`
-	UnifiedJobTemplate int    `json:"unified_job_template"`
-	Rrule              string `json:"rrule"`
-	Enabled            bool   `json:"enabled"`
 }
 
 type InventorySourceModel struct {
@@ -282,38 +233,87 @@ type JobTemplateAPIModel struct {
 	PreventInstanceGroupFallback   bool   `json:"prevent_instance_group_fallback,omitempty"`
 }
 
-type CredentialTypeModel struct {
-	Id          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Inputs      types.String `tfsdk:"inputs"`
-	Injectors   types.String `tfsdk:"injectors"`
-	Kind        types.String `tfsdk:"kind"`
+type LabelModel struct {
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Organization types.Int32  `tfsdk:"organization"`
 }
 
-type CredentialTypeAPIModel struct {
-	Id          int    `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Inputs      any    `json:"inputs,omitempty"`
-	Injectors   any    `json:"injectors,omitempty"`
-	Kind        string `json:"kind"`
+type LabelAPIModel struct {
+	Name         string `json:"name"`
+	Organization int    `json:"organization"`
 }
 
-type HostModel struct {
-	Id          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Enabled     types.Bool   `tfsdk:"enabled"`
-	Inventory   types.Int32  `tfsdk:"inventory"`
-	Variables   types.String `tfsdk:"variables"`
+type OrganizationModel struct {
+	Id               types.String `tfsdk:"id"`
+	Name             types.String `tfsdk:"name"`
+	Description      types.String `tfsdk:"description"`
+	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
+	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
+	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
 }
 
-type HostAPIModel struct {
-	Id          int    `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Enabled     bool   `json:"enabled"`
-	Inventory   int    `json:"inventory"`
-	Variables   string `json:"variables,omitempty"`
+type OrganizationAPIModel struct {
+	Id               int    `json:"id"`
+	Name             string `json:"name"`
+	Description      string `json:"description,omitempty"`
+	CustomVirtualEnv string `json:"custom_virtualenv,omitempty"`
+	DefaultEnv       int    `json:"default_environment,omitempty"`
+	MaxHosts         int    `json:"max_hosts,omitempty"`
+}
+
+type ProjectModel struct {
+	Id                 types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	Organization       types.Int32  `tfsdk:"organization"`
+	ScmType            types.String `tfsdk:"scm_type"`
+	Description        types.String `tfsdk:"description"`
+	AllowOverride      types.Bool   `tfsdk:"allow_override"`
+	Credential         types.Int32  `tfsdk:"credential"`
+	DefaultEnv         types.Int32  `tfsdk:"default_environment"`
+	LocalPath          types.String `tfsdk:"local_path"`
+	ScmBranch          types.String `tfsdk:"scm_branch"`
+	ScmClean           types.Bool   `tfsdk:"scm_clean"`
+	ScmDelOnUpdate     types.Bool   `tfsdk:"scm_delete_on_update"`
+	ScmRefSpec         types.String `tfsdk:"scm_refspec"`
+	ScmTrackSubmodules types.Bool   `tfsdk:"scm_track_submodules"`
+	ScmUpdOnLaunch     types.Bool   `tfsdk:"scm_update_on_launch"`
+	ScmUrl             types.String `tfsdk:"scm_url"`
+}
+
+type ProjectAPIModel struct {
+	Id                 int    `json:"id"`
+	Name               string `json:"name"`
+	Organization       int    `json:"organization"`
+	ScmType            string `json:"scm_type"`
+	Description        string `json:"description,omitempty"`
+	AllowOverride      bool   `json:"allow_override,omitempty"`
+	Credential         int    `json:"credential,omitempty"`
+	DefaultEnv         int    `json:"default_environment,omitempty"`
+	LocalPath          string `json:"local_path,omitempty"`
+	ScmBranch          string `json:"scm_branch,omitempty"`
+	ScmClean           bool   `json:"scm_clean,omitempty"`
+	ScmDelOnUpdate     bool   `json:"scm_delete_on_update,omitempty"`
+	ScmRefSpec         string `json:"scm_refspec,omitempty"`
+	ScmTrackSubmodules bool   `json:"scm_track_submodules,omitempty"`
+	ScmUpdOnLaunch     bool   `json:"scm_update_on_launch,omitempty"`
+	ScmUrl             string `json:"scm_url,omitempty"`
+}
+
+type ScheduleModel struct {
+	Id                 types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	Description        types.String `tfsdk:"description"`
+	UnifiedJobTemplate types.Int32  `tfsdk:"unified_job_template"`
+	Rrule              types.String `tfsdk:"rrule"`
+	Enabled            types.Bool   `tfsdk:"enabled"`
+}
+
+type ScheduleAPIModel struct {
+	Id                 int    `json:"id"`
+	Name               string `json:"name"`
+	Description        string `json:"description,omitempty"`
+	UnifiedJobTemplate int    `json:"unified_job_template"`
+	Rrule              string `json:"rrule"`
+	Enabled            bool   `json:"enabled"`
 }

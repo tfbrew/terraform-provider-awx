@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -362,12 +360,9 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	var data JobTemplateModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	url := r.client.endpoint + "/api/v2/job_templates/"
 
 	var bodyData JobTemplateAPIModel
 	if !(data.Name.IsNull()) {
@@ -502,69 +497,26 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 		bodyData.PreventInstanceGroupFallback = data.PreventInstanceGroupFallback.ValueBool()
 	}
 
-	jsonData, err := json.Marshal(bodyData)
+	url := "/api/v2/job_templates/"
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable marshal json",
-			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 201 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
+	returnedValues := []string{"id"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
 			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
 			return
 		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
-		return
 	}
 
-	tmp := struct {
-		Id int `json:"id"`
-	}{}
-
-	defer httpResp.Body.Close()
-	httpRepsBodyData, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get http response body",
-			fmt.Sprintf("Error was %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRepsBodyData, &tmp)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get unmarshal http response to grab ID",
-			fmt.Sprintf("error was %v", err))
-		return
-	}
-
-	idAsString := strconv.Itoa(tmp.Id)
-
-	data.Id = types.StringValue(idAsString)
+	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -573,7 +525,6 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	var data JobTemplateModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -585,54 +536,22 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	url := fmt.Sprintf("/api/v2/job_tempates/%d/", id)
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-		return
-	}
-
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	var responseData JobTemplateAPIModel
-
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -648,7 +567,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 			return
 		}
 	}
-	// Because this schema field has a Default, always set
+
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -958,14 +877,6 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	bodyData.WebhookCredential = data.WebhookCredential.ValueString()
 	bodyData.PreventInstanceGroupFallback = data.PreventInstanceGroupFallback.ValueBool()
 
-	jsonData, err := json.Marshal(bodyData)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable marshal json",
-			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-		return
-	}
-
 	id, err := strconv.Atoi(data.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -973,28 +884,13 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(string(jsonData)))
+	url := fmt.Sprintf("/api/v2/job_templates/%d/", id)
+	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API update request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
@@ -1005,7 +901,6 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 	var data JobTemplateModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -1017,28 +912,12 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/", id)
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/", id)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate delete request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 204 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 204, got %v. ", httpResp.StatusCode))
+			"Error making API delete request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 }
