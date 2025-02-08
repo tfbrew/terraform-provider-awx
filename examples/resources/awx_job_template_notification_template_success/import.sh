@@ -1,0 +1,1 @@
+terraform import awx_job_template_notification_template_success.example 100

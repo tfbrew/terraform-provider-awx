@@ -187,6 +187,8 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewJobTemplateInstanceGroupsResource,
 		NewJobTemplateLabelsResource,
 		NewJobTemplateNotifTemplErrResource,
+		NewJobTemplateNotifTemplStartedResource,
+		NewJobTemplateNotifTemplSuccessResource,
 		NewJobTemplateResource,
 		NewJobTemplateSurveyResource,
 		NewLabelsResource,
