@@ -229,7 +229,7 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 	err = json.Unmarshal(httpRepsBodyData, &tmp)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get unmarshall http response to grab ID",
+			"Unable to get unmarshal http response to grab ID",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -291,7 +291,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
+			"Unable to get all data out of the http response data body",
 			fmt.Sprintf("Body got %v. ", body))
 		return
 	}
@@ -299,7 +299,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -356,7 +356,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		err = json.Unmarshal([]byte(stateNotifConfig.ValueString()), &stateSlackConfig)
 		if err != nil {
 			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-				"Unable to unmarshall plan's notification configuration into a go type for interogation."+err.Error(),
+				"Unable to unmarshal plan's notification configuration into a go type for interogation."+err.Error(),
 			)
 			return
 		}

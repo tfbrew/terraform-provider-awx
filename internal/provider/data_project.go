@@ -181,7 +181,7 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	err = json.Unmarshal(body, &countResult)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to unmarshall response body into object",
+			"Unable to unmarshal response body into object",
 			fmt.Sprintf("Error:  %v.", err.Error()))
 		return
 	}

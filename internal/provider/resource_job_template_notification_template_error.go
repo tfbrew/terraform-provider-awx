@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"slices"
 	"strconv"
@@ -87,7 +86,7 @@ func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resou
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
 
 	var relatedIds []int
 
@@ -101,7 +100,7 @@ func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resou
 		var bodyData ChildResult
 		bodyData.Id = val
 
-		err := r.client.AssocJobTemplChild(ctx, bodyData, url)
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
@@ -126,44 +125,22 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
 	var responseData JTChildAPIRead
 
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
-
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -174,12 +151,14 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-	if diags.HasError() {
-		return
-	}
+	if !SetAndResponseMatch(data.NotifTEmplateIDs, tfRelatedIds) {
 
-	data.NotifTEmplateIDs = listValue
+		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
+		if diags.HasError() {
+			return
+		}
+		data.NotifTEmplateIDs = listValue
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -199,44 +178,22 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
 	var responseData JTChildAPIRead
 
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
-
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -260,7 +217,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 			var bodyData ChildDissasocBody
 			bodyData.Id = v
 
-			err := r.client.DisassocJobTemplChild(ctx, bodyData, url)
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
@@ -273,7 +230,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 			var bodyData ChildResult
 			bodyData.Id = v
 
-			err := r.client.AssocJobTemplChild(ctx, bodyData, url)
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
@@ -300,7 +257,7 @@ func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resou
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_error/", id)
 
 	var RelatedIds []int
 
@@ -311,12 +268,12 @@ func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resou
 
 	for _, val := range RelatedIds {
 
-		var body ChildDissasocBody
+		var bodyData ChildDissasocBody
 
-		body.Id = val
-		body.Disassociate = true
+		bodyData.Id = val
+		bodyData.Disassociate = true
 
-		err := r.client.DisassocJobTemplChild(ctx, body, url)
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 			return

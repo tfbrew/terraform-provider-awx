@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"slices"
 	"strconv"
@@ -15,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.Resource = &JobTemplateCredentialResource{}
 var _ resource.ResourceWithImportState = &JobTemplateCredentialResource{}
 
@@ -23,12 +21,10 @@ func NewJobTemplateCredentialResource() resource.Resource {
 	return &JobTemplateCredentialResource{}
 }
 
-// JobTemplateCredentialResource defines the resource implementation.
 type JobTemplateCredentialResource struct {
 	client *AwxClient
 }
 
-// JobTemplateCredentialResourceModel describes the resource data model.
 type JobTemplateCredentialResourceModel struct {
 	JobTemplateId types.String `tfsdk:"job_template_id"`
 	CredentialIds types.Set    `tfsdk:"credential_ids"`
@@ -70,7 +66,6 @@ func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource
 }
 
 func (r *JobTemplateCredentialResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
@@ -92,20 +87,20 @@ func (r *JobTemplateCredentialResource) Configure(ctx context.Context, req resou
 func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data JobTemplateCredentialResourceModel
 
-	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.JobTemplateId.ValueString()))
 	}
+
+	url := fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
 	var credIds []int
 
@@ -119,73 +114,47 @@ func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource
 		var bodyData Result
 		bodyData.Id = val
 
-		err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
+			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
 		}
 	}
 
-	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data JobTemplateCredentialResourceModel
 
-	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// set url for create HTTP request
 	id, err := strconv.Atoi(data.JobTemplateId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Converting ID to Int failed", fmt.Sprintf("Converting the job template id %s to int failed.", data.JobTemplateId.ValueString()))
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
-	// create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
 	var responseData JTCredentialAPIRead
 
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
-
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -196,12 +165,14 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		tfCredIds = append(tfCredIds, v.Id)
 	}
 
-	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfCredIds)
-	if diags.HasError() {
-		return
-	}
+	if !SetAndResponseMatch(data.CredentialIds, tfCredIds) {
 
-	data.CredentialIds = listValue
+		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfCredIds)
+		if diags.HasError() {
+			return
+		}
+		data.CredentialIds = listValue
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -223,42 +194,20 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 
 	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
 	var responseData JTCredentialAPIRead
 
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-		return
-	}
-
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -282,9 +231,9 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 			var bodyData DissasocBody
 			bodyData.Id = v
 
-			err := r.client.DisassocJobTemplCredential(ctx, id, bodyData)
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
+				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
 			}
 		}
@@ -295,9 +244,9 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 			var bodyData Result
 			bodyData.Id = v
 
-			err := r.client.AssocJobTemplCredential(ctx, id, bodyData)
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to associate credential.", err.Error())
+				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
 			}
 		}
@@ -329,18 +278,21 @@ func (r *JobTemplateCredentialResource) Delete(ctx context.Context, req resource
 		return
 	}
 
+	url := fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
+
 	for _, val := range credIds {
 
-		var body DissasocBody
+		var bodyData DissasocBody
 
-		body.Id = val
-		body.Disassociate = true
+		bodyData.Id = val
+		bodyData.Disassociate = true
 
-		err := r.client.DisassocJobTemplCredential(ctx, id, body)
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to disassociate credential.", err.Error())
+			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 			return
 		}
+
 	}
 
 }

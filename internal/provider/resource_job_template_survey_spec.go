@@ -218,7 +218,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 		case slices.Contains(numberTypes, specBuilt.Type) && spec.Default.ValueString() != "":
 			defaultNumber, err := strconv.Atoi(spec.Default.ValueString())
 			if err != nil {
-				resp.Diagnostics.AddError("uanble to convert to integer", err.Error())
+				resp.Diagnostics.AddError("Unable to convert to integer", err.Error())
 				return
 			}
 			specBuilt.Default = defaultNumber
@@ -305,14 +305,14 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
+			"Unable to get all data out of the http response data body",
 			fmt.Sprintf("Body got %v. ", body))
 	}
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 	}
 
@@ -461,7 +461,7 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 		case slices.Contains(numberTypes, specBuilt.Type) && spec.Default.ValueString() != "":
 			defaultNumber, err := strconv.Atoi(spec.Default.ValueString())
 			if err != nil {
-				resp.Diagnostics.AddError("uanble to convert to integer", err.Error())
+				resp.Diagnostics.AddError("Unable to convert to integer", err.Error())
 				return
 			}
 			specBuilt.Default = defaultNumber

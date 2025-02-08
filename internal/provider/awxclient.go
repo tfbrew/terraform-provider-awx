@@ -18,9 +18,22 @@ type AwxClient struct {
 
 // A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
 // headers and then makes the actual http request.
-func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody []byte, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
+func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
 	url = c.endpoint + url
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(requestBody)))
+
+	var body io.Reader
+
+	if requestBody != nil {
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			errorMessage = fmt.Errorf("unable to marshal requestBody into json: %s", err.Error())
+			return
+		}
+
+		body = strings.NewReader(string(jsonData))
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		errorMessage = fmt.Errorf("error generating http request: %v", err)
 		return
@@ -57,9 +70,22 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 	return
 }
 
-func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, body []byte, successCodes []int) (returnedData map[string]any, errorMessage error) {
+func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, errorMessage error) {
 	url = c.endpoint + url
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(body)))
+
+	var body io.Reader
+
+	if requestBody != nil {
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			errorMessage = fmt.Errorf("unable to marshal requestBody into json: %s", err.Error())
+			return
+		}
+
+		body = strings.NewReader(string(jsonData))
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		errorMessage = fmt.Errorf("error generating http request: %v", err)
 		return
@@ -98,201 +124,8 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	}
 	err = json.Unmarshal(httpRespBodyData, &returnedData)
 	if err != nil {
-		errorMessage = errors.New("unable to unmarshall http request response body to retrieve returnedData")
+		errorMessage = errors.New("unable to unmarshal http request response body to retrieve returnedData")
 		return
 	}
 	return
-}
-
-func (c *AwxClient) AssocJobTemplChild(ctx context.Context, body ChildResult, url string) error {
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return err
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", c.auth)
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	if httpResp.StatusCode != 204 {
-		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
-		return err
-	}
-
-	return nil
-}
-
-func (c *AwxClient) AssocSuccessNode(ctx context.Context, body ChildAssocBody, url string) error {
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return err
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", c.auth)
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	if httpResp.StatusCode != 204 {
-		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
-		return err
-	}
-
-	return nil
-}
-
-func (c *AwxClient) DisassocJobTemplChild(ctx context.Context, body ChildDissasocBody, url string) error {
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return err
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", c.auth)
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	if httpResp.StatusCode != 204 {
-		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
-		return err
-	}
-
-	return nil
-}
-
-func (c *AwxClient) AssocJobTemplCredential(ctx context.Context, id int, body Result) error {
-	url := c.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return err
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", c.auth)
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	if httpResp.StatusCode != 204 {
-		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
-		return err
-	}
-
-	return nil
-}
-
-func (c *AwxClient) DisassocJobTemplCredential(ctx context.Context, id int, body DissasocBody) error {
-	url := c.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return err
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", c.auth)
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	if httpResp.StatusCode != 204 {
-		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
-		return err
-	}
-
-	return nil
-}
-
-func (c *AwxClient) AssocJobTemplLabel(ctx context.Context, id int, body LabelResult) error {
-	url := c.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return err
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", c.auth)
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	if httpResp.StatusCode != 204 {
-		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
-		return err
-	}
-
-	return nil
-}
-
-func (c *AwxClient) DisassocJobTemplLabel(ctx context.Context, id int, body LabelDissasocBody) error {
-	url := c.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/labels/", id)
-
-	jsonData, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		return err
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", c.auth)
-
-	httpResp, err := c.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	if httpResp.StatusCode != 204 {
-		err = fmt.Errorf("expected http code 204, got %d", httpResp.StatusCode)
-		return err
-	}
-
-	return nil
 }

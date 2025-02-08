@@ -338,7 +338,7 @@ func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.
 	err = json.Unmarshal(httpRespBodyData, &tmp)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get unmarshall http response to grab ID",
+			"Unable to get unmarshal http response to grab ID",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -409,7 +409,7 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
+			"Unable to get all data out of the http response data body",
 			fmt.Sprintf("Body got %v. ", body))
 		return
 	}
@@ -417,7 +417,7 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
@@ -432,7 +432,7 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 	if !(data.Description.IsNull() && responseData.Description == nil) {
 		castString, ok := responseData.Description.(string)
 		if !ok {
-			resp.Diagnostics.AddError("uanble to cast descr as string.", "unable to cast as string.")
+			resp.Diagnostics.AddError("Unable to cast descr as string.", "unable to cast as string.")
 			return
 		}
 		if castString != "" {

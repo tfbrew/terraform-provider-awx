@@ -557,7 +557,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	err = json.Unmarshal(httpRepsBodyData, &tmp)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get unmarshall http response to grab ID",
+			"Unable to get unmarshal http response to grab ID",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -629,7 +629,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	body, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble to get all data out of the http response data body",
+			"Unable to get all data out of the http response data body",
 			fmt.Sprintf("Body got %v. ", body))
 		return
 	}
@@ -637,7 +637,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Uanble unmarshall response body into object",
+			"Unable unmarshal response body into object",
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 		return
 	}
