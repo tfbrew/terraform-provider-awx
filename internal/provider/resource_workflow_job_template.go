@@ -398,7 +398,7 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 	if !(data.Inventory.IsNull() && responseData.Inventory == nil) {
 		convertInt, ok := responseData.Inventory.(float64)
 		if !ok {
-			resp.Diagnostics.AddError("Unable to convert any to int32.", "Unable to convert any to int32.")
+			resp.Diagnostics.AddError("Unable to convert any to float64.", fmt.Sprintf("Unable to convert %v to float64.", responseData.Inventory))
 			return
 		}
 

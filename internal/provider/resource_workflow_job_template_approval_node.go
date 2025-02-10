@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -117,154 +115,88 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 	/////////////////////////////////////////////////////
 	// First create an empty node
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_templates/%d/workflow_nodes/", data.WorkflowJobTemplateId.ValueInt32())
+	url := fmt.Sprintf("/api/v2/workflow_job_templates/%d/workflow_nodes/", data.WorkflowJobTemplateId.ValueInt32())
 
-	newWJTworkflowNode := struct {
+	newJTworkflowNode := struct {
 		NodeType string `json:"node_type"`
 	}{
 		NodeType: "approval",
 	}
 
-	jsonData, err := json.Marshal(newWJTworkflowNode)
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, newJTworkflowNode, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable marshal json",
-			fmt.Sprintf("Unable to convert id: %+v. ", newWJTworkflowNode))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-		return
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 201 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
+	returnedValues := []string{"id"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
 			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
 			return
 		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
-		return
 	}
 
-	tmp := struct {
-		Id int `json:"id"`
-	}{}
-
-	defer httpResp.Body.Close()
-	httpRespBodyData, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get http response body",
-			fmt.Sprintf("Error was %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRespBodyData, &tmp)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get unmarshal http response to grab ID",
-			fmt.Sprintf("error was %v", err))
-		return
-	}
-
-	idAsString := strconv.Itoa(tmp.Id)
-
-	data.Id = types.StringValue(idAsString)
+	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
 
 	////////////////////////////////////////////////////
 	// Now we create a new approval template on that node
 	////////////////////////////////////////////////////
-	var jsonBody WorkflowJobTmplNodeApprvCreateAPIModel
+	var bodyData WorkflowJobTmplNodeApprvCreateAPIModel
 
-	jsonBody.Name = data.Name.ValueString()
+	bodyData.Name = data.Name.ValueString()
 	if !data.Description.IsNull() {
-		jsonBody.Description = data.Description.ValueString()
+		bodyData.Description = data.Description.ValueString()
 	}
 	if !data.Timeout.IsNull() {
-		jsonBody.Timeout = int(data.Timeout.ValueInt32())
+		bodyData.Timeout = int(data.Timeout.ValueInt32())
 	}
 
-	jsonData, err = json.Marshal(jsonBody)
+	tempId := fmt.Sprintf("%v", returnedData["id"])
+	tempIdInt, err := strconv.Atoi(tempId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable marshal json",
-			fmt.Sprintf("Unable to convert id: %+v. ", jsonBody))
+			"Error converting returned ID to an integer",
+			fmt.Sprintf("Error converting %v to integer, with error %v", tempId, err.Error()),
+		)
 		return
 	}
 
-	url = r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/create_approval_template/", tmp.Id)
+	url = fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/create_approval_template/", tempIdInt)
 
-	httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
+	returnedData, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err = r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 201 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
+	returnedValues = []string{"id"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
 			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
 			return
 		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 201, got %v with message %s. ", httpResp.StatusCode, body))
-		return
 	}
 
-	tmp = struct {
-		Id int `json:"id"`
-	}{}
-
-	defer httpResp.Body.Close()
-	httpRespBodyData, err = io.ReadAll(httpResp.Body)
+	tempId = fmt.Sprintf("%v", returnedData["id"])
+	tempIdInt, err = strconv.Atoi(tempId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get http response body",
-			fmt.Sprintf("Error was %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRespBodyData, &tmp)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get unmarshal http response to grab ID",
-			fmt.Sprintf("error was %v", err))
+			"Error converting returned ID to an integer",
+			fmt.Sprintf("Error converting %v to integer, with error %v", tempId, err.Error()),
+		)
 		return
 	}
 
-	data.ApprovalTemplateId = types.Int32Value(int32(tmp.Id))
+	data.ApprovalTemplateId = types.Int32Value(int32(tempIdInt))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -286,41 +218,17 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
+	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	responseBody, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-		return
-	}
-
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -330,18 +238,10 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 		ApprovalTemplateId    int `json:"unified_job_template"`
 	}{}
 
-	defer httpResp.Body.Close()
-	httpRespBodyData, err := io.ReadAll(httpResp.Body)
+	err = json.Unmarshal(responseBody, &getNameFromResponse)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get http response body",
-			fmt.Sprintf("Error was %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRespBodyData, &getNameFromResponse)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get unmarshal http response to grab ID",
+			"Unable to get unmarshal http response",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -357,59 +257,27 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 
 	/// now read the node's template's data
 
-	url = r.client.endpoint + fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", getNameFromResponse.ApprovalTemplateId)
+	url = fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", getNameFromResponse.ApprovalTemplateId)
 
-	httpReq, err = http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	responseBody, statusCode, err = r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err = r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-		return
-	}
-	if httpResp.StatusCode != 200 && httpResp.StatusCode != 404 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v with message %s. ", httpResp.StatusCode, body))
-		return
-	}
-
-	if httpResp.StatusCode == 404 {
+	if statusCode == 404 {
 		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	var readAPIResponse WorkflowJobTmplNodeApprvCreateAPIModel
 
-	defer httpResp.Body.Close()
-	httpRespBodyData, err = io.ReadAll(httpResp.Body)
+	err = json.Unmarshal(responseBody, &readAPIResponse)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get http response body",
-			fmt.Sprintf("Error was %v", err))
-		return
-	}
-	err = json.Unmarshal(httpRespBodyData, &readAPIResponse)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get unmarshal http response to grab ID",
+			"Unable to get unmarshal http response",
 			fmt.Sprintf("error was %v", err))
 		return
 	}
@@ -434,12 +302,13 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 	}
 
 	if !(data.Timeout.IsNull() && readAPIResponse.Timeout != nil) {
-		timeoutInt, ok := readAPIResponse.Timeout.(int32)
+		timeout, ok := readAPIResponse.Timeout.(float64)
 		if !ok {
-			resp.Diagnostics.AddError("couldn't convert any to int32", "unable to convert any to int32.")
+			resp.Diagnostics.AddError("couldn't convert any to float64", "unable to convert any to float64.")
 			return
 		}
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), timeoutInt)...)
+
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), int(timeout))...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -463,45 +332,14 @@ func (r *WorkflowJobTemplateApprovalNode) Update(ctx context.Context, req resour
 	bodyData.Description = data.Description.ValueString()
 	bodyData.Timeout = int(data.Timeout.ValueInt32())
 
-	jsonData, err := json.Marshal(bodyData)
+	url := fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", data.ApprovalTemplateId.ValueInt32())
+
+	_, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPatch, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable marshal json",
-			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
-	}
-
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", data.ApprovalTemplateId.ValueInt32())
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to generate delete request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 204, got %v with message %s. ", httpResp.StatusCode, body))
-		return
-
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -522,37 +360,14 @@ func (r *WorkflowJobTemplateApprovalNode) Delete(ctx context.Context, req resour
 			"Unable convert id from string to int",
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
+	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{204})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate delete request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
-	}
-	if httpResp.StatusCode != 204 {
-		defer httpResp.Body.Close()
-		body, err := io.ReadAll(httpResp.Body)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable read http request response body.",
-				err.Error())
-			return
-		}
-
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 204, got %v with message %s. ", httpResp.StatusCode, body))
+			"Error making API delete request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
-
 	}
 }
 

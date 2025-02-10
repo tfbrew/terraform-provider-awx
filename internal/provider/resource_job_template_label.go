@@ -151,14 +151,11 @@ func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadR
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	if !SetAndResponseMatch(data.LabelIDs, tfRelatedIds) {
-
-		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-		if diags.HasError() {
-			return
-		}
-		data.LabelIDs = listValue
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	if diags.HasError() {
+		return
 	}
+	data.LabelIDs = listValue
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

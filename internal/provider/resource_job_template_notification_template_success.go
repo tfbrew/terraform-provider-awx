@@ -151,15 +151,11 @@ func (r *JobTemplateNotifTemplSuccessResource) Read(ctx context.Context, req res
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	if !SetAndResponseMatch(data.NotifTEmplateIDs, tfRelatedIds) {
-
-		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-		if diags.HasError() {
-			return
-		}
-		data.NotifTEmplateIDs = listValue
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	if diags.HasError() {
+		return
 	}
-
+	data.NotifTEmplateIDs = listValue
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
