@@ -54,10 +54,6 @@ resource "awx_notification_template" "example" {
       }
     }
   })
-
-
-
-
 }
 ```
 

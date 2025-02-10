@@ -498,7 +498,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	url := "/api/v2/job_templates/"
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200})
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200, 201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
