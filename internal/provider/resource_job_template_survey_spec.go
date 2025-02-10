@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"reflect"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -177,7 +175,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
 	var bodyData JobTemplateSurvey
 	bodyData.Name = data.Name.ValueString()
@@ -231,32 +229,12 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 
 	bodyData.Spec = specs
 
-	jsonData, err := json.Marshal(bodyData)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable marshal json",
-			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -277,39 +255,19 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	httpResponse, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
 	}
 
 	var responseData JobTemplateSurvey
 
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get all data out of the http response data body",
-			fmt.Sprintf("Body got %v. ", body))
-	}
-
-	err = json.Unmarshal(body, &responseData)
+	err = json.Unmarshal(httpResponse, &responseData)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable unmarshal response body into object",
@@ -380,6 +338,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
 						"Unexpected error in resource_jobtemplate_survey",
 					)
+					return
 				}
 
 			default:
@@ -390,6 +349,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 					resp.Diagnostics.AddError("Unexpected error in resource_jobtemplate_survey",
 						"Unexpected error in resource_jobtemplate_survey",
 					)
+					return
 				}
 			}
 		}
@@ -420,7 +380,7 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
 	var bodyData JobTemplateSurvey
 	bodyData.Name = data.Name.ValueString()
@@ -474,32 +434,12 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 
 	bodyData.Spec = specs
 
-	jsonData, err := json.Marshal(bodyData)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable marshal json",
-			fmt.Sprintf("Unable to convert id: %+v. ", bodyData))
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(jsonData)))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to generate request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create example, got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -521,27 +461,14 @@ func (r *JobTemplateSurveyResource) Delete(ctx context.Context, req resource.Del
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to generate delete request",
-			fmt.Sprintf("Unable to gen url: %v. ", url))
-	}
-
-	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("Authorization", r.client.auth)
-
-	httpResp, err := r.client.client.Do(httpReq)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete got error: %s", err))
-	}
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Bad request status code.",
-			fmt.Sprintf("Expected 200, got %v. ", httpResp.StatusCode))
-
+			"Error making API http request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
 	}
 }
 
