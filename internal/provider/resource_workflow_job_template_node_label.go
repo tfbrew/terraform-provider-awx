@@ -36,7 +36,7 @@ func (r *WorkflowJobTemplatesNodeLabelResource) Metadata(ctx context.Context, re
 
 func (r *WorkflowJobTemplatesNodeLabelResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Specify a node ID and then a list of the lable IDs that are associated to this node.",
+		Description: "Specify a node ID and then a list of the label IDs that are associated to this node. NOTE: This can only be used if the job template specified in the node has `ask_labels_on_launch` specified.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
