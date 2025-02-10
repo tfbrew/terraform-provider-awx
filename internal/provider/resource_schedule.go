@@ -105,7 +105,7 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	url := "/api/v2/schedules/"
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -209,7 +209,7 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	url := fmt.Sprintf("/api/v2/schedules/%d/", id)
-	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",

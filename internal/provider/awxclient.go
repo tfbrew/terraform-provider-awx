@@ -55,6 +55,8 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 	}
 
 	responseBody, err = io.ReadAll(httpResp.Body)
+	statusCode = httpResp.StatusCode
+
 	if err != nil {
 		errorMessage = fmt.Errorf("unable to read the http response data body. body: %v", responseBody)
 		return
@@ -62,7 +64,6 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 	defer httpResp.Body.Close()
 
 	if !success {
-		statusCode = httpResp.StatusCode
 		errorMessage = fmt.Errorf("expected %v http response code for API call, got %d with message %s", successCodes, statusCode, responseBody)
 		return
 	}
@@ -70,7 +71,7 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 	return
 }
 
-func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, errorMessage error) {
+func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, statusCode int, errorMessage error) {
 	url = c.endpoint + url
 
 	var body io.Reader
@@ -117,6 +118,7 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 		return
 	}
 
+	statusCode = httpResp.StatusCode
 	httpRespBodyData, err := io.ReadAll(httpResp.Body)
 	if err != nil {
 		errorMessage = errors.New("unable to read http request response body to retrieve id")

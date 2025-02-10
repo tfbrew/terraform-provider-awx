@@ -169,7 +169,7 @@ type JobTemplateModel struct {
 	AskInventoryOnLaunch           types.Bool   `tfsdk:"ask_inventory_on_launch"`
 	AskCredentialOnLaunch          types.Bool   `tfsdk:"ask_credential_on_launch"`
 	AskExecutionEnvironmenOnLaunch types.Bool   `tfsdk:"ask_execution_environment_on_launch"`
-	AskLablesOnLaunch              types.Bool   `tfsdk:"ask_labels_on_launch"`
+	AskLabelsOnLaunch              types.Bool   `tfsdk:"ask_labels_on_launch"`
 	AskForksOnLaunch               types.Bool   `tfsdk:"ask_forks_on_launch"`
 	AskJobSliceCountOnLaunch       types.Bool   `tfsdk:"ask_job_slice_count_on_launch"`
 	AskTimeoutOnLaunch             types.Bool   `tfsdk:"ask_timeout_on_launch"`
@@ -217,7 +217,7 @@ type JobTemplateAPIModel struct {
 	AskInventoryOnLaunch           bool   `json:"ask_inventory_on_launch,omitempty"`
 	AskCredentialOnLaunch          bool   `json:"ask_credential_on_launch,omitempty"`
 	AskExecutionEnvironmenOnLaunch bool   `json:"ask_execution_environment_on_launch,omitempty"`
-	AskLablesOnLaunch              bool   `json:"ask_labels_on_launch,omitempty"`
+	AskLabelsOnLaunch              bool   `json:"ask_labels_on_launch,omitempty"`
 	AskForksOnLaunch               bool   `json:"ask_forks_on_launch,omitempty"`
 	AskJobSliceCountOnLaunch       bool   `json:"ask_job_slice_count_on_launch,omitempty"`
 	AskTimeoutOnLaunch             bool   `json:"ask_timeout_on_launch,omitempty"`

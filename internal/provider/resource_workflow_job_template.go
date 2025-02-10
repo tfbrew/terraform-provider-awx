@@ -282,7 +282,7 @@ func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.
 	}
 
 	url := "/api/v2/workflow_job_templates/"
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -523,7 +523,7 @@ func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.
 	bodyData.JobTags = data.JobTags.ValueString()
 
 	url := fmt.Sprintf("/api/v2/workflow_job_templates/%d/", id)
-	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",

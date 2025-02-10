@@ -212,7 +212,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 	}
 
 	url := "/api/v2/workflow_job_template_nodes/"
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -220,7 +220,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 		return
 	}
 
-	returnedValues := []string{"id"}
+	returnedValues := []string{"id", "identifier"}
 	for _, key := range returnedValues {
 		if _, exists := returnedData[key]; !exists {
 			resp.Diagnostics.AddError(
@@ -231,6 +231,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Create(ctx context.Context, req re
 	}
 
 	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
+	data.Identifier = types.StringValue(fmt.Sprintf("%v", returnedData["identifier"]))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -458,13 +459,25 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 	bodyData.Identifier = data.Identifier.ValueString()
 
 	url := fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/", id)
-	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
+
+	returnedValues := []string{"identifier"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
+	}
+
+	data.Identifier = types.StringValue(fmt.Sprintf("%v", returnedData["identifier"]))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

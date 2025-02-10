@@ -133,7 +133,7 @@ func (r *CredentialTypeResource) Create(ctx context.Context, req resource.Create
 	}
 
 	url := "/api/v2/credential_types/"
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -330,7 +330,7 @@ func (r *CredentialTypeResource) Update(ctx context.Context, req resource.Update
 	}
 
 	url := fmt.Sprintf("/api/v2/credential_types/%d/", id)
-	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",

@@ -88,7 +88,7 @@ func (r *LabelsResource) Create(ctx context.Context, req resource.CreateRequest,
 	bodyData.Organization = int(data.Organization.ValueInt32())
 
 	url := "/api/v2/labels/"
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -189,7 +189,7 @@ func (r *LabelsResource) Update(ctx context.Context, req resource.UpdateRequest,
 	bodyData.Organization = int(data.Organization.ValueInt32())
 
 	url := fmt.Sprintf("/api/v2/labels/%d/", id)
-	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
