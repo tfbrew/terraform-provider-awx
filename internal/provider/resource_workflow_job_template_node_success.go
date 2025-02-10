@@ -159,14 +159,11 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req 
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	if !SetAndResponseMatch(data.SuccessIds, tfRelatedIds) {
-
-		listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-		if diags.HasError() {
-			return
-		}
-		data.SuccessIds = listValue
+	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
+	if diags.HasError() {
+		return
 	}
+	data.SuccessIds = listValue
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
