@@ -123,7 +123,7 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 		NodeType: "approval",
 	}
 
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, newJTworkflowNode, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, newJTworkflowNode, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -168,7 +168,7 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 
 	url = fmt.Sprintf("/api/v2/workflow_job_template_nodes/%d/create_approval_template/", tempIdInt)
 
-	returnedData, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -334,7 +334,7 @@ func (r *WorkflowJobTemplateApprovalNode) Update(ctx context.Context, req resour
 
 	url := fmt.Sprintf("/api/v2/workflow_approval_templates/%d/", data.ApprovalTemplateId.ValueInt32())
 
-	_, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPatch, url, bodyData, []int{200})
+	_, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPatch, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",

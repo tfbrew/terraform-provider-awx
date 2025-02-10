@@ -454,8 +454,8 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	if !(data.AskExecutionEnvironmenOnLaunch.IsNull()) {
 		bodyData.AskExecutionEnvironmenOnLaunch = data.AskExecutionEnvironmenOnLaunch.ValueBool()
 	}
-	if !(data.AskLablesOnLaunch.IsNull()) {
-		bodyData.AskLablesOnLaunch = data.AskLablesOnLaunch.ValueBool()
+	if !(data.AskLabelsOnLaunch.IsNull()) {
+		bodyData.AskLabelsOnLaunch = data.AskLabelsOnLaunch.ValueBool()
 	}
 	if !(data.AskForksOnLaunch.IsNull()) {
 		bodyData.AskForksOnLaunch = data.AskForksOnLaunch.ValueBool()
@@ -498,12 +498,18 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	url := "/api/v2/job_templates/"
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200, 201})
+	returnedData, statusCode, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200, 201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
+	}
+
+	if statusCode == 201 {
+		resp.Diagnostics.AddWarning(
+			"Job Template warning",
+			fmt.Sprintf("The playbook file %v was not found in project %v, but the job template was created.", data.Playbook.ValueString(), int(data.Project.ValueInt32())))
 	}
 
 	returnedValues := []string{"id"}
@@ -721,7 +727,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_labels_on_launch"), responseData.AskLablesOnLaunch)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ask_labels_on_launch"), responseData.AskLabelsOnLaunch)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -862,7 +868,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	bodyData.AskInventoryOnLaunch = data.AskInventoryOnLaunch.ValueBool()
 	bodyData.AskCredentialOnLaunch = data.AskCredentialOnLaunch.ValueBool()
 	bodyData.AskExecutionEnvironmenOnLaunch = data.AskExecutionEnvironmenOnLaunch.ValueBool()
-	bodyData.AskLablesOnLaunch = data.AskLablesOnLaunch.ValueBool()
+	bodyData.AskLabelsOnLaunch = data.AskLabelsOnLaunch.ValueBool()
 	bodyData.AskForksOnLaunch = data.AskForksOnLaunch.ValueBool()
 	bodyData.AskJobSliceCountOnLaunch = data.AskJobSliceCountOnLaunch.ValueBool()
 	bodyData.AskTimeoutOnLaunch = data.AskTimeoutOnLaunch.ValueBool()
@@ -886,7 +892,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	url := fmt.Sprintf("/api/v2/job_templates/%d/", id)
-	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",

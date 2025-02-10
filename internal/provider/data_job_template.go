@@ -411,8 +411,8 @@ func (d *JobTemplateDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if responseData.AskExecutionEnvironmenOnLaunch {
 		data.AskExecutionEnvironmenOnLaunch = types.BoolValue(responseData.AskExecutionEnvironmenOnLaunch)
 	}
-	if responseData.AskLablesOnLaunch {
-		data.AskLablesOnLaunch = types.BoolValue(responseData.AskLablesOnLaunch)
+	if responseData.AskLabelsOnLaunch {
+		data.AskLabelsOnLaunch = types.BoolValue(responseData.AskLabelsOnLaunch)
 	}
 	if responseData.AskForksOnLaunch {
 		data.AskForksOnLaunch = types.BoolValue(responseData.AskForksOnLaunch)
