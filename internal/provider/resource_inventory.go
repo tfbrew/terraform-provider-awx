@@ -132,17 +132,8 @@ func (r *InventoryResource) Create(ctx context.Context, req resource.CreateReque
 		bodyData.HostFilter = data.HostFilter.ValueString()
 	}
 
-	jsonData, err := json.Marshal(bodyData)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to marshal bodyData to json",
-			fmt.Sprintf("bodyData: %+v.", bodyData))
-		return
-	}
-
 	url := "/api/v2/inventories/"
-	successCodes := []int{201}
-	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, jsonData, successCodes)
+	returnedData, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -182,8 +173,7 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	url := fmt.Sprintf("/api/v2/inventories/%d/", id)
-	successCodes := []int{200, 404}
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, successCodes)
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -286,17 +276,8 @@ func (r *InventoryResource) Update(ctx context.Context, req resource.UpdateReque
 		bodyData.HostFilter = data.HostFilter.ValueString()
 	}
 
-	jsonData, err := json.Marshal(bodyData)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to marshal bodyData to json",
-			fmt.Sprintf("bodyData: %+v.", bodyData))
-		return
-	}
-
 	url := fmt.Sprintf("/api/v2/inventories/%d/", id)
-	successCodes := []int{200}
-	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, jsonData, successCodes)
+	_, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -324,9 +305,7 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	url := fmt.Sprintf("/api/v2/inventories/%d/", id)
-
-	successCodes := []int{202, 204}
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, successCodes)
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

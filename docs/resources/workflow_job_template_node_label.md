@@ -3,12 +3,12 @@
 page_title: "awx_workflow_job_template_node_label Resource - awx"
 subcategory: ""
 description: |-
-  Specify a node ID and then a list of the lable IDs that are associated to this node.
+  Specify a node ID and then a list of the label IDs that are associated to this node. NOTE: This can only be used if the job template specified in the node has ask_labels_on_launch specified.
 ---
 
 # awx_workflow_job_template_node_label (Resource)
 
-Specify a node ID and then a list of the lable IDs that are associated to this node.
+Specify a node ID and then a list of the label IDs that are associated to this node. NOTE: This can only be used if the job template specified in the node has `ask_labels_on_launch` specified.
 
 ## Example Usage
 

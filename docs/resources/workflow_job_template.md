@@ -13,7 +13,7 @@ A workflow job template resource.
 ## Example Usage
 
 ```terraform
-resource "awx_workflow_job_templates" "example" {
+resource "awx_workflow_job_template" "example" {
   allow_simultaneous       = false
   ask_inventory_on_launch  = false
   ask_labels_on_launch     = false
