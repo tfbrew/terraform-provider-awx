@@ -20,7 +20,7 @@ resource "awx_credential" "example-machine" {
   credential_type = data.awx_credential_type.machine.id
   inputs = jsonencode({
     "username" : "awx",
-    "password" : "test1234", // insecure, example only
+    "password" : "test1234", // code should not contain secrets, example only
     "become_method" : "sudo",
     "become_password" : "ASK" // ASK = Prompt at Launch checkbox
   })
@@ -43,7 +43,7 @@ resource "awx_credential" "example-source-control" {
   credential_type = data.awx_credential_type.source-control.id
   inputs = jsonencode({
     "username" : "awx",
-    "ssh_key_data" : file("${path.module}/id_rsa") // insecure, example only
-    "ssh_key_unlock" : "test1234"                  // insecure, example only
+    "ssh_key_data" : file("${path.module}/id_rsa") // code should not contain secrets, example only
+    "ssh_key_unlock" : "test1234"                  // code should not contain secrets, example only
   })
 }
