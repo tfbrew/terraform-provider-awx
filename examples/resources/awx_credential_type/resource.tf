@@ -1,4 +1,4 @@
-resource "awx_credential_type" "name" {
+resource "awx_credential_type" "example" {
   name = "Example"
   kind = "cloud"
   inputs = jsonencode(

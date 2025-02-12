@@ -27,8 +27,11 @@ data "awx_credential" "example" {
 
 ### Read-Only
 
-- `credential_type` (Number) Credential type.
+- `credential_type` (Number) ID of the credential type.
 - `description` (String) Credential description.
+- `inputs` (String) Credential inputs.
 - `kind` (String) Credential kind.
 - `name` (String) Credential name.
-- `organization` (Number) Organization with which the credential is associated.
+- `organization` (Number) ID of organization which owns this credential. One and only one of `organization`, `team`, or `user` must be set.
+- `team` (Number) ID of team which owns this credential. One and only one of `organization`, `team`, or `user` must be set.
+- `user` (Number) ID of user which owns this credential. One and only one of `organization`, `team`, or `user` must be set.

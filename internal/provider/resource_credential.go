@@ -33,7 +33,9 @@ func (r *CredentialResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (r *CredentialResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `Manage an AWX credential.`,
+		Description: `Manage an AWX credential. 
+NOTE: The AWX API does not return encrypted secrets so changes made in AWX of the inputs field will be ignored. 
+The only changes to the inputs field that will be sent are when the terraform code does not match the terraform state.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Credential ID.",
@@ -69,6 +71,11 @@ func (r *CredentialResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"inputs": schema.StringAttribute{
 				Description: "Credential inputs.",
 				Required:    true,
+				Sensitive:   true,
+			},
+			"kind": schema.StringAttribute{
+				Description: "Credential kind.",
+				Computed:    true,
 			},
 		},
 	}
@@ -113,7 +120,6 @@ func (r *CredentialResource) Create(ctx context.Context, req resource.CreateRequ
 
 	bodyData.Name = data.Name.ValueString()
 	bodyData.CredentialType = int(data.CredentialType.ValueInt32())
-	bodyData.Inputs = data.Inputs.ValueString()
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
@@ -128,6 +134,17 @@ func (r *CredentialResource) Create(ctx context.Context, req resource.CreateRequ
 		bodyData.User = int(data.User.ValueInt32())
 	}
 
+	inputsDataMap := new(map[string]string)
+	err := json.Unmarshal([]byte(data.Inputs.ValueString()), &inputsDataMap)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to unmarshal map to json",
+			fmt.Sprintf("Unable to process inputs: %+v. ", data.Inputs))
+		return
+	}
+
+	bodyData.Inputs = inputsDataMap
+
 	url := "/api/v2/credentials/"
 	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
 	if err != nil {
@@ -137,7 +154,7 @@ func (r *CredentialResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	returnedValues := []string{"id"}
+	returnedValues := []string{"id", "kind"}
 	for _, key := range returnedValues {
 		if _, exists := returnedData[key]; !exists {
 			resp.Diagnostics.AddError(
@@ -148,6 +165,7 @@ func (r *CredentialResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
+	data.Kind = types.StringValue(fmt.Sprintf("%v", returnedData["kind"]))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -194,6 +212,7 @@ func (r *CredentialResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("credential_type"), responseData.CredentialType)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("kind"), responseData.Kind)...)
 
 	if !(data.Description.IsNull() && responseData.Description == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
@@ -254,7 +273,6 @@ func (r *CredentialResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	bodyData.Name = data.Name.ValueString()
 	bodyData.CredentialType = int(data.CredentialType.ValueInt32())
-	bodyData.Inputs = data.Inputs.ValueString()
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
@@ -269,14 +287,37 @@ func (r *CredentialResource) Update(ctx context.Context, req resource.UpdateRequ
 		bodyData.User = int(data.User.ValueInt32())
 	}
 
+	inputsDataMap := new(map[string]string)
+	err = json.Unmarshal([]byte(data.Inputs.ValueString()), &inputsDataMap)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to unmarshal map to json",
+			fmt.Sprintf("Unable to process inputs: %+v. ", data.Inputs))
+		return
+	}
+
+	bodyData.Inputs = inputsDataMap
+
 	url := fmt.Sprintf("/api/v2/credentials/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
+
+	returnedValues := []string{"id", "kind"}
+	for _, key := range returnedValues {
+		if _, exists := returnedData[key]; !exists {
+			resp.Diagnostics.AddError(
+				"Error retrieving computed values",
+				fmt.Sprintf("Could not retrieve %v.", key))
+			return
+		}
+	}
+
+	data.Kind = types.StringValue(fmt.Sprintf("%v", returnedData["kind"]))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

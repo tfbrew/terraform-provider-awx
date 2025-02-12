@@ -58,7 +58,7 @@ type CredentialAPIModel struct {
 	User           int    `json:"user,omitempty"`
 	CredentialType int    `json:"credential_type"`
 	Kind           string `json:"kind,omitempty"`
-	Inputs         string `json:"inputs"`
+	Inputs         any    `json:"inputs"`
 }
 
 type CredentialTypeModel struct {

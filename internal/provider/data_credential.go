@@ -148,5 +148,16 @@ func (d *CredentialDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	data.Kind = types.StringValue(responseData.Kind)
 	data.CredentialType = types.Int32Value(int32(responseData.CredentialType))
 
+	jsonInputs, err := json.Marshal(responseData.Inputs)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	// Convert to string and print
+	jsonString := string(jsonInputs)
+
+	data.Inputs = types.StringValue(jsonString)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
