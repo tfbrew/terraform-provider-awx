@@ -22,24 +22,6 @@ type CredentialDataSource struct {
 	client *AwxClient
 }
 
-type CredentialDataSourceModel struct {
-	Id             types.String `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	Description    types.String `tfsdk:"description"`
-	Kind           types.String `tfsdk:"kind"`
-	Organization   types.Int32  `tfsdk:"organization"`
-	CredentialType types.Int32  `tfsdk:"credential_type"`
-}
-
-type CredentialDataSourceJson struct {
-	Id             int    `json:"id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	Kind           string `json:"kind"`
-	Organization   int    `json:"organization"`
-	CredentialType int    `json:"credential_type"`
-}
-
 func (d *CredentialDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_credential"
 }
@@ -65,11 +47,23 @@ func (d *CredentialDataSource) Schema(ctx context.Context, req datasource.Schema
 				Computed:    true,
 			},
 			"organization": schema.Int32Attribute{
-				Description: "Organization with which the credential is associated.",
+				Description: "ID of organization which owns this credential. One and only one of `organization`, `team`, or `user` must be set.",
+				Computed:    true,
+			},
+			"team": schema.Int32Attribute{
+				Description: "ID of team which owns this credential. One and only one of `organization`, `team`, or `user` must be set.",
+				Computed:    true,
+			},
+			"user": schema.Int32Attribute{
+				Description: "ID of user which owns this credential. One and only one of `organization`, `team`, or `user` must be set.",
 				Computed:    true,
 			},
 			"credential_type": schema.Int32Attribute{
-				Description: "Credential type.",
+				Description: "ID of the credential type.",
+				Computed:    true,
+			},
+			"inputs": schema.StringAttribute{
+				Description: "Credential inputs.",
 				Computed:    true,
 			},
 		},
@@ -95,7 +89,7 @@ func (d *CredentialDataSource) Configure(ctx context.Context, req datasource.Con
 }
 
 func (d *CredentialDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data CredentialDataSourceModel
+	var data CredentialModel
 
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -128,7 +122,7 @@ func (d *CredentialDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	var responseData CredentialDataSourceJson
+	var responseData CredentialAPIModel
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -153,6 +147,17 @@ func (d *CredentialDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	data.Kind = types.StringValue(responseData.Kind)
 	data.CredentialType = types.Int32Value(int32(responseData.CredentialType))
+
+	jsonInputs, err := json.Marshal(responseData.Inputs)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	// Convert to string and print
+	jsonString := string(jsonInputs)
+
+	data.Inputs = types.StringValue(jsonString)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

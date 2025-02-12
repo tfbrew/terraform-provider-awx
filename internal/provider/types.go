@@ -37,6 +37,30 @@ type LabelDissasocBody struct {
 	Disassociate bool `json:"disassociate"`
 }
 
+type CredentialModel struct {
+	Id             types.String `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	Description    types.String `tfsdk:"description"`
+	Organization   types.Int32  `tfsdk:"organization"`
+	Team           types.Int32  `tfsdk:"team"`
+	User           types.Int32  `tfsdk:"user"`
+	CredentialType types.Int32  `tfsdk:"credential_type"`
+	Kind           types.String `tfsdk:"kind"`
+	Inputs         types.String `tfsdk:"inputs"`
+}
+
+type CredentialAPIModel struct {
+	Id             int    `json:"id"`
+	Name           string `json:"name"`
+	Description    string `json:"description,omitempty"`
+	Organization   int    `json:"organization,omitempty"`
+	Team           int    `json:"team,omitempty"`
+	User           int    `json:"user,omitempty"`
+	CredentialType int    `json:"credential_type"`
+	Kind           string `json:"kind,omitempty"`
+	Inputs         any    `json:"inputs"`
+}
+
 type CredentialTypeModel struct {
 	Id          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
