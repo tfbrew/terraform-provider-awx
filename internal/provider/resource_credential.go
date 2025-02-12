@@ -76,6 +76,9 @@ The only changes to the inputs field that will be sent are when the terraform co
 			"kind": schema.StringAttribute{
 				Description: "Credential kind.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
