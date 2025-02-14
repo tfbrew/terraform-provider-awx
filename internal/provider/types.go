@@ -342,3 +342,25 @@ type ScheduleAPIModel struct {
 	Rrule              string `json:"rrule"`
 	Enabled            bool   `json:"enabled"`
 }
+
+type UserModel struct {
+	Id              types.String `tfsdk:"id"`
+	Username        types.String `tfsdk:"username"`
+	FirstName       types.String `tfsdk:"first_name"`
+	LastName        types.String `tfsdk:"last_name"`
+	Email           types.String `tfsdk:"email"`
+	IsSuperuser     types.Bool   `tfsdk:"is_superuser"`
+	IsSystemAuditor types.Bool   `tfsdk:"is_system_auditor"`
+	Password        types.String `tfsdk:"password"`
+}
+
+type UserAPIModel struct {
+	Id              int    `json:"id"`
+	Username        string `json:"username"`
+	FirstName       string `json:"first_name,omitempty"`
+	LastName        string `json:"last_name,omitempty"`
+	Email           string `json:"email,omitempty"`
+	IsSuperuser     bool   `json:"is_superuser"`
+	IsSystemAuditor bool   `json:"is_system_auditor"`
+	Password        string `json:"password"`
+}

@@ -182,8 +182,8 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewCredentialResource,
 		NewCredentialTypeResource,
 		NewHostResource,
-		NewInventorySourceResource,
 		NewInventoryResource,
+		NewInventorySourceResource,
 		NewJobTemplateCredentialResource,
 		NewJobTemplateInstanceGroupsResource,
 		NewJobTemplateLabelsResource,
@@ -197,6 +197,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewOrganizationResource,
 		NewProjectResource,
 		NewScheduleResource,
+		NewUserResource,
 		NewWorkflowJobTemplatesResource,
 		NewWorkflowJobTemplatesJobNodeResource,
 		NewWorkflowJobTemplatesNodeLabelResource,
@@ -208,8 +209,8 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 
 func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewCredentialTypeDataSource,
 		NewCredentialDataSource,
+		NewCredentialTypeDataSource,
 		NewExecutionEnvironmentDataSource,
 		NewHostDataSource,
 		NewInventoryDataSource,
@@ -219,6 +220,7 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewOrganizationDataSource,
 		NewProjectDataSource,
 		NewScheduleDataSource,
+		NewUserDataSource,
 	}
 }
 
