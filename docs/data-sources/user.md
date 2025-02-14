@@ -27,8 +27,8 @@ data "awx_user" "example-username" {
 
 ### Optional
 
-- `id` (String) User ID
-- `username` (String) The username of the user.
+- `id` (String) User ID. Either `id` or `username` required for datasource.
+- `username` (String) The username of the user. Either `id` or `username` required for datasource.
 
 ### Read-Only
 

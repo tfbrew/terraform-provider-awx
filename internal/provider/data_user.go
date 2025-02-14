@@ -34,12 +34,12 @@ func (d *UserDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 		Description: "Get user datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "User ID",
+				Description: "User ID. Either `id` or `username` required for datasource.",
 				Optional:    true,
 			},
 			"username": schema.StringAttribute{
 				Optional:    true,
-				Description: "The username of the user.",
+				Description: "The username of the user. Either `id` or `username` required for datasource.",
 			},
 			"first_name": schema.StringAttribute{
 				Computed:    true,
