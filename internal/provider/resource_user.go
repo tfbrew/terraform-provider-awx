@@ -64,13 +64,13 @@ func (r *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"is_superuser": schema.BoolAttribute{
 				Optional:    true,
-				Description: "Designates that this user has all permissions without explicitly assigning them.",
+				Description: "Designates that this user has all permissions without explicitly assigning them. Only one of `is_superuser` or `is_system_auditor` is allowed.",
 				Default:     booldefault.StaticBool(false),
 				Computed:    true,
 			},
 			"is_system_auditor": schema.BoolAttribute{
 				Optional:    true,
-				Description: "User is a system wide auditor.",
+				Description: "User is a system wide auditor. Only one of `is_superuser` or `is_system_auditor` is allowed.",
 				Default:     booldefault.StaticBool(false),
 				Computed:    true,
 			},

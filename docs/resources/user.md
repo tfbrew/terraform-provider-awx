@@ -35,8 +35,8 @@ resource "awx_user" "example" {
 
 - `email` (String) User's email.
 - `first_name` (String) User's first name.
-- `is_superuser` (Boolean) Designates that this user has all permissions without explicitly assigning them.
-- `is_system_auditor` (Boolean) User is a system wide auditor.
+- `is_superuser` (Boolean) Designates that this user has all permissions without explicitly assigning them. Only one of `is_superuser` or `is_system_auditor` is allowed.
+- `is_system_auditor` (Boolean) User is a system wide auditor. Only one of `is_superuser` or `is_system_auditor` is allowed.
 - `last_name` (String) User's last name.
 
 ### Read-Only
