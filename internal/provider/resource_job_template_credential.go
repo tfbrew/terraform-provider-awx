@@ -189,7 +189,7 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	url := r.client.endpoint + fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
+	url := fmt.Sprintf("/api/v2/job_templates/%d/credentials/", id)
 
 	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
