@@ -1,4 +1,4 @@
-module terraform-provider-awx
+module github.com/TravisStratton/terraform-provider-awx
 
 go 1.22.7
 
