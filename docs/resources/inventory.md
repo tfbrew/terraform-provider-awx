@@ -47,7 +47,7 @@ resource "awx_inventory" "example-variables" {
 ### Optional
 
 - `description` (String) Inventory description.
-- `host_filter` (String) Populate the hosts for this inventory by using a search filter. Example: ansible_facts__ansible_distribution:"RedHat".
+- `host_filter` (String) Populate the hosts for this inventory by using a search filter. Example: `name__icontains=localhost`.
 - `kind` (String) Set to `smart` for smart inventories
 - `variables` (String) Enter inventory variables using either JSON or YAML syntax.
 
