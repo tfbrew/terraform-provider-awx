@@ -49,7 +49,7 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				Description: "URL for AWX (i.e. https://tower.example.com)",
-				Required:    true,
+				Optional:    true,
 			},
 			"token": schema.StringAttribute{
 				Description: "AWX access token (instead of username/password)",

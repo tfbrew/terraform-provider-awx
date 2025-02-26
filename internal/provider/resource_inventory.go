@@ -68,7 +68,7 @@ func (r *InventoryResource) Schema(ctx context.Context, req resource.SchemaReque
 				},
 			},
 			"host_filter": schema.StringAttribute{
-				Description: "Populate the hosts for this inventory by using a search filter. Example: ansible_facts__ansible_distribution:\"RedHat\".",
+				Description: "Populate the hosts for this inventory by using a search filter. Example: `name__icontains=localhost`.",
 				Optional:    true,
 			},
 		},

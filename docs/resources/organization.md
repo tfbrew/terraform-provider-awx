@@ -28,7 +28,6 @@ resource "awx_organization" "example" {
 
 ### Optional
 
-- `custom_virtualenv` (String) Local absolute file path containing a custom Python virtualenv to use.
 - `default_environment` (Number) The fallback execution environment that will be used for jobs inside of this organization if not explicitly assigned at the project, job template or workflow level.
 - `description` (String) Organization description.
 - `max_hosts` (Number) Maximum number of hosts allowed to be managed by this organization.
