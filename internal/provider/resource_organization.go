@@ -49,10 +49,6 @@ func (r *OrganizationResource) Schema(ctx context.Context, req resource.SchemaRe
 				Optional:    true,
 				Description: "Organization description.",
 			},
-			"custom_virtualenv": schema.StringAttribute{
-				Optional:    true,
-				Description: "Local absolute file path containing a custom Python virtualenv to use.",
-			},
 			"default_environment": schema.Int32Attribute{
 				Optional:    true,
 				Description: "The fallback execution environment that will be used for jobs inside of this organization if not explicitly assigned at the project, job template or workflow level.",
@@ -100,9 +96,6 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	}
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
-	}
-	if !(data.CustomVirtualEnv.IsNull()) {
-		bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
 	}
 	if !(data.DefaultEnv.IsNull()) {
 		bodyData.DefaultEnv = int(data.DefaultEnv.ValueInt32())
@@ -179,13 +172,6 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 		}
 	}
 
-	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), responseData.CustomVirtualEnv)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
 	if !(data.DefaultEnv.IsNull() && responseData.DefaultEnv == 0) {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("default_environment"), responseData.DefaultEnv)...)
 		if resp.Diagnostics.HasError() {
@@ -219,9 +205,6 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
-	}
-	if !(data.CustomVirtualEnv.IsNull()) {
-		bodyData.CustomVirtualEnv = data.CustomVirtualEnv.ValueString()
 	}
 	if !(data.DefaultEnv.IsNull()) {
 		bodyData.DefaultEnv = int(data.DefaultEnv.ValueInt32())

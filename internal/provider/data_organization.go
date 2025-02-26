@@ -45,10 +45,6 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 				Description: "Organization description.",
 				Computed:    true,
 			},
-			"custom_virtualenv": schema.StringAttribute{
-				Description: "Local absolute file path containing a custom Python virtualenv to use.",
-				Computed:    true,
-			},
 			"default_environment": schema.Int32Attribute{
 				Description: "The fallback execution environment that will be used for jobs inside of this organization if not explicitly assigned at the project, job template or workflow level.",
 				Computed:    true,
@@ -170,10 +166,6 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)
-	}
-
-	if responseData.CustomVirtualEnv != "" {
-		data.CustomVirtualEnv = types.StringValue(responseData.CustomVirtualEnv)
 	}
 
 	if responseData.DefaultEnv != 0 {

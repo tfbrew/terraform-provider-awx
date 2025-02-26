@@ -270,21 +270,19 @@ type LabelAPIModel struct {
 }
 
 type OrganizationModel struct {
-	Id               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Description      types.String `tfsdk:"description"`
-	CustomVirtualEnv types.String `tfsdk:"custom_virtualenv"`
-	DefaultEnv       types.Int32  `tfsdk:"default_environment"`
-	MaxHosts         types.Int32  `tfsdk:"max_hosts"`
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	DefaultEnv  types.Int32  `tfsdk:"default_environment"`
+	MaxHosts    types.Int32  `tfsdk:"max_hosts"`
 }
 
 type OrganizationAPIModel struct {
-	Id               int    `json:"id"`
-	Name             string `json:"name"`
-	Description      string `json:"description,omitempty"`
-	CustomVirtualEnv string `json:"custom_virtualenv,omitempty"`
-	DefaultEnv       int    `json:"default_environment,omitempty"`
-	MaxHosts         int    `json:"max_hosts,omitempty"`
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	DefaultEnv  int    `json:"default_environment,omitempty"`
+	MaxHosts    int    `json:"max_hosts,omitempty"`
 }
 
 type ProjectModel struct {
