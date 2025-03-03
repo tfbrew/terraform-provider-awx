@@ -97,6 +97,10 @@ func (d *ProjectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Description: "Example URLs for Remote Archive Source Control include: `https://github.com/username/project/archive/v0.0.1.tar.gz` `https://github.com/username/project/archive/v0.0.2.zip`",
 				Computed:    true,
 			},
+			"timeout": schema.Int32Attribute{
+				Description: "The amount of time (in seconds) to run before the SCM Update is canceled. A value of 0 means no timeout.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -199,6 +203,7 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	data.Name = types.StringValue(responseData.Name)
 	data.Organization = types.Int32Value(int32(responseData.Organization))
 	data.ScmType = types.StringValue(responseData.ScmType)
+	data.Timeout = types.Int32Value(int32(responseData.Timeout))
 
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)

@@ -14,35 +14,43 @@ import (
 
 func TestAccProjectResource(t *testing.T) {
 	project1 := ProjectAPIModel{
-		Name:         "test-project-" + acctest.RandString(5),
-		Description:  "Initial test git project",
-		ScmType:      "git",
-		ScmUrl:       "https://github.com/example/repo.git",
-		Organization: 1,
+		Name:           "test-project-" + acctest.RandString(5),
+		Description:    "Initial test git project",
+		ScmType:        "git",
+		ScmUrl:         "https://github.com/example/repo.git",
+		Organization:   1,
+		ScmUpdOnLaunch: false,
+		Timeout:        1,
 	}
 
 	project2 := ProjectAPIModel{
-		Name:         "test-project-" + acctest.RandString(5),
-		Description:  "Updated test git project",
-		ScmType:      "git",
-		ScmUrl:       "https://github.com/example/updated-repo.git",
-		Organization: 1,
+		Name:           "test-project-" + acctest.RandString(5),
+		Description:    "Updated test git project",
+		ScmType:        "git",
+		ScmUrl:         "https://github.com/example/updated-repo.git",
+		Organization:   1,
+		ScmUpdOnLaunch: true,
+		Timeout:        1,
 	}
 
 	project3 := ProjectAPIModel{
-		Name:         "test-project-" + acctest.RandString(5),
-		Description:  "svn project",
-		ScmType:      "svn",
-		ScmUrl:       "svn://bad_ip/test_repo",
-		Organization: 1,
+		Name:           "test-project-" + acctest.RandString(5),
+		Description:    "svn project",
+		ScmType:        "svn",
+		ScmUrl:         "svn://bad_ip/test_repo",
+		Organization:   1,
+		ScmUpdOnLaunch: false,
+		Timeout:        1,
 	}
 
 	project4 := ProjectAPIModel{
-		Name:         "test-project-" + acctest.RandString(5),
-		Description:  "archive project",
-		ScmType:      "archive",
-		ScmUrl:       "https://github.com/user/repo",
-		Organization: 1,
+		Name:           "test-project-" + acctest.RandString(5),
+		Description:    "archive project",
+		ScmType:        "archive",
+		ScmUrl:         "https://github.com/user/repo",
+		Organization:   1,
+		ScmUpdOnLaunch: true,
+		Timeout:        1,
 	}
 
 	project5 := ProjectAPIModel{
@@ -51,6 +59,7 @@ func TestAccProjectResource(t *testing.T) {
 		ScmType:      "", // manual
 		LocalPath:    "lost+found",
 		Organization: 1,
+		Timeout:      1,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -88,6 +97,16 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("organization"),
 						knownvalue.Int32Exact(int32(project1.Organization)),
 					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test",
+						tfjsonpath.New("scm_update_on_launch"),
+						knownvalue.Bool(project1.ScmUpdOnLaunch),
+					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(int32(project1.Timeout)),
+					),
 				},
 			},
 			{
@@ -123,6 +142,16 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("organization"),
 						knownvalue.Int32Exact(int32(project2.Organization)),
 					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test",
+						tfjsonpath.New("scm_update_on_launch"),
+						knownvalue.Bool(project2.ScmUpdOnLaunch),
+					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(int32(project2.Timeout)),
+					),
 				},
 			},
 			{
@@ -152,6 +181,16 @@ func TestAccProjectResource(t *testing.T) {
 						"awx_project.test-svn",
 						tfjsonpath.New("organization"),
 						knownvalue.Int32Exact(int32(project3.Organization)),
+					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test-svn",
+						tfjsonpath.New("scm_update_on_launch"),
+						knownvalue.Bool(project3.ScmUpdOnLaunch),
+					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test-svn",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(int32(project3.Timeout)),
 					),
 				},
 			},
@@ -183,6 +222,16 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("organization"),
 						knownvalue.Int32Exact(int32(project4.Organization)),
 					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test-archive",
+						tfjsonpath.New("scm_update_on_launch"),
+						knownvalue.Bool(project4.ScmUpdOnLaunch),
+					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test-archive",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(int32(project4.Timeout)),
+					),
 				},
 			},
 			{
@@ -213,6 +262,11 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("organization"),
 						knownvalue.Int32Exact(int32(project5.Organization)),
 					),
+					statecheck.ExpectKnownValue(
+						"awx_project.test-manual",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(int32(project5.Timeout)),
+					),
 				},
 			},
 		},
@@ -222,47 +276,54 @@ func TestAccProjectResource(t *testing.T) {
 func testAccProjectResourceConfig(resource ProjectAPIModel) string {
 	return fmt.Sprintf(`
 resource "awx_project" "test" {
-  name         	= "%s"
-  description  	= "%s"
-  scm_type     	= "%s"
-  scm_url      	= "%s"
-  organization 	= %d
+  name         			= "%s"
+  description  			= "%s"
+  scm_type     			= "%s"
+  scm_url      			= "%s"
+  organization 			= %d
+  scm_update_on_launch 	= %v
+  timeout				= %d
 }
-  `, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization)
+  `, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.ScmUpdOnLaunch, resource.Timeout)
 }
 
 func testAccProjectResource3Config(resource ProjectAPIModel) string {
 	return fmt.Sprintf(`
 resource "awx_project" "test-svn" {
-  name         	= "%s"
-  description  	= "%s"
-  scm_type     	= "%s"
-  scm_url      	= "%s"
-  organization 	= %d
+  name         			= "%s"
+  description  			= "%s"
+  scm_type     			= "%s"
+  scm_url      			= "%s"
+  organization 			= %d
+  scm_update_on_launch 	= %v
+  timeout				= %d
 }
-  `, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization)
+  `, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.ScmUpdOnLaunch, resource.Timeout)
 }
 
 func testAccProjectResource4Config(resource ProjectAPIModel) string {
 	return fmt.Sprintf(`
 resource "awx_project" "test-archive" {
-  name         	= "%s"
-  description  	= "%s"
-  scm_type     	= "%s"
-  scm_url      	= "%s"
-  organization 	= %d
+  name         			= "%s"
+  description  			= "%s"
+  scm_type     			= "%s"
+  scm_url      			= "%s"
+  organization 			= %d
+  scm_update_on_launch 	= %v
+  timeout				= %d
 }
-  `, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization)
+  `, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.ScmUpdOnLaunch, resource.Timeout)
 }
 
 func testAccProjectResource5Config(resource ProjectAPIModel) string {
 	return fmt.Sprintf(`
 resource "awx_project" "test-manual" {
-  name         	= "%s"
-  description  	= "%s"
-  scm_type     	= "%s"
-  local_path    = "%s"
-  organization 	= %d
+  name         			= "%s"
+  description  			= "%s"
+  scm_type     			= "%s"
+  local_path    		= "%s"
+  organization 			= %d
+  timeout				= %d
 }
-  `, resource.Name, resource.Description, resource.ScmType, resource.LocalPath, resource.Organization)
+  `, resource.Name, resource.Description, resource.ScmType, resource.LocalPath, resource.Organization, resource.Timeout)
 }

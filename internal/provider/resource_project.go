@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -126,6 +127,12 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"timeout": schema.Int32Attribute{
+				Description: "The amount of time (in seconds) to run before the SCM Update is canceled. A value of 0 means no timeout.",
+				Optional:    true,
+				Computed:    true,
+				Default:     int32default.StaticInt32(0),
 			},
 		},
 	}
@@ -308,6 +315,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.ScmType = data.ScmType.ValueString()
+	bodyData.Timeout = int(data.Timeout.ValueInt32())
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
@@ -420,6 +428,7 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_delete_on_update"), responseData.ScmDelOnUpdate)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_track_submodules"), responseData.ScmTrackSubmodules)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_update_on_launch"), responseData.ScmUpdOnLaunch)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), responseData.Timeout)...)
 
 	if !(data.Description.IsNull() && responseData.Description == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
@@ -492,6 +501,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.ScmType = data.ScmType.ValueString()
+	bodyData.Timeout = int(data.Timeout.ValueInt32())
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
@@ -574,7 +584,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	url := fmt.Sprintf("/api/v2/projects/%d/", id)
 	// 403 & 409 return code indicates project is being used by a job or had sync failures.
 	// Newly create projects will be syncing and not able to be deleted immediately.
-	attempts := 15
+	attempts := 30
 	var del_err error
 	var statusCode int
 	for attempt := 0; attempt < attempts; attempt++ {
@@ -593,7 +603,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 				fmt.Sprintf("Error was: %s.", del_err.Error()))
 			return
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(4 * time.Second)
 	}
 
 	if del_err != nil {

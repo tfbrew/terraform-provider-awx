@@ -19,6 +19,7 @@ func TestAccProjectDataSource(t *testing.T) {
 		ScmType:      "git",
 		ScmUrl:       "https://github.com/example/repo.git",
 		Organization: 1,
+		Timeout:      1,
 	}
 	project2 := ProjectAPIModel{
 		Name:         "test-project-" + acctest.RandString(5),
@@ -26,6 +27,7 @@ func TestAccProjectDataSource(t *testing.T) {
 		ScmType:      "svn",
 		ScmUrl:       "svn://bad_ip/test_repo",
 		Organization: 1,
+		Timeout:      1,
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -63,6 +65,11 @@ func TestAccProjectDataSource(t *testing.T) {
 						tfjsonpath.New("organization"),
 						knownvalue.Int32Exact(int32(project1.Organization)),
 					),
+					statecheck.ExpectKnownValue(
+						"data.awx_project.test-id",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(int32(project1.Timeout)),
+					),
 				},
 			},
 			// Read by ID testing
@@ -94,6 +101,11 @@ func TestAccProjectDataSource(t *testing.T) {
 						tfjsonpath.New("organization"),
 						knownvalue.Int32Exact(int32(project2.Organization)),
 					),
+					statecheck.ExpectKnownValue(
+						"data.awx_project.test-name",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(int32(project2.Timeout)),
+					),
 				},
 			},
 		},
@@ -108,11 +120,12 @@ resource "awx_project" "test-id" {
   scm_type     	= "%s"
   scm_url      	= "%s"
   organization 	= %d
+  timeout		= %d
 }
 data "awx_project" "test-id" {
   id = awx_project.test-id.id
 }
-`, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization)
+`, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.Timeout)
 }
 
 func testAccProjectDataSourceNameConfig(resource ProjectAPIModel) string {
@@ -123,9 +136,10 @@ resource "awx_project" "test-name" {
   scm_type     	= "%s"
   scm_url      	= "%s"
   organization 	= %d
+  timeout		= %d
 }
 data "awx_project" "test-name" {
   name = awx_project.test-name.name
 }
-`, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization)
+`, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.Timeout)
 }
