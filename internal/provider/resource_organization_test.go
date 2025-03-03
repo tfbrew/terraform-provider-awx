@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAccOrganization(t *testing.T) {
+func TestAccOrganizationResource(t *testing.T) {
 	resource1 := OrganizationAPIModel{
 		Name:        "test-organization-" + acctest.RandString(5),
 		Description: "test description 1",

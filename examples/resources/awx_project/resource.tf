@@ -27,7 +27,7 @@ resource "awx_project" "example-archive" {
 resource "awx_project" "example-manual" {
   name         = "example_manual"
   organization = awx_organization.example.id
-  scm_type     = "manual"
+  scm_type     = ""
   local_path   = "directory/on/awx"
 }
 

@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -53,10 +55,10 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Required:    true,
 			},
 			"scm_type": schema.StringAttribute{
-				Description: "Type of SCM resource. Options: `manual`, `git`, `svn` `insights`, `archive`.",
+				Description: "Type of SCM resource. Options: `\"\"` for manual, otherwise `git`, `svn` `insights`, `archive`.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"manual", "git", "svn", "insights", "archive"}...),
+					stringvalidator.OneOf([]string{"", "git", "svn", "insights", "archive"}...),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -126,6 +128,12 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"timeout": schema.Int32Attribute{
+				Description: "The amount of time (in seconds) to run before the SCM Update is canceled. A value of 0 means no timeout.",
+				Optional:    true,
+				Computed:    true,
+				Default:     int32default.StaticInt32(0),
+			},
 		},
 	}
 }
@@ -153,7 +161,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// local_path
-	if data.ScmType.ValueString() == "manual" {
+	if data.ScmType.ValueString() == "" {
 		if data.LocalPath.ValueString() == "" || data.LocalPath.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("local_path"),
@@ -177,7 +185,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	// Not allowed validation.
 
 	// allow_override
-	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "insights" {
+	if data.ScmType.ValueString() == "" || data.ScmType.ValueString() == "insights" {
 		if data.AllowOverride.ValueBool() || !data.AllowOverride.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("allow_override"),
@@ -188,7 +196,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// credential
-	if data.ScmType.ValueString() == "manual" {
+	if data.ScmType.ValueString() == "" {
 		if !data.Credential.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("credential"),
@@ -210,7 +218,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_branch
-	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
+	if data.ScmType.ValueString() == "" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
 		if data.ScmBranch.ValueString() != "" || !data.ScmBranch.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_branch"),
@@ -221,7 +229,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_clean
-	if data.ScmType.ValueString() == "manual" {
+	if data.ScmType.ValueString() == "" {
 		if data.ScmClean.ValueBool() || !data.ScmClean.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_clean"),
@@ -232,7 +240,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_del_on_update
-	if data.ScmType.ValueString() == "manual" {
+	if data.ScmType.ValueString() == "" {
 		if data.ScmDelOnUpdate.ValueBool() || !data.ScmDelOnUpdate.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_del_on_update"),
@@ -243,7 +251,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_refspec
-	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
+	if data.ScmType.ValueString() == "" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
 		if data.ScmRefSpec.ValueString() != "" || !data.ScmRefSpec.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_refspec"),
@@ -254,7 +262,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_track_submodules
-	if data.ScmType.ValueString() == "manual" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
+	if data.ScmType.ValueString() == "" || data.ScmType.ValueString() == "svn" || data.ScmType.ValueString() == "insights" || data.ScmType.ValueString() == "archive" {
 		if data.ScmTrackSubmodules.ValueBool() || !data.ScmTrackSubmodules.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_track_submodules"),
@@ -265,7 +273,7 @@ func (r ProjectResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 
 	// scm_update_on_launch
-	if data.ScmType.ValueString() == "manual" {
+	if data.ScmType.ValueString() == "" {
 		if data.ScmUpdOnLaunch.ValueBool() || !data.ScmUpdOnLaunch.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("scm_update_on_launch"),
@@ -307,6 +315,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.ScmType = data.ScmType.ValueString()
+	bodyData.Timeout = int(data.Timeout.ValueInt32())
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
@@ -414,16 +423,15 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_type"), responseData.ScmType)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_override"), responseData.AllowOverride)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_clean"), responseData.ScmClean)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_delete_on_update"), responseData.ScmDelOnUpdate)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_track_submodules"), responseData.ScmTrackSubmodules)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_update_on_launch"), responseData.ScmUpdOnLaunch)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), responseData.Timeout)...)
 
 	if !(data.Description.IsNull() && responseData.Description == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if !(data.AllowOverride.IsNull()) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("allow_override"), responseData.AllowOverride)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -457,36 +465,8 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		}
 	}
 
-	if !(data.ScmClean.IsNull()) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_clean"), responseData.ScmClean)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if !(data.ScmDelOnUpdate.IsNull()) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_delete_on_update"), responseData.ScmDelOnUpdate)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
 	if !(data.ScmRefSpec.IsNull() && responseData.ScmRefSpec == "") {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_refspec"), responseData.ScmRefSpec)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if !(data.ScmTrackSubmodules.IsNull()) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_track_submodules"), responseData.ScmTrackSubmodules)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	if !(data.ScmUpdOnLaunch.IsNull()) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_update_on_launch"), responseData.ScmUpdOnLaunch)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -521,6 +501,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Organization = int(data.Organization.ValueInt32())
 	bodyData.ScmType = data.ScmType.ValueString()
+	bodyData.Timeout = int(data.Timeout.ValueInt32())
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
@@ -601,11 +582,34 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	url := fmt.Sprintf("/api/v2/projects/%d/", id)
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
-	if err != nil {
+	// 403 & 409 return code indicates project is being used by a job or had sync failures.
+	// Newly create projects will be syncing and not able to be deleted immediately.
+	attempts := 30
+	var del_err error
+	var statusCode int
+	for attempt := 0; attempt < attempts; attempt++ {
+		_, statusCode, del_err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+		if del_err == nil {
+			if attempt > 0 {
+				resp.Diagnostics.AddWarning(
+					"Retry required to delete project",
+					fmt.Sprintf("Project was successfully delete after %d attempt(s).", attempt))
+			}
+			return
+		}
+		if statusCode != 403 && statusCode != 409 {
+			resp.Diagnostics.AddError(
+				"Error making API delete request",
+				fmt.Sprintf("Error was: %s.", del_err.Error()))
+			return
+		}
+		time.Sleep(4 * time.Second)
+	}
+
+	if del_err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",
-			fmt.Sprintf("Error was: %s.", err.Error()))
+			fmt.Sprintf("Error after %v attempt(s) was: %s.", attempts, del_err.Error()))
 		return
 	}
 }

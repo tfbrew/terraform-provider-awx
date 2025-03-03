@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAccUser(t *testing.T) {
+func TestAccUserResource(t *testing.T) {
 	resource1 := UserAPIModel{
 		Username:  "test-user-" + acctest.RandString(5),
 		FirstName: "test-firstname",

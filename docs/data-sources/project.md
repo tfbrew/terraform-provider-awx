@@ -47,3 +47,4 @@ data "awx_project" "example-name" {
 - `scm_type` (String) Type of SCM resource. Options: `manual`, `git`, `svn` `insights`, `archive`.
 - `scm_update_on_launch` (Boolean) Perform an update to the local repository before launching a job with this project.
 - `scm_url` (String) Example URLs for Remote Archive Source Control include: `https://github.com/username/project/archive/v0.0.1.tar.gz` `https://github.com/username/project/archive/v0.0.2.zip`
+- `timeout` (Number) The amount of time (in seconds) to run before the SCM Update is canceled. A value of 0 means no timeout.

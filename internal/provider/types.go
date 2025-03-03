@@ -302,6 +302,7 @@ type ProjectModel struct {
 	ScmTrackSubmodules types.Bool   `tfsdk:"scm_track_submodules"`
 	ScmUpdOnLaunch     types.Bool   `tfsdk:"scm_update_on_launch"`
 	ScmUrl             types.String `tfsdk:"scm_url"`
+	Timeout            types.Int32  `tfsdk:"timeout"`
 }
 
 type ProjectAPIModel struct {
@@ -321,6 +322,7 @@ type ProjectAPIModel struct {
 	ScmTrackSubmodules bool   `json:"scm_track_submodules,omitempty"`
 	ScmUpdOnLaunch     bool   `json:"scm_update_on_launch,omitempty"`
 	ScmUrl             string `json:"scm_url,omitempty"`
+	Timeout            int    `json:"timeout"`
 }
 
 type ScheduleModel struct {
