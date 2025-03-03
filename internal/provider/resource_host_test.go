@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -13,14 +14,14 @@ import (
 
 func TestAccHostResource(t *testing.T) {
 	host1 := HostAPIModel{
-		Name:        "example",
+		Name:        "test-host-" + acctest.RandString(5),
 		Description: "Example with jsonencoded variables for localhost",
 		Variables:   "{\"foo\":\"bar\"}",
 		Enabled:     true,
 	}
 
 	host2 := HostAPIModel{
-		Name:        "example",
+		Name:        "test-host-" + acctest.RandString(5),
 		Description: "Updated example with different variables",
 		Variables:   "{\"baz\":\"qux\"}",
 		Enabled:     false,
@@ -95,12 +96,12 @@ func TestAccHostResource(t *testing.T) {
 func testAccHostResourceConfig(resource HostAPIModel) string {
 	return fmt.Sprintf(`
 resource "awx_organization" "test" {
-  name        = "example"
-  description = "example"
+  name        = "test-organization-%s"
+  description = "test"
 }
 resource "awx_inventory" "test" {
-  name         = "example"
-  description  = "example"
+  name         = "test-inventory-%s"
+  description  = "test"
   organization = awx_organization.test.id
 }
 resource "awx_host" "test" {
@@ -109,5 +110,5 @@ resource "awx_host" "test" {
   inventory   = awx_inventory.test.id
   variables   = jsonencode(%s)
 }
-  `, resource.Name, resource.Description, resource.Variables)
+  `, acctest.RandString(5), acctest.RandString(5), resource.Name, resource.Description, resource.Variables)
 }
