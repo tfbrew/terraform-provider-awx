@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAccInventory(t *testing.T) {
+func TestAccInventoryResource(t *testing.T) {
 	resource1 := InventoryAPIModel{
 		Name:         "test-inventory-" + acctest.RandString(5),
 		Description:  "test description 1",
