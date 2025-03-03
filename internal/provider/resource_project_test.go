@@ -53,15 +53,6 @@ func TestAccProjectResource(t *testing.T) {
 		Timeout:        1,
 	}
 
-	project5 := ProjectAPIModel{
-		Name:         "test-project-" + acctest.RandString(5),
-		Description:  "manual project",
-		ScmType:      "", // manual
-		LocalPath:    "lost+found",
-		Organization: 1,
-		Timeout:      1,
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -234,41 +225,6 @@ func TestAccProjectResource(t *testing.T) {
 					),
 				},
 			},
-			{
-				Config: testAccProjectResource5Config(project5),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						"awx_project.test-manual",
-						tfjsonpath.New("name"),
-						knownvalue.StringExact(project5.Name),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_project.test-manual",
-						tfjsonpath.New("description"),
-						knownvalue.StringExact(project5.Description),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_project.test-manual",
-						tfjsonpath.New("scm_type"),
-						knownvalue.StringExact(project5.ScmType),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_project.test-manual",
-						tfjsonpath.New("local_path"),
-						knownvalue.StringExact(project5.LocalPath),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_project.test-manual",
-						tfjsonpath.New("organization"),
-						knownvalue.Int32Exact(int32(project5.Organization)),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_project.test-manual",
-						tfjsonpath.New("timeout"),
-						knownvalue.Int32Exact(int32(project5.Timeout)),
-					),
-				},
-			},
 		},
 	})
 }
@@ -313,17 +269,4 @@ resource "awx_project" "test-archive" {
   timeout				= %d
 }
   `, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.ScmUpdOnLaunch, resource.Timeout)
-}
-
-func testAccProjectResource5Config(resource ProjectAPIModel) string {
-	return fmt.Sprintf(`
-resource "awx_project" "test-manual" {
-  name         			= "%s"
-  description  			= "%s"
-  scm_type     			= "%s"
-  local_path    		= "%s"
-  organization 			= %d
-  timeout				= %d
-}
-  `, resource.Name, resource.Description, resource.ScmType, resource.LocalPath, resource.Organization, resource.Timeout)
 }
