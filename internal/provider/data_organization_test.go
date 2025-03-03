@@ -37,22 +37,22 @@ func TestAccOrganizationDataSource(t *testing.T) {
 				Config: testAccOrganizationDataSourceIdConfig(resource1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-id",
+						"data.awx_organization.test-id",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(resource1.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-id",
+						"data.awx_organization.test-id",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource1.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-id",
+						"data.awx_organization.test-id",
 						tfjsonpath.New("default_environment"),
 						knownvalue.Int32Exact(int32(resource1.DefaultEnv)),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-id",
+						"data.awx_organization.test-id",
 						tfjsonpath.New("max_hosts"),
 						knownvalue.Int32Exact(int32(resource1.MaxHosts)),
 					),
@@ -63,22 +63,22 @@ func TestAccOrganizationDataSource(t *testing.T) {
 				Config: testAccOrganizationDataSourceNameConfig(resource2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-name",
+						"data.awx_organization.test-name",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(resource2.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-name",
+						"data.awx_organization.test-name",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource2.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-name",
+						"data.awx_organization.test-name",
 						tfjsonpath.New("default_environment"),
 						knownvalue.Int32Exact(int32(resource2.DefaultEnv)),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_organization.test-name",
+						"data.awx_organization.test-name",
 						tfjsonpath.New("max_hosts"),
 						knownvalue.Int32Exact(int32(resource2.MaxHosts)),
 					),
@@ -110,7 +110,7 @@ resource "awx_organization" "test-name" {
   default_environment 	= %d
   max_hosts				= %d
 }
-data "awx_organization" "test-id" {
+data "awx_organization" "test-name" {
   name = awx_organization.test-name.name
 }
 `, resource.Name, resource.Description, resource.DefaultEnv, resource.MaxHosts)

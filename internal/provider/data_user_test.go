@@ -41,32 +41,32 @@ func TestAccUserDataSource(t *testing.T) {
 				Config: testAccUserDataSourceIdConfig(resource1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"awx_user.test-id",
+						"data.awx_user.test-id",
 						tfjsonpath.New("username"),
 						knownvalue.StringExact(resource1.Username),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-id",
+						"data.awx_user.test-id",
 						tfjsonpath.New("first_name"),
 						knownvalue.StringExact(resource1.FirstName),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-id",
+						"data.awx_user.test-id",
 						tfjsonpath.New("last_name"),
 						knownvalue.StringExact(resource1.LastName),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-id",
+						"data.awx_user.test-id",
 						tfjsonpath.New("email"),
 						knownvalue.StringExact(resource1.Email),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-id",
+						"data.awx_user.test-id",
 						tfjsonpath.New("is_superuser"),
 						knownvalue.Bool(resource1.IsSuperuser),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-id",
+						"data.awx_user.test-id",
 						tfjsonpath.New("is_system_auditor"),
 						knownvalue.Bool(false),
 					),
@@ -77,32 +77,32 @@ func TestAccUserDataSource(t *testing.T) {
 				Config: testAccUserDataSourceNameConfig(resource2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"awx_user.test-name",
+						"data.awx_user.test-name",
 						tfjsonpath.New("username"),
 						knownvalue.StringExact(resource2.Username),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-name",
+						"data.awx_user.test-name",
 						tfjsonpath.New("first_name"),
 						knownvalue.StringExact(resource2.FirstName),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-name",
+						"data.awx_user.test-name",
 						tfjsonpath.New("last_name"),
 						knownvalue.StringExact(resource2.LastName),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-name",
+						"data.awx_user.test-name",
 						tfjsonpath.New("email"),
 						knownvalue.StringExact(resource2.Email),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-name",
+						"data.awx_user.test-name",
 						tfjsonpath.New("is_superuser"),
 						knownvalue.Bool(false),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_user.test-name",
+						"data.awx_user.test-name",
 						tfjsonpath.New("is_system_auditor"),
 						knownvalue.Bool(resource2.IsSystemAuditor),
 					),
@@ -138,7 +138,7 @@ resource "awx_user" "test-name" {
   password 			= "%s"
   is_system_auditor = %v
 }
-data "awx_user" "test-id" {
+data "awx_user" "test-name" {
   username = awx_user.test-name.username
 }
 `, resource.Username, resource.FirstName, resource.LastName, resource.Email, resource.Password, resource.IsSystemAuditor)
