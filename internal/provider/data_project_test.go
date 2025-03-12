@@ -72,7 +72,7 @@ func TestAccProjectDataSource(t *testing.T) {
 					),
 				},
 			},
-			// Read by ID testing
+			// Read by name testing
 			{
 				Config: testAccProjectDataSourceNameConfig(project2),
 				ConfigStateChecks: []statecheck.StateCheck{

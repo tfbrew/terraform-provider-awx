@@ -43,7 +43,30 @@ resource "awx_credential" "example-source-control" {
   credential_type = data.awx_credential_type.source-control.id
   inputs = jsonencode({
     "username" : "awx",
-    "ssh_key_data" : file("${path.module}/id_rsa") // code should not contain secrets, example only
-    "ssh_key_unlock" : "test1234"                  // code should not contain secrets, example only
+    "ssh_key_data" : file("${path.module}/id_rsa"), // code should not contain secrets, example only
+    "ssh_key_unlock" : "test1234"                   // code should not contain secrets, example only
+  })
+}
+
+// Example container registry credential
+
+// Inputs options for source control credentials:
+// host, username, password, verify_ssl
+// Setting a value to "ASK" is equal to choosing "Prompt at Launch"
+
+data "awx_credential_type" "container-registry" {
+  name = "Container Registry"
+  kind = "registry"
+}
+
+resource "awx_credential" "example-container-registry" {
+  name            = "example_container_registry"
+  organization    = awx_organization.example.id
+  credential_type = data.awx_credential_type.container-registry.id
+  inputs = jsonencode({
+    "host" : "quay.io",
+    "username" : "test",
+    "password" : "test1234", // code should not contain secrets, example only
+    "verify_ssl" : true
   })
 }
