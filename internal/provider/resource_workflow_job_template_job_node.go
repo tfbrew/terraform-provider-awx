@@ -51,7 +51,7 @@ type WorkflowJobTemplatesJobNodeResourceModel struct {
 type WorkflowJobTemplateNodeAPIModel struct {
 	WorkflowJobId          int    `json:"workflow_job_template"`
 	UnifiedJobTemplateId   int    `json:"unified_job_template"`
-	Inventory              int    `json:"inventory,omitempty"`
+	Inventory              any    `json:"inventory"`
 	ExtraData              any    `json:"extra_data,omitempty"`
 	ScmBranch              string `json:"scm_branch,omitempty"`
 	JobType                string `json:"job_type,omitempty"`
@@ -305,8 +305,13 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			return
 		}
 	}
-	if !(data.Inventory.IsNull() && responseData.Inventory == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
+	if !(data.Inventory.IsNull() && responseData.Inventory == nil) {
+		inventory, ok := responseData.Inventory.(float64)
+		if !ok {
+			resp.Diagnostics.AddError("read of inventory failed", fmt.Sprintf("unable to cast inventory %v to float64", responseData.Inventory))
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), int32(inventory))...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -450,7 +455,9 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 	bodyData.WorkflowJobId = int(data.WorkflowJobId.ValueInt32())
 	bodyData.UnifiedJobTemplateId = int(data.UnifiedJobTemplateId.ValueInt32())
 
-	bodyData.Inventory = int(data.Inventory.ValueInt32())
+	if !data.Inventory.IsNull() {
+		bodyData.Inventory = int(data.Inventory.ValueInt32())
+	}
 
 	// Generate a go type that fits into the any var so that when ALL
 	//  bodyData fields are set with go types, we call Marshall to generate entire JSON
