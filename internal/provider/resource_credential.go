@@ -137,7 +137,7 @@ func (r *CredentialResource) Create(ctx context.Context, req resource.CreateRequ
 		bodyData.User = int(data.User.ValueInt32())
 	}
 
-	inputsDataMap := new(map[string]string)
+	inputsDataMap := new(map[string]any)
 	err := json.Unmarshal([]byte(data.Inputs.ValueString()), &inputsDataMap)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -290,7 +290,7 @@ func (r *CredentialResource) Update(ctx context.Context, req resource.UpdateRequ
 		bodyData.User = int(data.User.ValueInt32())
 	}
 
-	inputsDataMap := new(map[string]string)
+	inputsDataMap := new(map[string]any)
 	err = json.Unmarshal([]byte(data.Inputs.ValueString()), &inputsDataMap)
 	if err != nil {
 		resp.Diagnostics.AddError(
