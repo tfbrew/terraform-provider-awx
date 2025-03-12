@@ -36,17 +36,17 @@ resource "awx_workflow_job_template_job_node" "example_node" {
 
 ### Optional
 
-- `all_parents_must_converge` (Boolean) Defaults to false.
-- `diff_mode` (Boolean)
-- `extra_data` (String) JSON Key/value pairs, wrap in `jsonencode()`.
+- `all_parents_must_converge` (Boolean) If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node. Defaults to `false`.
+- `diff_mode` (Boolean) Run diff mode, applied as a prompt, if job template prompts for diff mode.
+- `extra_data` (String) Variables to apply at launch time. JSON Key/value pairs, wrap in `jsonencode()`.  Will only be accepted if job template prompts for vars or has a survey asking for those vars.
 - `identifier` (String) The unique identifier for this node, set automatically by API when creating a new one.
-- `inventory` (Number) This attribute is set to optional. However, creating new nodes may not work without providing this value. This provider was set up marking this optional so that you can import existing nodes from your AWX tower environment that were created without specficying inventory. Something that doesn't appear allowed on more current versions of AWX.
-- `job_tags` (String)
-- `job_type` (String)
-- `limit` (String)
-- `scm_branch` (String)
-- `skip_tags` (String)
-- `verbosity` (Number)
+- `inventory` (Number) ID of the Inventory applied as a prompt, if job template prompts for inventory.
+- `job_tags` (String) Job tags applied as a prompt, if job template prompts for job tags.
+- `job_type` (String) Job type applied as a prompt, if job template prompts for job type.
+- `limit` (String) Limit to act on, applied as a prompt, if job template prompts for limit.
+- `scm_branch` (String) SCM branch applied as a prompt, if job template prompts for SCM branch.
+- `skip_tags` (String) Tags to skip, applied as a prompt, if job template prompts for job tags.
+- `verbosity` (Number) Verbosity applied as a prompt, if job template prompts for verbosity. Control the level of output ansible will produce as the playbook executes. `0 - Normal`, `1 - Verbose`, `2 - More Verbose`, `3 - Debug`, `4 - r.client.auth Debug`, `5 - WinRM Debug`
 
 ### Read-Only
 
