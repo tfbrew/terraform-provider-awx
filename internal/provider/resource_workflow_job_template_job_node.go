@@ -309,6 +309,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 		inventory, ok := responseData.Inventory.(float64)
 		if !ok {
 			resp.Diagnostics.AddError("read of inventory failed", fmt.Sprintf("unable to cast inventory %v to float64", responseData.Inventory))
+			return
 		}
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), int32(inventory))...)
 		if resp.Diagnostics.HasError() {
