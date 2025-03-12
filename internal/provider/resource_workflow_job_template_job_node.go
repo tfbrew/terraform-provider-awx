@@ -8,12 +8,15 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -87,38 +90,51 @@ func (r *WorkflowJobTemplatesJobNodeResource) Schema(ctx context.Context, req re
 			},
 			"inventory": schema.Int32Attribute{
 				Optional:    true,
-				Description: "This attribute is set to optional. However, creating new nodes may not work without providing this value. This provider was set up marking this optional so that you can import existing nodes from your AWX tower environment that were created without specficying inventory. Something that doesn't appear allowed on more current versions of AWX.",
+				Description: "ID of the Inventory applied as a prompt, if job template prompts for inventory.",
 			},
 			"extra_data": schema.StringAttribute{
 				Optional:    true,
-				Description: "JSON Key/value pairs, wrap in `jsonencode()`.",
+				Description: "Variables to apply at launch time. JSON Key/value pairs, wrap in `jsonencode()`.  Will only be accepted if job template prompts for vars or has a survey asking for those vars.",
 			},
 			"scm_branch": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "SCM branch applied as a prompt, if job template prompts for SCM branch.",
 			},
 			"job_type": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Job type applied as a prompt, if job template prompts for job type.",
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"run", "check"}...),
+				},
 			},
 			"job_tags": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Job tags applied as a prompt, if job template prompts for job tags.",
 			},
 			"skip_tags": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Tags to skip, applied as a prompt, if job template prompts for job tags.",
 			},
 			"limit": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Limit to act on, applied as a prompt, if job template prompts for limit.",
 			},
 			"diff_mode": schema.BoolAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Run diff mode, applied as a prompt, if job template prompts for diff mode.",
 			},
 			"verbosity": schema.Int32Attribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Verbosity applied as a prompt, if job template prompts for verbosity. Control the level of output ansible will produce as the playbook executes. `0 - Normal`, `1 - Verbose`, `2 - More Verbose`, `3 - Debug`, `4 - r.client.auth Debug`, `5 - WinRM Debug`",
+				Validators: []validator.Int32{
+					int32validator.Between(0, 5),
+				},
 			},
 			"all_parents_must_converge": schema.BoolAttribute{
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Defaults to false.",
+				Description: "If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node. Defaults to `false`.",
 			},
 			"identifier": schema.StringAttribute{
 				Computed: true,
@@ -433,6 +449,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 	var bodyData WorkflowJobTemplateNodeAPIModel
 	bodyData.WorkflowJobId = int(data.WorkflowJobId.ValueInt32())
 	bodyData.UnifiedJobTemplateId = int(data.UnifiedJobTemplateId.ValueInt32())
+
 	bodyData.Inventory = int(data.Inventory.ValueInt32())
 
 	// Generate a go type that fits into the any var so that when ALL
@@ -448,6 +465,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 		}
 		bodyData.ExtraData = extraDataMap
 	}
+
 	bodyData.ScmBranch = data.ScmBranch.ValueString()
 	bodyData.JobType = data.JobType.ValueString()
 	bodyData.JobTags = data.JobTags.ValueString()
@@ -455,6 +473,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Update(ctx context.Context, req re
 	bodyData.Limit = data.Limit.ValueString()
 	bodyData.DiffMode = data.DiffMode.ValueBool()
 	bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+
 	bodyData.AllParentsMustConverge = data.AllParentsMustConverge.ValueBool()
 	bodyData.Identifier = data.Identifier.ValueString()
 
