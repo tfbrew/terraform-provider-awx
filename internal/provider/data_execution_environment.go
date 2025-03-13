@@ -25,26 +25,6 @@ type ExecutionEnvironmentDataSource struct {
 	client *AwxClient
 }
 
-type ExecutionEnvironmentDataSourceModel struct {
-	Id           types.String `tfsdk:"id"`
-	Name         types.String `tfsdk:"name"`
-	Description  types.String `tfsdk:"description"`
-	Image        types.String `tfsdk:"image"`
-	Pull         types.String `tfsdk:"pull"`
-	Organization types.Int32  `tfsdk:"organization"`
-	Credential   types.Int32  `tfsdk:"credential"`
-}
-
-type ExecutionEnvironmentDataSourceJson struct {
-	Id           int    `json:"id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Image        string `json:"image"`
-	Pull         string `json:"pull"`
-	Organization int    `json:"organization"`
-	Credential   int    `json:"credential"`
-}
-
 func (d *ExecutionEnvironmentDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_execution_environment"
 }
@@ -70,7 +50,7 @@ func (d *ExecutionEnvironmentDataSource) Schema(ctx context.Context, req datasou
 				Computed:    true,
 			},
 			"pull": schema.StringAttribute{
-				Description: "always: always pull container before running, missing: only pull the image if not pressent before running, never: never pull container before running.",
+				Description: "`always` always pull container before running, `missing` only pull the image if not pressent before running, `never` never pull container before running.",
 				Computed:    true,
 			},
 			"organization": schema.Int32Attribute{
@@ -113,7 +93,7 @@ func (d *ExecutionEnvironmentDataSource) Configure(ctx context.Context, req data
 }
 
 func (d *ExecutionEnvironmentDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data ExecutionEnvironmentDataSourceModel
+	var data ExecutionEnvironmentModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -153,7 +133,7 @@ func (d *ExecutionEnvironmentDataSource) Read(ctx context.Context, req datasourc
 		return
 	}
 
-	var responseData ExecutionEnvironmentDataSourceJson
+	var responseData ExecutionEnvironmentAPIModel
 
 	if !data.Id.IsNull() && data.Name.IsNull() {
 		err = json.Unmarshal(body, &responseData)
@@ -167,8 +147,8 @@ func (d *ExecutionEnvironmentDataSource) Read(ctx context.Context, req datasourc
 	// If looking up by name, check that there is only one response and extract it.
 	if data.Id.IsNull() && !data.Name.IsNull() {
 		nameResult := struct {
-			Count   int                                  `json:"count"`
-			Results []ExecutionEnvironmentDataSourceJson `json:"results"`
+			Count   int                            `json:"count"`
+			Results []ExecutionEnvironmentAPIModel `json:"results"`
 		}{}
 		err = json.Unmarshal(body, &nameResult)
 		if err != nil {

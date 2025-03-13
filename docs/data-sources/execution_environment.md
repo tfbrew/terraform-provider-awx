@@ -36,4 +36,4 @@ data "awx_execution_environment" "example-name" {
 - `description` (String) Execution Environment description.
 - `image` (String) The full image location, including the container registry, image name, and version tag.
 - `organization` (Number) Leave this field blank to make the execution environment globally available.
-- `pull` (String) always: always pull container before running, missing: only pull the image if not pressent before running, never: never pull container before running.
+- `pull` (String) `always` always pull container before running, `missing` only pull the image if not pressent before running, `never` never pull container before running.

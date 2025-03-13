@@ -179,6 +179,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewExecutionEnvironmentResource,
 		NewCredentialResource,
 		NewCredentialTypeResource,
 		NewHostResource,

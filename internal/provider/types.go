@@ -79,6 +79,26 @@ type CredentialTypeAPIModel struct {
 	Kind        string `json:"kind"`
 }
 
+type ExecutionEnvironmentModel struct {
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Description  types.String `tfsdk:"description"`
+	Image        types.String `tfsdk:"image"`
+	Pull         types.String `tfsdk:"pull"`
+	Organization types.Int32  `tfsdk:"organization"`
+	Credential   types.Int32  `tfsdk:"credential"`
+}
+
+type ExecutionEnvironmentAPIModel struct {
+	Id           int    `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Image        string `json:"image"`
+	Pull         string `json:"pull"`
+	Organization int    `json:"organization,omitempty"`
+	Credential   int    `json:"credential,omitempty"`
+}
+
 type HostModel struct {
 	Id          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
