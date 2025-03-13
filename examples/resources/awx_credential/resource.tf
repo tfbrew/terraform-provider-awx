@@ -19,10 +19,10 @@ resource "awx_credential" "example-machine" {
   organization    = awx_organization.example.id
   credential_type = data.awx_credential_type.machine.id
   inputs = jsonencode({
-    "username" : "awx",
-    "password" : "test1234", // code should not contain secrets, example only
     "become_method" : "sudo",
-    "become_password" : "ASK" // ASK = Prompt at Launch checkbox
+    "become_password" : "ASK", // ASK = Prompt at Launch checkbox
+    "password" : "test1234",   // code should not contain secrets, example only
+    "username" : "awx"
   })
 }
 
@@ -42,9 +42,9 @@ resource "awx_credential" "example-source-control" {
   organization    = awx_organization.example.id
   credential_type = data.awx_credential_type.source-control.id
   inputs = jsonencode({
-    "username" : "awx",
     "ssh_key_data" : file("${path.module}/id_rsa"), // code should not contain secrets, example only
-    "ssh_key_unlock" : "test1234"                   // code should not contain secrets, example only
+    "ssh_key_unlock" : "test1234",                  // code should not contain secrets, example only
+    "username" : "awx"
   })
 }
 
@@ -65,8 +65,8 @@ resource "awx_credential" "example-container-registry" {
   credential_type = data.awx_credential_type.container-registry.id
   inputs = jsonencode({
     "host" : "quay.io",
-    "username" : "test",
     "password" : "test1234", // code should not contain secrets, example only
+    "username" : "test",
     "verify_ssl" : true
   })
 }
