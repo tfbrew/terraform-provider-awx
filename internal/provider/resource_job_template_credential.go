@@ -26,6 +26,7 @@ type JobTemplateCredentialResource struct {
 }
 
 type JobTemplateCredentialResourceModel struct {
+	Id            types.String `tfsdk:"id"`
 	JobTemplateId types.String `tfsdk:"job_template_id"`
 	CredentialIds types.Set    `tfsdk:"credential_ids"`
 }
@@ -52,6 +53,10 @@ func (r *JobTemplateCredentialResource) Schema(ctx context.Context, req resource
 	resp.Schema = schema.Schema{
 		Description: "Associate credentials to a job template.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The ID of this resource which will be the same value as `job_template_id` but is needed for import testing.",
+			},
 			"job_template_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the containing Job Template.",
@@ -121,6 +126,7 @@ func (r *JobTemplateCredentialResource) Create(ctx context.Context, req resource
 		}
 	}
 
+	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -170,7 +176,7 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		return
 	}
 	data.CredentialIds = listValue
-
+	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -248,7 +254,7 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 			}
 		}
 	}
-
+	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

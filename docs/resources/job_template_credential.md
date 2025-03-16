@@ -47,6 +47,10 @@ resource "awx_job_template_credential" "example" {
 - `credential_ids` (Set of Number) An unordered list of credential IDs associated to a particular Job Template.
 - `job_template_id` (String) The ID of the containing Job Template.
 
+### Read-Only
+
+- `id` (String) The ID of this resource which will be the same value as `job_template_id` but is needed for import testing.
+
 ## Import
 
 Import is supported using the following syntax:
