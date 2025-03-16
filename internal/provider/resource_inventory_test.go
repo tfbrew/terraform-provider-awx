@@ -14,16 +14,14 @@ import (
 
 func TestAccInventoryResource(t *testing.T) {
 	resource1 := InventoryAPIModel{
-		Name:         "test-inventory-" + acctest.RandString(5),
-		Description:  "test description 1",
-		Organization: 1,
-		Variables:    "{\"foo\":\"bar\"}",
+		Name:        "test-inventory-" + acctest.RandString(5),
+		Description: "test description 1",
+		Variables:   "{\"foo\":\"bar\"}",
 	}
 	resource2 := InventoryAPIModel{
-		Name:         "test-inventory-" + acctest.RandString(5),
-		Description:  "test description 2",
-		Organization: 1,
-		Variables:    "{\"foo\":\"baz\"}",
+		Name:        "test-inventory-" + acctest.RandString(5),
+		Description: "test description 2",
+		Variables:   "{\"foo\":\"baz\"}",
 	}
 	resource3 := InventoryAPIModel{
 		Name:         "test-inventory-" + acctest.RandString(5),
@@ -55,11 +53,6 @@ func TestAccInventoryResource(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						"awx_inventory.test",
-						tfjsonpath.New("organization"),
-						knownvalue.Int32Exact(int32(resource1.Organization)),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_inventory.test",
 						tfjsonpath.New("variables"),
 						knownvalue.StringExact(resource1.Variables),
 					),
@@ -74,6 +67,10 @@ func TestAccInventoryResource(t *testing.T) {
 						knownvalue.Null(),
 					),
 				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
+						"awx_inventory.test", "organization"),
+				),
 			},
 			{
 				ResourceName:      "awx_inventory.test",
@@ -81,7 +78,7 @@ func TestAccInventoryResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: testAccInventoryResource2Config(resource2),
+				Config: testAccInventoryResource1Config(resource2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"awx_inventory.test",
@@ -92,11 +89,6 @@ func TestAccInventoryResource(t *testing.T) {
 						"awx_inventory.test",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource2.Description),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_inventory.test",
-						tfjsonpath.New("organization"),
-						knownvalue.Int32Exact(int32(resource2.Organization)),
 					),
 					statecheck.ExpectKnownValue(
 						"awx_inventory.test",
@@ -114,6 +106,10 @@ func TestAccInventoryResource(t *testing.T) {
 						knownvalue.Null(),
 					),
 				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
+						"awx_inventory.test", "organization"),
+				),
 			},
 			{
 				Config: testAccInventoryResource3Config(resource3),
@@ -127,11 +123,6 @@ func TestAccInventoryResource(t *testing.T) {
 						"awx_inventory.test3",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource3.Description),
-					),
-					statecheck.ExpectKnownValue(
-						"awx_inventory.test3",
-						tfjsonpath.New("organization"),
-						knownvalue.Int32Exact(int32(resource3.Organization)),
 					),
 					statecheck.ExpectKnownValue(
 						"awx_inventory.test3",
@@ -149,6 +140,10 @@ func TestAccInventoryResource(t *testing.T) {
 						knownvalue.StringExact(resource3.HostFilter),
 					),
 				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("awx_organization.test3", "id",
+						"awx_inventory.test3", "organization"),
+				),
 			},
 		},
 	})
@@ -156,35 +151,30 @@ func TestAccInventoryResource(t *testing.T) {
 
 func testAccInventoryResource1Config(resource InventoryAPIModel) string {
 	return fmt.Sprintf(`
+resource "awx_organization" "test" {
+  name        			= "%s"
+}
 resource "awx_inventory" "test" {
   name         = "%s"
   description  = "%s"
-  organization = %d
+  organization = awx_organization.test.id
   variables    = jsonencode(%s)
 }
-  `, resource.Name, resource.Description, resource.Organization, resource.Variables)
-}
-
-func testAccInventoryResource2Config(resource InventoryAPIModel) string {
-	return fmt.Sprintf(`
-resource "awx_inventory" "test" {
-  name         	= "%s"
-  description  	= "%s"
-  organization 	= %d
-  variables    	= jsonencode(%s)
-}
-  `, resource.Name, resource.Description, resource.Organization, resource.Variables)
+  `, acctest.RandString(5), resource.Name, resource.Description, resource.Variables)
 }
 
 func testAccInventoryResource3Config(resource InventoryAPIModel) string {
 	return fmt.Sprintf(`
+resource "awx_organization" "test3" {
+  name        			= "%s"
+}
 resource "awx_inventory" "test3" {
   name         	= "%s"
   description  	= "%s"
-  organization 	= %d
+  organization 	= awx_organization.test3.id
   variables    	= jsonencode(%s)
   kind			= "%s"
   host_filter	= "%s"
 }
-  `, resource.Name, resource.Description, resource.Organization, resource.Variables, resource.Kind, resource.HostFilter)
+  `, acctest.RandString(5), resource.Name, resource.Description, resource.Variables, resource.Kind, resource.HostFilter)
 }

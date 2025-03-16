@@ -1,4 +1,4 @@
-resource "awx_notification_template" "example" {
+resource "awx_notification_template" "example-slack-type" {
   name              = "example1"
   notification_type = "slack"
   organization      = 1
@@ -38,5 +38,22 @@ resource "awx_notification_template" "example" {
         message = ""
       }
     }
+  })
+}
+
+resource "awx_notification_template" "example-webhook-type" {
+  name              = "example2"
+  notification_type = "webhook"
+  organization      = 1
+  notification_configuration = jsonencode({
+    url = "https://webhooktarget.com"
+    headers = {
+      httpheader1 = "travis"
+      httpheader2 = 2
+    }
+    password                 = "thepassword"
+    username                 = "user-abc"
+    http_method              = "POST"
+    disable_ssl_verification = true
   })
 }

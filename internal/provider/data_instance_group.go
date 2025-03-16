@@ -25,24 +25,6 @@ type InstanceGroupDataSource struct {
 	client *AwxClient
 }
 
-type InstanceGroupDataSourceModel struct {
-	Id                       types.String `tfsdk:"id"`
-	Name                     types.String `tfsdk:"name"`
-	MaxConcurrentJobs        types.Int32  `tfsdk:"max_concurrent_jobs"`
-	MaxForks                 types.Int32  `tfsdk:"max_forks"`
-	PolicyInstancePercentage types.Int32  `tfsdk:"policy_instance_percentage"`
-	PolicyInstanceMinimum    types.Int32  `tfsdk:"policy_instance_minimum"`
-}
-
-type InstanceGroupDataSourceJson struct {
-	Id                       int    `json:"id"`
-	Name                     string `json:"name"`
-	MaxConcurrentJobs        int    `json:"max_concurrent_jobs"`
-	MaxForks                 int    `json:"max_forks"`
-	PolicyInstancePercentage int    `json:"policy_instance_percentage"`
-	PolicyInstanceMinimum    int    `json:"policy_instance_minimum"`
-}
-
 func (d *InstanceGroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_instance_group"
 }
@@ -60,12 +42,24 @@ func (d *InstanceGroupDataSource) Schema(ctx context.Context, req datasource.Sch
 				Description: "Instance Group name.",
 				Optional:    true,
 			},
+			"credential": schema.Int32Attribute{
+				Description: "Credential ID to authenticate with Kubernetes or OpenShift. Must be of type `OpenShift` or `Kubernetes API Bearer Token`",
+				Computed:    true,
+			},
+			"is_container_group": schema.BoolAttribute{
+				Description: "Signifies that this InstanceGroup should act as a ContainerGroup. If no credential is specified, the underlying Pod’s ServiceAccount will be used.",
+				Computed:    true,
+			},
 			"max_concurrent_jobs": schema.Int32Attribute{
 				Description: "Maximum number of jobs to run concurrently on this group. Zero means no limit will be enforced.",
 				Computed:    true,
 			},
 			"max_forks": schema.Int32Attribute{
 				Description: "Maximum number of forks to allow across all jobs running concurrently on this group. Zero means no limit will be enforced.",
+				Computed:    true,
+			},
+			"pod_spec_override": schema.StringAttribute{
+				Description: "A custom Kubernetes or OpenShift Pod specification.",
 				Computed:    true,
 			},
 			"policy_instance_percentage": schema.Int32Attribute{
@@ -108,7 +102,7 @@ func (d *InstanceGroupDataSource) Configure(ctx context.Context, req datasource.
 }
 
 func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data InstanceGroupDataSourceModel
+	var data InstanceGroupModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -148,7 +142,7 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	var responseData InstanceGroupDataSourceJson
+	var responseData InstanceGroupAPIModel
 
 	if !data.Id.IsNull() && data.Name.IsNull() {
 		err = json.Unmarshal(body, &responseData)
@@ -162,8 +156,8 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 	// If looking up by name, check that there is only one response and extract it.
 	if data.Id.IsNull() && !data.Name.IsNull() {
 		nameResult := struct {
-			Count   int                           `json:"count"`
-			Results []InstanceGroupDataSourceJson `json:"results"`
+			Count   int                     `json:"count"`
+			Results []InstanceGroupAPIModel `json:"results"`
 		}{}
 		err = json.Unmarshal(body, &nameResult)
 		if err != nil {
@@ -190,6 +184,22 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 	data.MaxForks = types.Int32Value(int32(responseData.MaxForks))
 	data.PolicyInstancePercentage = types.Int32Value(int32(responseData.PolicyInstancePercentage))
 	data.PolicyInstanceMinimum = types.Int32Value(int32(responseData.PolicyInstanceMinimum))
+	data.IsContainerGroup = types.BoolValue(responseData.IsContainerGroup)
+
+	if responseData.Credential != 0 {
+		data.Credential = types.Int32Value(int32(responseData.Credential))
+	}
+
+	if podSpecStr, ok := responseData.PodSpecOverride.(string); ok {
+		if podSpecStr != "" {
+			data.PodSpecOverride = types.StringValue(podSpecStr)
+		}
+	} else {
+		resp.Diagnostics.AddError(
+			"Error converting pod_spec_override response to string",
+			fmt.Sprintf("pod_spec_override api response: %v.", responseData.PodSpecOverride))
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

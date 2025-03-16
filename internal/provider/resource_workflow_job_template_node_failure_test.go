@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAccWkflwJobTemplJobNodeResource(t *testing.T) {
+func TestAccWkflwJobTemplJobNodeFailureResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -18,35 +18,32 @@ func TestAccWkflwJobTemplJobNodeResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccWkflwJobTemplJobNodeResource1Config(),
+				Config: testAccWkflwJobTemplJobNodeFailureResource1Config(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
-						"awx_workflow_job_template_job_node.test", "unified_job_template"),
-					resource.TestCheckResourceAttrPair("awx_workflow_job_template.test", "id",
-						"awx_workflow_job_template_job_node.test", "workflow_job_template_id"),
-					resource.TestCheckResourceAttrPair("awx_inventory.test", "id",
-						"awx_workflow_job_template_job_node.test", "inventory"),
+					resource.TestCheckResourceAttrPair("awx_workflow_job_template_job_node.test1", "id",
+						"awx_workflow_job_template_node_failure.test", "id"),
+					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test2", "id", "awx_workflow_job_template_node_failure.test", "failure_ids"),
 				),
 			},
 			{
-				ResourceName:      "awx_workflow_job_template_job_node.test",
+				ResourceName:      "awx_workflow_job_template_node_failure.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
-				Config: testAccWkflwJobTemplJobNodeResource2Config(),
+				Config: testAccWkflwJobTemplJobNodeFailureResource2Config(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
-						"awx_workflow_job_template_job_node.test", "unified_job_template"),
-					resource.TestCheckResourceAttrPair("awx_workflow_job_template.test", "id",
-						"awx_workflow_job_template_job_node.test", "workflow_job_template_id"),
+					resource.TestCheckResourceAttrPair("awx_workflow_job_template_job_node.test3", "id",
+						"awx_workflow_job_template_node_failure.test", "id"),
+					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test4", "id", "awx_workflow_job_template_node_failure.test", "failure_ids"),
+					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test5", "id", "awx_workflow_job_template_node_failure.test", "failure_ids"),
 				),
 			},
 		},
 	})
 }
 
-func testAccWkflwJobTemplJobNodeResource1Config() string {
+func testAccWkflwJobTemplJobNodeFailureResource1Config() string {
 	return fmt.Sprintf(`
 resource "awx_organization" "test" {
   name        = "%s"
@@ -73,15 +70,24 @@ resource "awx_workflow_job_template" "test" {
   inventory                = awx_inventory.test.id
   organization             = awx_organization.test.id
 }
-resource "awx_workflow_job_template_job_node" "test" {
+resource "awx_workflow_job_template_job_node" "test1" {
   unified_job_template     	= awx_job_template.test.id
   workflow_job_template_id 	= awx_workflow_job_template.test.id
   inventory 				= awx_inventory.test.id
 }
+resource "awx_workflow_job_template_job_node" "test2" {
+  unified_job_template     	= awx_job_template.test.id
+  workflow_job_template_id 	= awx_workflow_job_template.test.id
+  inventory 				= awx_inventory.test.id
+}
+resource "awx_workflow_job_template_node_failure" "test" {
+  id              = awx_workflow_job_template_job_node.test1.id
+  failure_ids = [awx_workflow_job_template_job_node.test2.id]
+}
   `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5))
 }
 
-func testAccWkflwJobTemplJobNodeResource2Config() string {
+func testAccWkflwJobTemplJobNodeFailureResource2Config() string {
 	return fmt.Sprintf(`
 resource "awx_organization" "test" {
   name        = "%s"
@@ -108,9 +114,24 @@ resource "awx_workflow_job_template" "test" {
   inventory                = awx_inventory.test.id
   organization             = awx_organization.test.id
 }
-resource "awx_workflow_job_template_job_node" "test" {
-  unified_job_template     = awx_job_template.test.id
-  workflow_job_template_id = awx_workflow_job_template.test.id
+resource "awx_workflow_job_template_job_node" "test3" {
+  unified_job_template     	= awx_job_template.test.id
+  workflow_job_template_id 	= awx_workflow_job_template.test.id
+  inventory 				= awx_inventory.test.id
+}
+resource "awx_workflow_job_template_job_node" "test4" {
+  unified_job_template     	= awx_job_template.test.id
+  workflow_job_template_id 	= awx_workflow_job_template.test.id
+  inventory 				= awx_inventory.test.id
+}
+resource "awx_workflow_job_template_job_node" "test5" {
+  unified_job_template     	= awx_job_template.test.id
+  workflow_job_template_id 	= awx_workflow_job_template.test.id
+  inventory 				= awx_inventory.test.id
+}
+resource "awx_workflow_job_template_node_failure" "test" {
+  id              = awx_workflow_job_template_job_node.test3.id
+  failure_ids = [awx_workflow_job_template_job_node.test4.id, awx_workflow_job_template_job_node.test5.id]
 }
   `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5))
 }

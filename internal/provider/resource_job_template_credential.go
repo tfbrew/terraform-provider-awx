@@ -170,7 +170,6 @@ func (r *JobTemplateCredentialResource) Read(ctx context.Context, req resource.R
 		return
 	}
 	data.CredentialIds = listValue
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -248,7 +247,6 @@ func (r *JobTemplateCredentialResource) Update(ctx context.Context, req resource
 			}
 		}
 	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

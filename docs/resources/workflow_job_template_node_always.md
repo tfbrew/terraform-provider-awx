@@ -24,7 +24,7 @@ resource "awx_workflow_job_template_node_always" "example_node_always" {
 
 ### Required
 
-- `always_node_ids` (Set of Number) An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.
+- `always_ids` (Set of Number) An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.
 - `id` (String) The ID of the containing workflow job template node.
 
 ## Import

@@ -58,7 +58,7 @@ type CredentialAPIModel struct {
 	User           int    `json:"user,omitempty"`
 	CredentialType int    `json:"credential_type"`
 	Kind           string `json:"kind,omitempty"`
-	Inputs         any    `json:"inputs"`
+	Inputs         any    `json:"inputs,omitempty"`
 }
 
 type CredentialTypeModel struct {
@@ -117,6 +117,30 @@ type HostAPIModel struct {
 	Variables   string `json:"variables,omitempty"`
 }
 
+type InstanceGroupModel struct {
+	Id                       types.String `tfsdk:"id"`
+	Name                     types.String `tfsdk:"name"`
+	IsContainerGroup         types.Bool   `tfsdk:"is_container_group"`
+	MaxConcurrentJobs        types.Int32  `tfsdk:"max_concurrent_jobs"`
+	MaxForks                 types.Int32  `tfsdk:"max_forks"`
+	PodSpecOverride          types.String `tfsdk:"pod_spec_override"`
+	PolicyInstancePercentage types.Int32  `tfsdk:"policy_instance_percentage"`
+	PolicyInstanceMinimum    types.Int32  `tfsdk:"policy_instance_minimum"`
+	Credential               types.Int32  `tfsdk:"credential"`
+}
+
+type InstanceGroupAPIModel struct {
+	Id                       int    `json:"id"`
+	Name                     string `json:"name"`
+	IsContainerGroup         bool   `json:"is_container_group"`
+	MaxConcurrentJobs        int    `json:"max_concurrent_jobs"`
+	MaxForks                 int    `json:"max_forks"`
+	PodSpecOverride          any    `json:"pod_spec_override,omitempty"`
+	PolicyInstancePercentage int    `json:"policy_instance_percentage"`
+	PolicyInstanceMinimum    int    `json:"policy_instance_minimum"`
+	Credential               int    `json:"credential,omitempty"`
+}
+
 type InventoryModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
@@ -166,7 +190,7 @@ type InventorySourceAPIModel struct {
 	Source               string `json:"source"`
 	Credential           int    `json:"credential,omitempty"`
 	Description          string `json:"description,omitempty"`
-	ExecutionEnvironment int    `json:"execution_environment,omitempty"`
+	ExecutionEnvironment any    `json:"execution_environment"`
 	SourcePath           string `json:"source_path,omitempty"`
 	EnabledValue         string `json:"enabled_value,omitempty"`
 	EnabledVar           string `json:"enabled_var,omitempty"`
@@ -383,4 +407,52 @@ type UserAPIModel struct {
 	IsSuperuser     bool   `json:"is_superuser"`
 	IsSystemAuditor bool   `json:"is_system_auditor"`
 	Password        string `json:"password"`
+}
+
+type WorkflowJobTemplatesResourceModel struct {
+	Id                   types.String `tfsdk:"id"`
+	Name                 types.String `tfsdk:"name"`
+	Description          types.String `tfsdk:"description"`
+	ExtraVars            types.String `tfsdk:"extra_vars"`
+	Organization         types.Int32  `tfsdk:"organization"`
+	SurveyEnabled        types.Bool   `tfsdk:"survey_enabled"`
+	AllowSimultaneous    types.Bool   `tfsdk:"allow_simultaneous"`
+	AskVariablesOnLaunch types.Bool   `tfsdk:"ask_variables_on_launch"`
+	Inventory            types.Int32  `tfsdk:"inventory"`
+	Limit                types.String `tfsdk:"limit"`
+	ScmBranch            types.String `tfsdk:"scm_branch"`
+	AskInventoryOnLaunch types.Bool   `tfsdk:"ask_inventory_on_launch"`
+	AskScmBranchOnLaunch types.Bool   `tfsdk:"ask_scm_branch_on_launch"`
+	AskLimitOnLaunch     types.Bool   `tfsdk:"ask_limit_on_launch"`
+	WebhookService       types.String `tfsdk:"webhook_service"`
+	WebhookCredential    types.String `tfsdk:"webhook_credential"`
+	AskLabelsOnLaunch    types.Bool   `tfsdk:"ask_labels_on_launch"`
+	AskSkipTagsOnLaunch  types.Bool   `tfsdk:"ask_skip_tags_on_launch"`
+	AskTagsOnLaunch      types.Bool   `tfsdk:"ask_tags_on_launch"`
+	SkipTags             types.String `tfsdk:"skip_tags"`
+	JobTags              types.String `tfsdk:"job_tags"`
+}
+
+type WorkflowJobTemplateAPIModel struct {
+	Id                   int    `json:"id"`
+	Name                 string `json:"name"`
+	Description          string `json:"description,omitempty"`
+	ExtraVars            string `json:"extra_vars"`
+	Organization         int    `json:"organization"`
+	SurveyEnabled        bool   `json:"survey_enabled"`
+	AllowSimultaneous    bool   `json:"allow_simultaneous"`
+	AskVariablesOnLaunch bool   `json:"ask_variables_on_launch"`
+	Inventory            any    `json:"inventory"`
+	Limit                string `json:"limit,omitempty"`
+	ScmBranch            string `json:"scm_branch"`
+	AskInventoryOnLaunch bool   `json:"ask_inventory_on_launch"`
+	AskScmBranchOnLaunch bool   `json:"ask_scm_branch_on_launch"`
+	AskLimitOnLaunch     bool   `json:"ask_limit_on_launch"`
+	WebhookService       string `json:"webhook_service"`
+	WebhookCredential    string `json:"webhook_credential"`
+	AskLabelsOnLaunch    bool   `json:"ask_labels_on_launch"`
+	AskSkipTagsOnLaunch  bool   `json:"ask_skip_tags_on_launch"`
+	AskTagsOnLaunch      bool   `json:"ask_tags_on_launch"`
+	SkipTags             string `json:"skip_tags"`
+	JobTags              string `json:"job_tags"`
 }

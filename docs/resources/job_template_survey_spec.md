@@ -67,10 +67,13 @@ resource "awx_job_template_survey_spec" "example" {
 
 ### Required
 
-- `description` (String) Job template survey spec description.
 - `id` (String) ID of job template to attach survey to.
-- `name` (String) Job template survey spec name.
 - `spec` (Attributes List) (see [below for nested schema](#nestedatt--spec))
+
+### Optional
+
+- `description` (String) Job template survey spec description.
+- `name` (String) Job template survey spec name.
 
 <a id="nestedatt--spec"></a>
 ### Nested Schema for `spec`
@@ -87,7 +90,7 @@ Optional:
 - `choices` (List of String) List of strings which define the choices users can make for multichoice or multiselect.
 - `default` (String) Default value for the survey question. For `multiselect` type, supply a list of valid values separated by the characters \n, e.g., "choice1\nchoice2". Supply a value of "" when you want no default value, even for type values that are non-text-based.
 - `max` (Number) Maximum value, default `1024`.
-- `min` (Number) Minimum value, default `1024`.
+- `min` (Number) Minimum value, default `0`.
 - `required` (Boolean) Set if the survey question is required, defaults to `false`.
 
 ## Import

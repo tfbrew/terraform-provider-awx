@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -185,8 +186,16 @@ func (d *InventorySourceDataSource) Read(ctx context.Context, req datasource.Rea
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)
 	}
-	if responseData.ExecutionEnvironment != 0 {
-		data.ExecutionEnvironment = types.Int32Value(int32(responseData.ExecutionEnvironment))
+	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == nil) {
+		execution_environment, ok := responseData.ExecutionEnvironment.(float64)
+		if !ok {
+			resp.Diagnostics.AddError("read of execution_environment failed", fmt.Sprintf("unable to cast execution_environment %v to float64", responseData.ExecutionEnvironment))
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), int32(execution_environment))...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 	if responseData.SourcePath != "" {
 		data.SourcePath = types.StringValue(responseData.SourcePath)
