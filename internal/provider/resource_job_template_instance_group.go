@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"slices"
+	"reflect"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -26,8 +26,9 @@ type JobTemplateInstanceGroupsResource struct {
 }
 
 type JobTemplateInstanceGroupsResourceModel struct {
+	Id                types.String `tfsdk:"id"`
 	JobTemplateId     types.String `tfsdk:"job_template_id"`
-	InstanceGroupsIDs types.Set    `tfsdk:"instance_groups_ids"`
+	InstanceGroupsIDs types.List   `tfsdk:"instance_groups_ids"`
 }
 
 func (r *JobTemplateInstanceGroupsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -38,13 +39,17 @@ func (r *JobTemplateInstanceGroupsResource) Schema(ctx context.Context, req reso
 	resp.Schema = schema.Schema{
 		Description: "Associate instance group(s) to a job template.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The ID of this resource which will be the same value as `job_template_id` but is needed for import testing.",
+			},
 			"job_template_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the containing Job Template.",
 			},
-			"instance_groups_ids": schema.SetAttribute{
+			"instance_groups_ids": schema.ListAttribute{
 				Required:    true,
-				Description: "An unordered list of instance_group IDs associated to a particular Job Template.",
+				Description: "An ordered list of instance_group IDs associated to a particular Job Template. The order in which these are specified sets the execution precedence.",
 				ElementType: types.Int32Type,
 			},
 		},
@@ -107,6 +112,7 @@ func (r *JobTemplateInstanceGroupsResource) Create(ctx context.Context, req reso
 		}
 	}
 
+	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -145,18 +151,15 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 		return
 	}
 
-	tfRelatedIds := make([]int, 0, responseData.Count)
+	var tfRelatedIds []int
 
 	for _, v := range responseData.Results {
 		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
-	listValue, diags := types.SetValueFrom(ctx, types.Int32Type, tfRelatedIds)
-	if diags.HasError() {
-		return
-	}
-	data.InstanceGroupsIDs = listValue
+	data.InstanceGroupsIDs, _ = types.ListValueFrom(context.Background(), types.Int32Type, tfRelatedIds)
 
+	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -195,10 +198,10 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 		return
 	}
 
-	ApiTfChildIds := make([]int, 0, responseData.Count)
+	var tfRelatedIds []int
 
 	for _, v := range responseData.Results {
-		ApiTfChildIds = append(ApiTfChildIds, v.Id)
+		tfRelatedIds = append(tfRelatedIds, v.Id)
 	}
 
 	var PlanChildIds []int
@@ -207,10 +210,9 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 		return
 	}
 
-	// diassociate any chyildren found currently via API call that
-	//  are no longer in the plan
-	for _, v := range ApiTfChildIds {
-		if !slices.Contains(PlanChildIds, v) {
+	// if plan Id's don't match Id's from response data, disassociate and reassociate all.
+	if !reflect.DeepEqual(tfRelatedIds, PlanChildIds) {
+		for _, v := range tfRelatedIds {
 			var bodyData ChildDissasocBody
 			bodyData.Id = v
 
@@ -220,12 +222,9 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 				return
 			}
 		}
-	}
-	// associate any children found in plan that weren't shown in API response
-	for _, v := range PlanChildIds {
-		if !slices.Contains(ApiTfChildIds, v) {
+		for _, val := range PlanChildIds {
 			var bodyData ChildResult
-			bodyData.Id = v
+			bodyData.Id = val
 
 			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
 			if err != nil {
@@ -235,6 +234,7 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 		}
 	}
 
+	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
