@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-// ImportStateIdFunc to fetch job_template_id from state for resources that don't have an ID
+// ImportStateIdFunc to fetch job_template_id from state for resources that don't have an ID.
 func importStateJobTemplateID(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
