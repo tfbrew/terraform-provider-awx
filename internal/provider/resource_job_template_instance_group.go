@@ -26,7 +26,6 @@ type JobTemplateInstanceGroupsResource struct {
 }
 
 type JobTemplateInstanceGroupsResourceModel struct {
-	Id                types.String `tfsdk:"id"`
 	JobTemplateId     types.String `tfsdk:"job_template_id"`
 	InstanceGroupsIDs types.List   `tfsdk:"instance_groups_ids"`
 }
@@ -39,10 +38,6 @@ func (r *JobTemplateInstanceGroupsResource) Schema(ctx context.Context, req reso
 	resp.Schema = schema.Schema{
 		Description: "Associate instance group(s) to a job template.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The ID of this resource which will be the same value as `job_template_id` but is needed for import testing.",
-			},
 			"job_template_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the containing Job Template.",
@@ -112,7 +107,6 @@ func (r *JobTemplateInstanceGroupsResource) Create(ctx context.Context, req reso
 		}
 	}
 
-	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -159,7 +153,6 @@ func (r *JobTemplateInstanceGroupsResource) Read(ctx context.Context, req resour
 
 	data.InstanceGroupsIDs, _ = types.ListValueFrom(context.Background(), types.Int32Type, tfRelatedIds)
 
-	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -234,7 +227,6 @@ func (r *JobTemplateInstanceGroupsResource) Update(ctx context.Context, req reso
 		}
 	}
 
-	data.Id = data.JobTemplateId
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

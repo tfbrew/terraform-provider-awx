@@ -25,9 +25,11 @@ func TestAccJobTemplateCredentialResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "awx_job_template_credential.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:                         "awx_job_template_credential.test",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateIdFunc:                    importStateJobTemplateID("awx_job_template_credential.test"),
+				ImportStateVerifyIdentifierAttribute: ("job_template_id"),
 			},
 			{
 				Config: testAccJobTemplateCredentialResource2Config(),

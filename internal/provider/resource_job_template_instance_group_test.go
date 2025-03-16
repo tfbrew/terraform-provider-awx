@@ -25,9 +25,11 @@ func TestAccJobTemplateInstanceGroupResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "awx_job_template_instance_group.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:                         "awx_job_template_instance_group.test",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateIdFunc:                    importStateJobTemplateID("awx_job_template_instance_group.test"),
+				ImportStateVerifyIdentifierAttribute: ("job_template_id"),
 			},
 			{
 				Config: testAccJobTemplateInstanceGroupResource2Config(),
