@@ -117,6 +117,30 @@ type HostAPIModel struct {
 	Variables   string `json:"variables,omitempty"`
 }
 
+type InstanceGroupModel struct {
+	Id                       types.String `tfsdk:"id"`
+	Name                     types.String `tfsdk:"name"`
+	IsContainerGroup         types.Bool   `tfsdk:"is_container_group"`
+	MaxConcurrentJobs        types.Int32  `tfsdk:"max_concurrent_jobs"`
+	MaxForks                 types.Int32  `tfsdk:"max_forks"`
+	PodSpecOverride          types.String `tfsdk:"pod_spec_override"`
+	PolicyInstancePercentage types.Int32  `tfsdk:"policy_instance_percentage"`
+	PolicyInstanceMinimum    types.Int32  `tfsdk:"policy_instance_minimum"`
+	Credential               types.Int32  `tfsdk:"credential"`
+}
+
+type InstanceGroupAPIModel struct {
+	Id                       int    `json:"id"`
+	Name                     string `json:"name"`
+	IsContainerGroup         bool   `json:"is_container_group"`
+	MaxConcurrentJobs        int    `json:"max_concurrent_jobs"`
+	MaxForks                 int    `json:"max_forks"`
+	PodSpecOverride          any    `json:"pod_spec_override,omitempty"`
+	PolicyInstancePercentage int    `json:"policy_instance_percentage"`
+	PolicyInstanceMinimum    int    `json:"policy_instance_minimum"`
+	Credential               int    `json:"credential,omitempty"`
+}
+
 type InventoryModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`

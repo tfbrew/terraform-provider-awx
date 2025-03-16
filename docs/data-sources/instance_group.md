@@ -32,7 +32,10 @@ data "awx_instance_group" "example-name" {
 
 ### Read-Only
 
+- `credential` (Number) Credential ID to authenticate with Kubernetes or OpenShift. Must be of type `OpenShift` or `Kubernetes API Bearer Token`
+- `is_container_group` (Boolean) Signifies that this InstanceGroup should act as a ContainerGroup. If no credential is specified, the underlying Pod’s ServiceAccount will be used.
 - `max_concurrent_jobs` (Number) Maximum number of jobs to run concurrently on this group. Zero means no limit will be enforced.
 - `max_forks` (Number) Maximum number of forks to allow across all jobs running concurrently on this group. Zero means no limit will be enforced.
+- `pod_spec_override` (String) A custom Kubernetes or OpenShift Pod specification.
 - `policy_instance_minimum` (Number) Minimum number of instances that will be automatically assigned to this group when new instances come online.
 - `policy_instance_percentage` (Number) Minimum percentage of all instances that will be automatically assigned to this group when new instances come online.
