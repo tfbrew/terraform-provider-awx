@@ -58,7 +58,7 @@ type CredentialAPIModel struct {
 	User           int    `json:"user,omitempty"`
 	CredentialType int    `json:"credential_type"`
 	Kind           string `json:"kind,omitempty"`
-	Inputs         any    `json:"inputs"`
+	Inputs         any    `json:"inputs,omitempty"`
 }
 
 type CredentialTypeModel struct {
@@ -190,7 +190,7 @@ type InventorySourceAPIModel struct {
 	Source               string `json:"source"`
 	Credential           int    `json:"credential,omitempty"`
 	Description          string `json:"description,omitempty"`
-	ExecutionEnvironment int    `json:"execution_environment,omitempty"`
+	ExecutionEnvironment any    `json:"execution_environment"`
 	SourcePath           string `json:"source_path,omitempty"`
 	EnabledValue         string `json:"enabled_value,omitempty"`
 	EnabledVar           string `json:"enabled_var,omitempty"`

@@ -97,12 +97,12 @@ resource "awx_credential" "example-container-registry" {
 ### Required
 
 - `credential_type` (Number) ID of the credential type.
-- `inputs` (String, Sensitive) Credential inputs using `jsonencode()`. Specify alphabetically.
 - `name` (String) Credential name.
 
 ### Optional
 
 - `description` (String) Credential description.
+- `inputs` (String, Sensitive) Credential inputs using `jsonencode()`. Specify alphabetically.
 - `organization` (Number) ID of organization which owns this credential. One and only one of `organization`, `team`, or `user` must be set.
 - `team` (Number) ID of team which owns this credential. One and only one of `organization`, `team`, or `user` must be set.
 - `user` (Number) ID of user which owns this credential. One and only one of `organization`, `team`, or `user` must be set.
