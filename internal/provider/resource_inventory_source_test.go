@@ -14,13 +14,14 @@ import (
 
 func TestAccInventorySourceResource(t *testing.T) {
 	inventory_source1 := InventorySourceAPIModel{
-		Name:           "test-inventory-source-" + acctest.RandString(5),
-		Description:    "Example description 1",
-		Source:         "scm",
-		SourcePath:     "test",
-		Overwrite:      true,
-		OverwriteVars:  true,
-		UpdateOnLaunch: true,
+		Name:                 "test-inventory-source-" + acctest.RandString(5),
+		Description:          "Example description 1",
+		Source:               "scm",
+		SourcePath:           "test",
+		ExecutionEnvironment: 1,
+		Overwrite:            true,
+		OverwriteVars:        true,
+		UpdateOnLaunch:       true,
 	}
 
 	inventory_source2 := InventorySourceAPIModel{
@@ -38,7 +39,7 @@ func TestAccInventorySourceResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInventorySourceResourceConfig(inventory_source1),
+				Config: testAccInventorySourceResource1Config(inventory_source1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"awx_inventory_source.test",
@@ -89,7 +90,7 @@ func TestAccInventorySourceResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: testAccInventorySourceResourceConfig(inventory_source2),
+				Config: testAccInventorySourceResource2Config(inventory_source2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"awx_inventory_source.test",
@@ -138,7 +139,7 @@ func TestAccInventorySourceResource(t *testing.T) {
 	})
 }
 
-func testAccInventorySourceResourceConfig(resource InventorySourceAPIModel) string {
+func testAccInventorySourceResource1Config(resource InventorySourceAPIModel) string {
 	return fmt.Sprintf(`
 resource "awx_organization" "test" {
   name        = "%s"
@@ -157,15 +158,48 @@ resource "awx_inventory" "test" {
 }
 
 resource "awx_inventory_source" "test" {
-  name             = "%s"
-  description	   = "%s"
-  inventory        = awx_inventory.test.id
-  source           = "%s"
-  source_project   = awx_project.test.id
-  source_path      = "%s"
-  overwrite        = %v
-  overwrite_vars   = %v
-  update_on_launch = %v
+  name             		= "%s"
+  description	   		= "%s"
+  inventory        		= awx_inventory.test.id
+  source           		= "%s"
+  source_project   		= awx_project.test.id
+  source_path      		= "%s"
+  overwrite        		= %v
+  overwrite_vars   		= %v
+  update_on_launch 		= %v
+  execution_environment = %v
+}
+  `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), resource.Name, resource.Description, resource.Source, resource.SourcePath, resource.Overwrite, resource.OverwriteVars, resource.UpdateOnLaunch, resource.ExecutionEnvironment)
+}
+
+func testAccInventorySourceResource2Config(resource InventorySourceAPIModel) string {
+	return fmt.Sprintf(`
+resource "awx_organization" "test" {
+  name        = "%s"
+}
+
+resource "awx_project" "test" {
+  name         = "%s"
+  organization = awx_organization.test.id
+  scm_type     = "git"
+  scm_url      = "git@github.com:user/repo.git"
+}
+
+resource "awx_inventory" "test" {
+  name         = "%s"
+  organization = awx_organization.test.id
+}
+
+resource "awx_inventory_source" "test" {
+  name             		= "%s"
+  description	   		= "%s"
+  inventory        		= awx_inventory.test.id
+  source           		= "%s"
+  source_project   		= awx_project.test.id
+  source_path      		= "%s"
+  overwrite        		= %v
+  overwrite_vars   		= %v
+  update_on_launch 		= %v
 }
   `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), resource.Name, resource.Description, resource.Source, resource.SourcePath, resource.Overwrite, resource.OverwriteVars, resource.UpdateOnLaunch)
 }
