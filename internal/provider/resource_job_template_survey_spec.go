@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -80,12 +81,16 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 				Description: "ID of job template to attach survey to.",
 			},
 			"name": schema.StringAttribute{
-				Required:    true,
 				Description: "Job template survey spec name.",
+				Default:     stringdefault.StaticString(""),
+				Optional:    true,
+				Computed:    true,
 			},
 			"description": schema.StringAttribute{
-				Required:    true,
 				Description: "Job template survey spec description.",
+				Default:     stringdefault.StaticString(""),
+				Optional:    true,
+				Computed:    true,
 			},
 			"spec": schema.ListNestedAttribute{
 				Required: true,
@@ -93,11 +98,15 @@ func (r *JobTemplateSurveyResource) Schema(ctx context.Context, req resource.Sch
 					Attributes: map[string]schema.Attribute{
 						"max": schema.Int32Attribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Maximum value, default `1024`.",
+							Default:     int32default.StaticInt32(1024),
 						},
 						"min": schema.Int32Attribute{
 							Optional:    true,
-							Description: "Minimum value, default `1024`.",
+							Computed:    true,
+							Description: "Minimum value, default `0`.",
+							Default:     int32default.StaticInt32(0),
 						},
 						"type": schema.StringAttribute{
 							Required:    true,

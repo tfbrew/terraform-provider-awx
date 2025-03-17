@@ -70,7 +70,7 @@ The only changes to the inputs field that will be sent are when the terraform co
 			},
 			"inputs": schema.StringAttribute{
 				Description: "Credential inputs using `jsonencode()`. Specify alphabetically.",
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 			},
 			"kind": schema.StringAttribute{

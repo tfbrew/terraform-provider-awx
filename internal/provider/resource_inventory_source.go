@@ -359,8 +359,13 @@ func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadReq
 		}
 	}
 
-	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == 0) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), responseData.ExecutionEnvironment)...)
+	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == nil) {
+		execution_environment, ok := responseData.ExecutionEnvironment.(float64)
+		if !ok {
+			resp.Diagnostics.AddError("read of execution_environment failed", fmt.Sprintf("unable to cast execution_environment %v to float64", responseData.ExecutionEnvironment))
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), int32(execution_environment))...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
