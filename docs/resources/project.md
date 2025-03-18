@@ -42,7 +42,7 @@ resource "awx_project" "example-archive" {
 resource "awx_project" "example-manual" {
   name         = "example_manual"
   organization = awx_organization.example.id
-  scm_type     = ""
+  scm_type     = "manual"
   local_path   = "directory/on/awx"
 }
 
@@ -65,7 +65,7 @@ resource "awx_project" "example-insights" {
 
 - `name` (String) Project name.
 - `organization` (Number) Organization ID for the project to live in.
-- `scm_type` (String) Type of SCM resource. Options: `""` for manual, otherwise `git`, `svn` `insights`, `archive`.
+- `scm_type` (String) Type of SCM resource. Options: `manual`, `git`, `svn` `insights`, `archive`.
 
 ### Optional
 
