@@ -14,20 +14,18 @@ import (
 
 func TestAccProjectDataSource(t *testing.T) {
 	project1 := ProjectAPIModel{
-		Name:         "test-project-" + acctest.RandString(5),
-		Description:  "Test git project",
-		ScmType:      "git",
-		ScmUrl:       "https://github.com/example/repo.git",
-		Organization: 1,
-		Timeout:      1,
+		Name:        "test-project-" + acctest.RandString(5),
+		Description: "Test git project",
+		ScmType:     "git",
+		ScmUrl:      "https://github.com/example/repo.git",
+		Timeout:     1,
 	}
 	project2 := ProjectAPIModel{
-		Name:         "test-project-" + acctest.RandString(5),
-		Description:  "svn project",
-		ScmType:      "svn",
-		ScmUrl:       "svn://bad_ip/test_repo",
-		Organization: 1,
-		Timeout:      1,
+		Name:        "test-project-" + acctest.RandString(5),
+		Description: "svn project",
+		ScmType:     "svn",
+		ScmUrl:      "svn://bad_ip/test_repo",
+		Timeout:     1,
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -62,15 +60,14 @@ func TestAccProjectDataSource(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						"data.awx_project.test-id",
-						tfjsonpath.New("organization"),
-						knownvalue.Int32Exact(int32(project1.Organization)),
-					),
-					statecheck.ExpectKnownValue(
-						"data.awx_project.test-id",
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project1.Timeout)),
 					),
 				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("awx_organization.test-id", "id",
+						"data.awx_project.test-id", "organization"),
+				),
 			},
 			// Read by name testing
 			{
@@ -98,15 +95,14 @@ func TestAccProjectDataSource(t *testing.T) {
 					),
 					statecheck.ExpectKnownValue(
 						"data.awx_project.test-name",
-						tfjsonpath.New("organization"),
-						knownvalue.Int32Exact(int32(project2.Organization)),
-					),
-					statecheck.ExpectKnownValue(
-						"data.awx_project.test-name",
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project2.Timeout)),
 					),
 				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("awx_organization.test-name", "id",
+						"data.awx_project.test-name", "organization"),
+				),
 			},
 		},
 	})
@@ -114,32 +110,38 @@ func TestAccProjectDataSource(t *testing.T) {
 
 func testAccProjectDataSourceIDConfig(resource ProjectAPIModel) string {
 	return fmt.Sprintf(`
+resource "awx_organization" "test-id" {
+  name        			= "%s"
+}
 resource "awx_project" "test-id" {
   name         	= "%s"
   description  	= "%s"
   scm_type     	= "%s"
   scm_url      	= "%s"
-  organization 	= %d
+  organization 	= awx_organization.test-id.id
   timeout		= %d
 }
 data "awx_project" "test-id" {
   id = awx_project.test-id.id
 }
-`, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.Timeout)
+`, acctest.RandString(5), resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Timeout)
 }
 
 func testAccProjectDataSourceNameConfig(resource ProjectAPIModel) string {
 	return fmt.Sprintf(`
+resource "awx_organization" "test-name" {
+  name        			= "%s"
+}
 resource "awx_project" "test-name" {
   name         	= "%s"
   description  	= "%s"
   scm_type     	= "%s"
   scm_url      	= "%s"
-  organization 	= %d
+  organization 	= awx_organization.test-name.id
   timeout		= %d
 }
 data "awx_project" "test-name" {
   name = awx_project.test-name.name
 }
-`, resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Organization, resource.Timeout)
+`, acctest.RandString(5), resource.Name, resource.Description, resource.ScmType, resource.ScmUrl, resource.Timeout)
 }
