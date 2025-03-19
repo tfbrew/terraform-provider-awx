@@ -22,7 +22,7 @@ func TestAccWkflwJobTemplJobNodeAlwaysResource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("awx_workflow_job_template_job_node.test1", "id",
 						"awx_workflow_job_template_node_always.test", "id"),
-					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test2", "id", "awx_workflow_job_template_node_always.test", "always_node_ids"),
+					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test2", "id", "awx_workflow_job_template_node_always.test", "always_ids"),
 				),
 			},
 			{
@@ -35,8 +35,8 @@ func TestAccWkflwJobTemplJobNodeAlwaysResource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("awx_workflow_job_template_job_node.test3", "id",
 						"awx_workflow_job_template_node_always.test", "id"),
-					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test4", "id", "awx_workflow_job_template_node_always.test", "always_node_ids"),
-					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test5", "id", "awx_workflow_job_template_node_always.test", "always_node_ids"),
+					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test4", "id", "awx_workflow_job_template_node_always.test", "always_ids"),
+					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test5", "id", "awx_workflow_job_template_node_always.test", "always_ids"),
 				),
 			},
 		},
@@ -82,7 +82,7 @@ resource "awx_workflow_job_template_job_node" "test2" {
 }
 resource "awx_workflow_job_template_node_always" "test" {
   id              = awx_workflow_job_template_job_node.test1.id
-  always_node_ids = [awx_workflow_job_template_job_node.test2.id]
+  always_ids = [awx_workflow_job_template_job_node.test2.id]
 }
   `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5))
 }
@@ -131,7 +131,7 @@ resource "awx_workflow_job_template_job_node" "test5" {
 }
 resource "awx_workflow_job_template_node_always" "test" {
   id              = awx_workflow_job_template_job_node.test3.id
-  always_node_ids = [awx_workflow_job_template_job_node.test4.id, awx_workflow_job_template_job_node.test5.id]
+  always_ids = [awx_workflow_job_template_job_node.test4.id, awx_workflow_job_template_job_node.test5.id]
 }
   `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5))
 }
