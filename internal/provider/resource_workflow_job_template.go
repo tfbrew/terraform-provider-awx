@@ -28,54 +28,6 @@ type WorkflowJobTemplatesResource struct {
 	client *AwxClient
 }
 
-type WorkflowJobTemplatesResourceModel struct {
-	Id                   types.String `tfsdk:"id"`
-	Name                 types.String `tfsdk:"name"`
-	Description          types.String `tfsdk:"description"`
-	ExtraVars            types.String `tfsdk:"extra_vars"`
-	Organization         types.Int32  `tfsdk:"organization"`
-	SurveyEnabled        types.Bool   `tfsdk:"survey_enabled"`
-	AllowSimultaneous    types.Bool   `tfsdk:"allow_simultaneous"`
-	AskVariablesOnLaunch types.Bool   `tfsdk:"ask_variables_on_launch"`
-	Inventory            types.Int32  `tfsdk:"inventory"`
-	Limit                types.String `tfsdk:"limit"`
-	ScmBranch            types.String `tfsdk:"scm_branch"`
-	AskInventoryOnLaunch types.Bool   `tfsdk:"ask_inventory_on_launch"`
-	AskScmBranchOnLaunch types.Bool   `tfsdk:"ask_scm_branch_on_launch"`
-	AskLimitOnLaunch     types.Bool   `tfsdk:"ask_limit_on_launch"`
-	WebhookService       types.String `tfsdk:"webhook_service"`
-	WebhookCredential    types.String `tfsdk:"webhook_credential"`
-	AskLabelsOnLaunch    types.Bool   `tfsdk:"ask_labels_on_launch"`
-	AskSkipTagsOnLaunch  types.Bool   `tfsdk:"ask_skip_tags_on_launch"`
-	AskTagsOnLaunch      types.Bool   `tfsdk:"ask_tags_on_launch"`
-	SkipTags             types.String `tfsdk:"skip_tags"`
-	JobTags              types.String `tfsdk:"job_tags"`
-}
-
-type WorkflowJobTemplateAPIModel struct {
-	Id                   int    `json:"id"`
-	Name                 string `json:"name"`
-	Description          any    `json:"description,omitempty"`
-	ExtraVars            string `json:"extra_vars"`
-	Organization         int    `json:"organization"`
-	SurveyEnabled        bool   `json:"survey_enabled"`
-	AllowSimultaneous    bool   `json:"allow_simultaneous"`
-	AskVariablesOnLaunch bool   `json:"ask_variables_on_launch"`
-	Inventory            any    `json:"inventory"`
-	Limit                string `json:"limit,omitempty"`
-	ScmBranch            string `json:"scm_branch"`
-	AskInventoryOnLaunch bool   `json:"ask_inventory_on_launch"`
-	AskScmBranchOnLaunch bool   `json:"ask_scm_branch_on_launch"`
-	AskLimitOnLaunch     bool   `json:"ask_limit_on_launch"`
-	WebhookService       string `json:"webhook_service"`
-	WebhookCredential    string `json:"webhook_credential"`
-	AskLabelsOnLaunch    bool   `json:"ask_labels_on_launch"`
-	AskSkipTagsOnLaunch  bool   `json:"ask_skip_tags_on_launch"`
-	AskTagsOnLaunch      bool   `json:"ask_tags_on_launch"`
-	SkipTags             string `json:"skip_tags"`
-	JobTags              string `json:"job_tags"`
-}
-
 func (r *WorkflowJobTemplatesResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_workflow_job_template"
 }
@@ -352,17 +304,10 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == nil) {
-		castString, ok := responseData.Description.(string)
-		if !ok {
-			resp.Diagnostics.AddError("Unable to cast descr as string.", "unable to cast as string.")
+	if !(data.Description.IsNull() && responseData.Description == "") {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
+		if resp.Diagnostics.HasError() {
 			return
-		}
-		if castString != "" {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), castString)...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
 		}
 	}
 

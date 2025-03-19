@@ -18,7 +18,7 @@ func TestAccWkflwJobTemplJobNodeResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccWkflwJobTemplResource1Config(),
+				Config: testAccWkflwJobTemplJobNodeResource1Config(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
 						"awx_workflow_job_template_job_node.test", "unified_job_template"),
@@ -34,7 +34,7 @@ func TestAccWkflwJobTemplJobNodeResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: testAccWkflwJobTemplResource2Config(),
+				Config: testAccWkflwJobTemplJobNodeResource2Config(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
 						"awx_workflow_job_template_job_node.test", "unified_job_template"),
@@ -46,7 +46,7 @@ func TestAccWkflwJobTemplJobNodeResource(t *testing.T) {
 	})
 }
 
-func testAccWkflwJobTemplResource1Config() string {
+func testAccWkflwJobTemplJobNodeResource1Config() string {
 	return fmt.Sprintf(`
 resource "awx_organization" "test" {
   name        = "%s"
@@ -81,7 +81,7 @@ resource "awx_workflow_job_template_job_node" "test" {
   `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5))
 }
 
-func testAccWkflwJobTemplResource2Config() string {
+func testAccWkflwJobTemplJobNodeResource2Config() string {
 	return fmt.Sprintf(`
 resource "awx_organization" "test" {
   name        = "%s"
