@@ -26,8 +26,8 @@ type WorkflowJobTemplatesNodeAlwaysResource struct {
 }
 
 type WorkflowJobTemplatesNodeAlwaysResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	AlwaysNodeIds types.Set    `tfsdk:"always_node_ids"`
+	Id        types.String `tfsdk:"id"`
+	AlwaysIds types.Set    `tfsdk:"always_ids"`
 }
 
 func (r *WorkflowJobTemplatesNodeAlwaysResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -43,7 +43,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Schema(ctx context.Context, req
 				Required:    true,
 				Description: "The ID of the containing workflow job template node.",
 			},
-			"always_node_ids": schema.SetAttribute{
+			"always_ids": schema.SetAttribute{
 				Required:    true,
 				Description: "An unordered list of Node IDs attached to this workflow template node that should run on successful completion of this node.",
 				ElementType: types.Int32Type,
@@ -91,7 +91,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Create(ctx context.Context, req
 
 	var relatedIds []int
 
-	diags := data.AlwaysNodeIds.ElementsAs(ctx, &relatedIds, false)
+	diags := data.AlwaysIds.ElementsAs(ctx, &relatedIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -164,7 +164,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Read(ctx context.Context, req r
 	if diags.HasError() {
 		return
 	}
-	data.AlwaysNodeIds = listValue
+	data.AlwaysIds = listValue
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -211,7 +211,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Update(ctx context.Context, req
 	}
 
 	var PlanChildIds []int
-	diags := data.AlwaysNodeIds.ElementsAs(ctx, &PlanChildIds, false)
+	diags := data.AlwaysIds.ElementsAs(ctx, &PlanChildIds, false)
 	if diags.HasError() {
 		return
 	}
@@ -268,7 +268,7 @@ func (r *WorkflowJobTemplatesNodeAlwaysResource) Delete(ctx context.Context, req
 
 	var RelatedIds []int
 
-	diags := data.AlwaysNodeIds.ElementsAs(ctx, &RelatedIds, false)
+	diags := data.AlwaysIds.ElementsAs(ctx, &RelatedIds, false)
 	if diags.HasError() {
 		return
 	}
