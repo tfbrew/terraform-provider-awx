@@ -408,3 +408,51 @@ type UserAPIModel struct {
 	IsSystemAuditor bool   `json:"is_system_auditor"`
 	Password        string `json:"password"`
 }
+
+type WorkflowJobTemplatesResourceModel struct {
+	Id                   types.String `tfsdk:"id"`
+	Name                 types.String `tfsdk:"name"`
+	Description          types.String `tfsdk:"description"`
+	ExtraVars            types.String `tfsdk:"extra_vars"`
+	Organization         types.Int32  `tfsdk:"organization"`
+	SurveyEnabled        types.Bool   `tfsdk:"survey_enabled"`
+	AllowSimultaneous    types.Bool   `tfsdk:"allow_simultaneous"`
+	AskVariablesOnLaunch types.Bool   `tfsdk:"ask_variables_on_launch"`
+	Inventory            types.Int32  `tfsdk:"inventory"`
+	Limit                types.String `tfsdk:"limit"`
+	ScmBranch            types.String `tfsdk:"scm_branch"`
+	AskInventoryOnLaunch types.Bool   `tfsdk:"ask_inventory_on_launch"`
+	AskScmBranchOnLaunch types.Bool   `tfsdk:"ask_scm_branch_on_launch"`
+	AskLimitOnLaunch     types.Bool   `tfsdk:"ask_limit_on_launch"`
+	WebhookService       types.String `tfsdk:"webhook_service"`
+	WebhookCredential    types.String `tfsdk:"webhook_credential"`
+	AskLabelsOnLaunch    types.Bool   `tfsdk:"ask_labels_on_launch"`
+	AskSkipTagsOnLaunch  types.Bool   `tfsdk:"ask_skip_tags_on_launch"`
+	AskTagsOnLaunch      types.Bool   `tfsdk:"ask_tags_on_launch"`
+	SkipTags             types.String `tfsdk:"skip_tags"`
+	JobTags              types.String `tfsdk:"job_tags"`
+}
+
+type WorkflowJobTemplateAPIModel struct {
+	Id                   int    `json:"id"`
+	Name                 string `json:"name"`
+	Description          string `json:"description,omitempty"`
+	ExtraVars            string `json:"extra_vars"`
+	Organization         int    `json:"organization"`
+	SurveyEnabled        bool   `json:"survey_enabled"`
+	AllowSimultaneous    bool   `json:"allow_simultaneous"`
+	AskVariablesOnLaunch bool   `json:"ask_variables_on_launch"`
+	Inventory            any    `json:"inventory"`
+	Limit                string `json:"limit,omitempty"`
+	ScmBranch            string `json:"scm_branch"`
+	AskInventoryOnLaunch bool   `json:"ask_inventory_on_launch"`
+	AskScmBranchOnLaunch bool   `json:"ask_scm_branch_on_launch"`
+	AskLimitOnLaunch     bool   `json:"ask_limit_on_launch"`
+	WebhookService       string `json:"webhook_service"`
+	WebhookCredential    string `json:"webhook_credential"`
+	AskLabelsOnLaunch    bool   `json:"ask_labels_on_launch"`
+	AskSkipTagsOnLaunch  bool   `json:"ask_skip_tags_on_launch"`
+	AskTagsOnLaunch      bool   `json:"ask_tags_on_launch"`
+	SkipTags             string `json:"skip_tags"`
+	JobTags              string `json:"job_tags"`
+}
