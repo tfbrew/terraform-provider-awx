@@ -16,6 +16,8 @@ import (
 func TestAccNotificationTemplateResource(t *testing.T) {
 	objectName := acctest.RandString(5)
 	objectName2 := acctest.RandString(5)
+	objectName3 := acctest.RandString(5)
+
 	IdComparer := &compareTwoValuesAsStrings{}
 
 	basicWebhookConifg := WebhookConfiguration{
@@ -37,6 +39,12 @@ func TestAccNotificationTemplateResource(t *testing.T) {
 	}
 
 	webhookConfigString := string(temp)
+
+	webhookConfigComparer := compareTwoWebhookConfigs{
+		InitialValue: webhookConfigString,
+	}
+
+	webhookConfigComparer1 := statecheck.CompareValue(&webhookConfigComparer)
 
 	basicSlackConfig := SlackConfiguration{
 		Channels:  []string{"#channel1", "#channel2"},
@@ -86,16 +94,21 @@ func TestAccNotificationTemplateResource(t *testing.T) {
 						tfjsonpath.New("notification_type"),
 						knownvalue.StringExact("webhook"),
 					),
-					statecheck.ExpectKnownValue(
+					webhookConfigComparer1.AddStateValue(
 						"awx_notification_template.example-webhook-type",
 						tfjsonpath.New("notification_configuration"),
-						knownvalue.StringExact("{\"disable_ssl_verification\":true,\"headers\":{\"httpheader1\":\"testone\",\"httpheader2\":2},\"http_method\":\"POST\",\"password\":\"thepassword\",\"url\":\"https://webhooktarget.com\",\"username\":\"user-abc\"}"),
 					),
 				},
 			},
+			// test import
+			{
+				ResourceName:            "awx_notification_template.example-webhook-type",
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"notification_configuration"},
+			},
 			// test basic slack case
 			{
-				Config: testAccNotifTmplWebhookResource2Config(objectName2, slackConfigString),
+				Config: testAccNotifTmplSlackResource2Config(objectName2, slackConfigString),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"awx_notification_template.example-slack-type",
@@ -118,18 +131,31 @@ func TestAccNotificationTemplateResource(t *testing.T) {
 						tfjsonpath.New("notification_type"),
 						knownvalue.StringExact("slack"),
 					),
-					// statecheck.ExpectKnownValue(
-					// 	"awx_notification_template.example-slack-type",
-					// 	tfjsonpath.New("notification_configuration"),
-					// 	knownvalue.StringExact("{\"disable_ssl_verification\":true,\"headers\":{\"httpheader1\":\"testone\",\"httpheader2\":2},\"http_method\":\"POST\",\"password\":\"thepassword\",\"url\":\"https://webhooktarget.com\",\"username\":\"user-abc\"}"),
-					// ),
 				},
 			},
-			// {
-			// 	ResourceName:      "awx_notification_template.example-webhook-type",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			// a simple message field test case
+			{
+				Config: testAccNotifTmplSlackWithMessagesConfig(objectName3, slackConfigString),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						"awx_notification_template.example-slack-and-message",
+						tfjsonpath.New("name"),
+						knownvalue.StringExact(objectName3),
+					),
+					statecheck.CompareValuePairs(
+						"awx_notification_template.example-slack-and-message",
+						tfjsonpath.New("organization"),
+						"awx_organization.example",
+						tfjsonpath.New("id"),
+						IdComparer,
+					),
+					statecheck.ExpectKnownValue(
+						"awx_notification_template.example-slack-and-message",
+						tfjsonpath.New("messages"),
+						knownvalue.StringExact(`{"error":{"body":"","message":""},"started":{"body":"","message":"{{ job_friendly_name }} #{{ job.id }} '{{ job.name }}' {{ job.status }}: {{ url }} Custom Message"},"success":{"body":"","message":""},"workflow_approval":{"approved":{"body":"","message":""},"denied":{"body":"","message":""},"running":{"body":"","message":""},"timed_out":{"body":"","message":""}}}`),
+					),
+				},
+			},
 		},
 	})
 }
@@ -149,7 +175,7 @@ resource "awx_notification_template" "example-webhook-type" {
   }`, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), objectName, notifConfig)
 }
 
-func testAccNotifTmplWebhookResource2Config(objectName, notifConfig string) string {
+func testAccNotifTmplSlackResource2Config(objectName, notifConfig string) string {
 	return fmt.Sprintf(`
 resource "awx_organization" "example" { 
 	name = "%s" 
@@ -164,45 +190,49 @@ resource "awx_notification_template" "example-slack-type" {
   }`, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), objectName, notifConfig)
 }
 
-// resource "awx_notification_template" "example-slack-type" {
-// 	name              = "example1"
-// 	notification_type = "slack"
-// 	organization      = 1
-// 	notification_configuration = jsonencode({
-// 	  channels  = ["#channel1", "#channel1"]
-// 	  hex_color = ""
-// 	  token     = ""
-// 	})
-// 	messages = jsonencode({
-// 	  error = {
-// 		body    = ""
-// 		message = ""
-// 	  }
-// 	  started = {
-// 		body    = ""
-// 		message = "{{ job_friendly_name }} #{{ job.id }} '{{ job.name }}' {{ job.status }}: {{ url }} Custom Message"
-// 	  }
-// 	  success = {
-// 		body    = ""
-// 		message = ""
-// 	  }
-// 	  workflow_approval = {
-// 		approved = {
-// 		  body    = ""
-// 		  message = ""
-// 		}
-// 		denied = {
-// 		  body    = ""
-// 		  message = ""
-// 		}
-// 		running = {
-// 		  body    = ""
-// 		  message = ""
-// 		}
-// 		timed_out = {
-// 		  body    = ""
-// 		  message = ""
-// 		}
-// 	  }
-// 	})
-//   }
+func testAccNotifTmplSlackWithMessagesConfig(objectName, notifConfig string) string {
+	return fmt.Sprintf(`
+resource "awx_organization" "example" { 
+	name = "%s" 
+	description = "testing example" 
+}
+
+resource "awx_notification_template" "example-slack-and-message" {
+	name              = "%s"
+	notification_type = "slack"
+	organization      = awx_organization.example.id
+  notification_configuration = jsonencode(%s)
+  messages = jsonencode({
+	  error = {
+		body    = ""
+		message = ""
+	  }
+	  started = {
+		body    = ""
+		message = "{{ job_friendly_name }} #{{ job.id }} '{{ job.name }}' {{ job.status }}: {{ url }} Custom Message"
+	  }
+	  success = {
+		body    = ""
+		message = ""
+	  }
+	  workflow_approval = {
+		approved = {
+		  body    = ""
+		  message = ""
+		}
+		denied = {
+		  body    = ""
+		  message = ""
+		}
+		running = {
+		  body    = ""
+		  message = ""
+		}
+		timed_out = {
+		  body    = ""
+		  message = ""
+		}
+	  }
+	})
+  }`, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), objectName, notifConfig)
+}
