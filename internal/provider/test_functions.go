@@ -66,6 +66,37 @@ func (mc *compareTwoSlackConfigs) CompareValues(values ...any) error {
 	return nil
 }
 
+// Implmenet the compare.ValueComparer interface in order to compare Webhook-specific Notification Configurations.
+type compareTwoWebhookConfigs struct {
+	InitialValue string
+}
+
+func (mc *compareTwoWebhookConfigs) CompareValues(values ...any) error {
+	if len(values) != 1 {
+		return errors.New("expected exactly 1 values to compare with InitialValue")
+	}
+
+	v1 := fmt.Sprint(values[0])
+
+	var initialWebhook, v1Webhook WebhookConfiguration
+
+	err := json.Unmarshal([]byte(v1), &v1Webhook)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal([]byte(mc.InitialValue), &initialWebhook)
+	if err != nil {
+		return err
+	}
+
+	if !reflect.DeepEqual(initialWebhook, v1Webhook) {
+		return fmt.Errorf("value mismatch: %v vs %v", mc.InitialValue, v1)
+	}
+
+	return nil
+}
+
 // ImportStateIdFunc to fetch job_template_id from state for resources that don't have an ID.
 func importStateJobTemplateID(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {

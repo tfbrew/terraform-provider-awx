@@ -353,23 +353,13 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		}
 	}
 
-	//  if we are switching types, then just slam in the new config data
-	if responseData.NotificationType != data.NotificationType.ValueString() {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_configuration"), responseData.NotificationConfiguration)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	// if we are staying as webhook, update when different
-	if data.NotificationType.ValueString() == "webhook" && responseData.NotificationType == data.NotificationType.ValueString() {
+	if responseData.NotificationType == "webhook" {
 
 		// because the API always sends back $encrypted$ for secrets with an HTTP GET, use state value for compare instead
 		responseWebhookConfig.Password = stateWebhookConfig.Password
 
 		if !reflect.DeepEqual(stateWebhookConfig, responseWebhookConfig) {
 			jsonData, err := json.Marshal(responseWebhookConfig)
-			// jsonData, err := json.Marshal(responseData.NotificationConfiguration.(map[string]any))
 			if err != nil {
 				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
 					"Unable to marshal data into json."+err.Error(),
@@ -383,15 +373,13 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		}
 	}
 
-	// if we are staying as slack, update when different
-	if data.NotificationType.ValueString() == "slack" && responseData.NotificationType == data.NotificationType.ValueString() {
+	if responseData.NotificationType == "slack" {
 
 		// because the API always sends back $encrypted$ for secrets with an HTTP GET, use state value for compare instead
 		responseSlackConifg.Token = stateSlackConfig.Token
 
 		if !reflect.DeepEqual(stateSlackConfig, responseSlackConifg) {
 			jsonData, err := json.Marshal(responseSlackConifg)
-			// jsonData, err := json.Marshal(responseData.NotificationConfiguration.(map[string]any))
 			if err != nil {
 				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
 					"Unable to marshal data into json."+err.Error(),
