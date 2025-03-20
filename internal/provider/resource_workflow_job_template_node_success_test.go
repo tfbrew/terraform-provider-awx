@@ -6,10 +6,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAccWkflwJobTemplJobNodeSuccessResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
+	StringListCompare := &compareStringInList{}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -19,11 +23,22 @@ func TestAccWkflwJobTemplJobNodeSuccessResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWkflwJobTemplJobNodeSuccessResource1Config(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_workflow_job_template_job_node.test1", "id",
-						"awx_workflow_job_template_node_success.test", "id"),
-					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test2", "id", "awx_workflow_job_template_node_success.test", "success_ids"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						"awx_workflow_job_template_job_node.test1",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template_node_success.test",
+						tfjsonpath.New("id"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_workflow_job_template_job_node.test2",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template_node_success.test",
+						tfjsonpath.New("success_ids"),
+						StringListCompare,
+					),
+				},
 			},
 			{
 				ResourceName:      "awx_workflow_job_template_node_success.test",
@@ -32,12 +47,29 @@ func TestAccWkflwJobTemplJobNodeSuccessResource(t *testing.T) {
 			},
 			{
 				Config: testAccWkflwJobTemplJobNodeSuccessResource2Config(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_workflow_job_template_job_node.test3", "id",
-						"awx_workflow_job_template_node_success.test", "id"),
-					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test4", "id", "awx_workflow_job_template_node_success.test", "success_ids"),
-					TestAccCheckAttributeInList("awx_workflow_job_template_job_node.test5", "id", "awx_workflow_job_template_node_success.test", "success_ids"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						"awx_workflow_job_template_job_node.test3",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template_node_success.test",
+						tfjsonpath.New("id"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_workflow_job_template_job_node.test4",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template_node_success.test",
+						tfjsonpath.New("success_ids"),
+						StringListCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_workflow_job_template_job_node.test5",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template_node_success.test",
+						tfjsonpath.New("success_ids"),
+						StringListCompare,
+					),
+				},
 			},
 		},
 	})

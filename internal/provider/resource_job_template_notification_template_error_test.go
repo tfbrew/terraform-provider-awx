@@ -6,10 +6,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAccJobTemplNotifErrResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
+	StringListCompare := &compareStringInList{}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -19,11 +23,22 @@ func TestAccJobTemplNotifErrResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccJobTemplNotifErr1ResourceConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
-						"awx_job_template_notification_template_error.test", "job_template_id"),
-					TestAccCheckAttributeInList("awx_notification_template.test1", "id", "awx_job_template_notification_template_error.test", "notif_template_ids"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						"awx_job_template.test",
+						tfjsonpath.New("id"),
+						"awx_job_template_notification_template_error.test",
+						tfjsonpath.New("job_template_id"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_notification_template.test1",
+						tfjsonpath.New("id"),
+						"awx_job_template_notification_template_error.test",
+						tfjsonpath.New("notif_template_ids"),
+						StringListCompare,
+					),
+				},
 			},
 			{
 				ResourceName:      "awx_job_template.test",
@@ -32,12 +47,29 @@ func TestAccJobTemplNotifErrResource(t *testing.T) {
 			},
 			{
 				Config: testAccJobTemplNotifErr2ResourceConfig(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
-						"awx_job_template_notification_template_error.test", "job_template_id"),
-					TestAccCheckAttributeInList("awx_notification_template.test2", "id", "awx_job_template_notification_template_error.test", "notif_template_ids"),
-					TestAccCheckAttributeInList("awx_notification_template.test3", "id", "awx_job_template_notification_template_error.test", "notif_template_ids"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						"awx_job_template.test",
+						tfjsonpath.New("id"),
+						"awx_job_template_notification_template_error.test",
+						tfjsonpath.New("job_template_id"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_notification_template.test2",
+						tfjsonpath.New("id"),
+						"awx_job_template_notification_template_error.test",
+						tfjsonpath.New("notif_template_ids"),
+						StringListCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_notification_template.test3",
+						tfjsonpath.New("id"),
+						"awx_job_template_notification_template_error.test",
+						tfjsonpath.New("notif_template_ids"),
+						StringListCompare,
+					),
+				},
 			},
 		},
 	})

@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccJobTemplateResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	resource1 := JobTemplateAPIModel{
 		Name:        "test-job-template-" + acctest.RandString(5),
 		Description: "test description 1",
@@ -55,13 +56,21 @@ func TestAccJobTemplateResource(t *testing.T) {
 						tfjsonpath.New("playbook"),
 						knownvalue.StringExact(resource1.Playbook),
 					),
+					statecheck.CompareValuePairs(
+						"awx_inventory.test",
+						tfjsonpath.New("id"),
+						"awx_job_template.test",
+						tfjsonpath.New("inventory"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_project.test",
+						tfjsonpath.New("id"),
+						"awx_job_template.test",
+						tfjsonpath.New("project"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_inventory.test", "id",
-						"awx_job_template.test", "inventory"),
-					resource.TestCheckResourceAttrPair("awx_project.test", "id",
-						"awx_job_template.test", "project"),
-				),
 			},
 			{
 				ResourceName:      "awx_job_template.test",
@@ -90,6 +99,20 @@ func TestAccJobTemplateResource(t *testing.T) {
 						"awx_job_template.test",
 						tfjsonpath.New("playbook"),
 						knownvalue.StringExact(resource2.Playbook),
+					),
+					statecheck.CompareValuePairs(
+						"awx_inventory.test",
+						tfjsonpath.New("id"),
+						"awx_job_template.test",
+						tfjsonpath.New("inventory"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_project.test",
+						tfjsonpath.New("id"),
+						"awx_job_template.test",
+						tfjsonpath.New("project"),
+						IdCompare,
 					),
 				},
 			},
