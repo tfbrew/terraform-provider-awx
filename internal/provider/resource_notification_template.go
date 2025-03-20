@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -55,6 +56,15 @@ type SlackConfiguration struct {
 	Token     string   `json:"token"`
 }
 
+type WebhookConfiguration struct {
+	Url                    string         `json:"url"`
+	Headers                map[string]any `json:"headers"`
+	Password               string         `json:"password"`
+	Username               string         `json:"username"`
+	HttpMethod             string         `json:"http_method"`
+	DisableSslVerification bool           `json:"disable_ssl_verification"`
+}
+
 type MessageValue struct {
 	Body    string `json:"body"`
 	Message string `json:"message"`
@@ -98,9 +108,9 @@ func (r *NotificationTemplatesResource) Schema(ctx context.Context, req resource
 			},
 			"notification_type": schema.StringAttribute{
 				Required:    true,
-				Description: "Only `slack` is supported in this provider currently. Choose from: `email`, `grafan`, `irc`, `mattermost`, `pagerduty`, `rocketchat`, `slack`, `twilio`, `webhook`.",
+				Description: "Only `slack` and `webhook` are currently supported in this provider. Choose from: `email`, `grafan`, `irc`, `mattermost`, `pagerduty`, `rocketchat`, `slack`, `twilio`, `webhook`.",
 				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"slack"}...),
+					stringvalidator.OneOf([]string{"slack", "webhook"}...),
 				},
 			},
 			"notification_configuration": schema.StringAttribute{
@@ -152,9 +162,15 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 	if !data.NotificationConfiguration.IsNull() {
 		fieldToBytes := []byte(data.NotificationConfiguration.ValueString())
 
-		slackConfig := new(SlackConfiguration)
+		var notifConfig any
 
-		err := json.Unmarshal(fieldToBytes, &slackConfig)
+		if data.NotificationType.ValueString() == "slack" {
+			notifConfig = new(SlackConfiguration)
+		} else {
+			notifConfig = new(WebhookConfiguration)
+		}
+
+		err := json.Unmarshal(fieldToBytes, &notifConfig)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to move Notification Config into json object",
@@ -162,7 +178,7 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 			return
 		}
 
-		bodyData.NotificationConfiguration = slackConfig
+		bodyData.NotificationConfiguration = notifConfig
 	}
 	if !data.Messages.IsNull() {
 		fieldToBytes := []byte(data.Messages.ValueString())
@@ -270,112 +286,122 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		}
 	}
 
-	if !(data.NotificationType.IsNull() && responseData.NotificationType == "") {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_type"), responseData.NotificationType)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
+	var responseSlackConifg SlackConfiguration
 
-	// Get the State's Token value provide that back into the State.
-	// The api will always return a blank value for token on GET, I'm assuming as a safety measure.
-	var stateNotifConfig types.String
-	diags := req.State.GetAttribute(ctx, path.Root("notification_configuration"), &stateNotifConfig)
-	if diags.HasError() {
-		return
-	}
+	if responseData.NotificationType == "slack" {
 
-	useResponseConfig := false
-	var stateToken string
-
-	if stateNotifConfig.IsNull() {
-		useResponseConfig = true
-	} else {
-		stateSlackConfig := new(SlackConfiguration)
-
-		err = json.Unmarshal([]byte(stateNotifConfig.ValueString()), &stateSlackConfig)
+		jsonData, err := json.Marshal(responseData.NotificationConfiguration)
 		if err != nil {
 			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-				"Unable to unmarshal plan's notification configuration into a go type for interogation."+err.Error(),
+				"Unable to marshal data into json."+err.Error(),
 			)
 			return
 		}
 
-		stateToken = stateSlackConfig.Token
+		err = json.Unmarshal(jsonData, &responseSlackConifg)
+		if err != nil {
+			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+				"Unable to unmarshal state data notification configuration into a go type for interogation."+err.Error(),
+			)
+			return
+		}
+
 	}
 
-	// now build the state from the API response data for notification configuration (slack)
-	slackConfig := new(SlackConfiguration)
+	var responseWebhookConfig WebhookConfiguration
 
-	notificationConfig, ok := responseData.NotificationConfiguration.(map[string]any)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-			"Unexpected error in resource_notification_templates with responseData.NotificationConfiguration",
-		)
-		return
-	}
-
-	for k, v := range notificationConfig {
-		if k == "hex_color" {
-			if hexColor, ok := v.(string); ok {
-				slackConfig.HexColors = hexColor
-			} else {
-				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-					"Unexpected error in esource_notification_templates with. hex_color is not a string",
-				)
-				return
-			}
+	if responseData.NotificationType == "webhook" {
+		jsonData, err := json.Marshal(responseData.NotificationConfiguration)
+		if err != nil {
+			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+				"Unable to marshal response notification configuration into json for interogation."+err.Error(),
+			)
+			return
 		}
-		if k == "token" {
-			if useResponseConfig {
-				if respToken, ok := v.(string); ok {
-					slackConfig.Token = respToken
-				} else {
-					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-						"Unexpected error in esource_notification_templates with. token is not a string",
-					)
-					return
-				}
-			} else {
-				slackConfig.Token = stateToken
-			}
-		}
-		if k == "channels" {
-			if channels, ok := v.([]any); ok {
-				channelList := make([]string, 0, len(channels))
-				for _, ch := range channels {
-					if channel, ok := ch.(string); ok {
-						channelList = append(channelList, channel)
-					} else {
-						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-							"Unexpected error in esource_notification_templates with. channel is not the right type.",
-						)
-						return
-					}
-				}
-				slackConfig.Channels = channelList
-			} else {
-				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-					"Unexpected error in esource_notification_templates with. channels is not the right type.",
-				)
-				return
-			}
+		err = json.Unmarshal(jsonData, &responseWebhookConfig)
+		if err != nil {
+			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+				"Unable to unmarshal response notification configuration into a go type for interogation."+err.Error(),
+			)
+			return
 		}
 	}
 
-	config, err := json.Marshal(slackConfig)
+	var stateSlackConfig SlackConfiguration
 
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to move Notification Config into json object",
-			fmt.Sprintf("Error = %s ", err.Error()))
-		return
+	if data.NotificationType.ValueString() == "slack" {
+
+		err := json.Unmarshal([]byte(data.NotificationConfiguration.ValueString()), &stateSlackConfig)
+		if err != nil {
+			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+				"Unable to unmarshal state data notification configuration into a go type for interogation."+err.Error(),
+			)
+			return
+		}
 	}
 
-	if !(data.NotificationConfiguration.IsNull() && responseData.NotificationConfiguration == nil) {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_configuration"), string(config))...)
+	var stateWebhookConfig WebhookConfiguration
+
+	if data.NotificationType.ValueString() == "webhook" {
+
+		err = json.Unmarshal([]byte(data.NotificationConfiguration.ValueString()), &stateWebhookConfig)
+		if err != nil {
+			resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+				"Unable to unmarshal state data notification configuration into a go type for interogation."+err.Error(),
+			)
+			return
+		}
+	}
+
+	//  if we are switching types, then just slam in the new config data
+	if responseData.NotificationType != data.NotificationType.ValueString() {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_configuration"), responseData.NotificationConfiguration)...)
 		if resp.Diagnostics.HasError() {
 			return
+		}
+	}
+
+	// if we are staying as webhook, update when different
+	if data.NotificationType.ValueString() == "webhook" && responseData.NotificationType == data.NotificationType.ValueString() {
+
+		// because the API always sends back $encrypted$ for secrets with an HTTP GET, use state value for compare instead
+		responseWebhookConfig.Password = stateWebhookConfig.Password
+
+		if !reflect.DeepEqual(stateWebhookConfig, responseWebhookConfig) {
+			jsonData, err := json.Marshal(responseWebhookConfig)
+			// jsonData, err := json.Marshal(responseData.NotificationConfiguration.(map[string]any))
+			if err != nil {
+				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+					"Unable to marshal data into json."+err.Error(),
+				)
+				return
+			}
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_configuration"), string(jsonData))...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+		}
+	}
+
+	// if we are staying as slack, update when different
+	if data.NotificationType.ValueString() == "slack" && responseData.NotificationType == data.NotificationType.ValueString() {
+
+		// because the API always sends back $encrypted$ for secrets with an HTTP GET, use state value for compare instead
+		responseSlackConifg.Token = stateSlackConfig.Token
+
+		if !reflect.DeepEqual(stateSlackConfig, responseSlackConifg) {
+			jsonData, err := json.Marshal(responseSlackConifg)
+			// jsonData, err := json.Marshal(responseData.NotificationConfiguration.(map[string]any))
+			if err != nil {
+				resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
+					"Unable to marshal data into json."+err.Error(),
+				)
+				return
+			}
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_configuration"), string(jsonData))...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 		}
 	}
 
@@ -548,9 +574,31 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 
 	fieldToBytes := []byte(data.NotificationConfiguration.ValueString())
 
-	slackConfig := new(SlackConfiguration)
+	var notifConfig any
 
-	err = json.Unmarshal(fieldToBytes, &slackConfig)
+	if !data.NotificationConfiguration.IsNull() {
+		fieldToBytes := []byte(data.NotificationConfiguration.ValueString())
+
+		var notifConfig any
+
+		if data.NotificationConfiguration.ValueString() == "slack" {
+			notifConfig = new(SlackConfiguration)
+		} else {
+			notifConfig = new(WebhookConfiguration)
+		}
+
+		err := json.Unmarshal(fieldToBytes, &notifConfig)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to move Notification Config into json object",
+				fmt.Sprintf("Error = %s ", err.Error()))
+			return
+		}
+
+		bodyData.NotificationConfiguration = notifConfig
+	}
+
+	err = json.Unmarshal(fieldToBytes, &notifConfig)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to move Notification Config into json object",
@@ -558,21 +606,23 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	bodyData.NotificationConfiguration = slackConfig
+	bodyData.NotificationConfiguration = notifConfig
 
-	fieldToBytes = []byte(data.Messages.ValueString())
+	if !data.Messages.IsNull() {
+		fieldToBytes = []byte(data.Messages.ValueString())
 
-	messageData := new(Messages)
+		messageData := new(Messages)
 
-	err = json.Unmarshal(fieldToBytes, &messageData)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to move Messages into json object",
-			fmt.Sprintf("Error = %s ", err.Error()))
-		return
+		err = json.Unmarshal(fieldToBytes, &messageData)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to move Messages into json object",
+				fmt.Sprintf("Error = %s ", err.Error()))
+			return
+		}
+
+		bodyData.Messages = messageData
 	}
-
-	bodyData.Messages = messageData
 
 	url := fmt.Sprintf("/api/v2/notification_templates/%d/", id)
 	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
