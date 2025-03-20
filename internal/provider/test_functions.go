@@ -35,6 +35,42 @@ func (mc *compareTwoValuesAsStrings) CompareValues(values ...any) error {
 	return nil
 }
 
+type compareStringInList struct{}
+
+func (mc *compareStringInList) CompareValues(values ...any) error {
+	if len(values) != 2 {
+		return errors.New("expected exactly two values: a string and a list of integers")
+	}
+
+	v1, ok1 := values[0].(string)
+	v2, ok2 := values[1].([]interface{})
+
+	if !ok1 {
+		return fmt.Errorf("type mismatch: expected first value to be a string, got %T", values[0])
+	}
+
+	if !ok2 {
+		return fmt.Errorf("type mismatch: expected second value to be a list of integers, got %T", values[1])
+	}
+
+	for _, num := range v2 {
+		switch n := num.(type) {
+		case int:
+			if fmt.Sprint(n) == v1 {
+				return nil // Match found
+			}
+		case json.Number:
+			if n.String() == v1 {
+				return nil // Match found
+			}
+		default:
+			return fmt.Errorf("type mismatch: expected list elements to be integers or json.Number, got %T", n)
+		}
+	}
+
+	return fmt.Errorf("value mismatch: %v not found in %v", v1, v2)
+}
+
 // Implmenet the compare.ValueComparer interface in order to compare Slack-specific Notification Configurations.
 type compareTwoSlackConfigs struct {
 	InitialValue string

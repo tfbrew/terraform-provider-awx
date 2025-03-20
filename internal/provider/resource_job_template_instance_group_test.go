@@ -6,10 +6,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAccJobTemplateInstanceGroupResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -19,10 +22,15 @@ func TestAccJobTemplateInstanceGroupResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccJobTemplateInstanceGroupResource1Config(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
-						"awx_job_template_instance_group.test", "job_template_id"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						"awx_job_template.test",
+						tfjsonpath.New("id"),
+						"awx_job_template_instance_group.test",
+						tfjsonpath.New("job_template_id"),
+						IdCompare,
+					),
+				},
 			},
 			{
 				ResourceName:                         "awx_job_template_instance_group.test",
@@ -33,10 +41,15 @@ func TestAccJobTemplateInstanceGroupResource(t *testing.T) {
 			},
 			{
 				Config: testAccJobTemplateInstanceGroupResource2Config(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_job_template.test", "id",
-						"awx_job_template_instance_group.test", "job_template_id"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.CompareValuePairs(
+						"awx_job_template.test",
+						tfjsonpath.New("id"),
+						"awx_job_template_instance_group.test",
+						tfjsonpath.New("job_template_id"),
+						IdCompare,
+					),
+				},
 			},
 		},
 	})

@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccProjectResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	project1 := ProjectAPIModel{
 		Name:           "test-project-" + acctest.RandString(5),
 		Description:    "Initial test git project",
@@ -93,11 +94,14 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project1.Timeout)),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("id"),
+						"awx_project.test",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
-						"awx_project.test", "organization"),
-				),
 			},
 			{
 				ResourceName:      "awx_project.test",
@@ -137,11 +141,14 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project2.Timeout)),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("id"),
+						"awx_project.test",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
-						"awx_project.test", "organization"),
-				),
 			},
 			{
 				Config: testAccProjectResource3Config(project3),
@@ -176,11 +183,14 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project3.Timeout)),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test-svn",
+						tfjsonpath.New("id"),
+						"awx_project.test-svn",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test-svn", "id",
-						"awx_project.test-svn", "organization"),
-				),
 			},
 			{
 				Config: testAccProjectResource4Config(project4),
@@ -215,11 +225,14 @@ func TestAccProjectResource(t *testing.T) {
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project4.Timeout)),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test-archive",
+						tfjsonpath.New("id"),
+						"awx_project.test-archive",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test-archive", "id",
-						"awx_project.test-archive", "organization"),
-				),
 			},
 		},
 	})

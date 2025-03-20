@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccProjectDataSource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	project1 := ProjectAPIModel{
 		Name:        "test-project-" + acctest.RandString(5),
 		Description: "Test git project",
@@ -63,11 +64,14 @@ func TestAccProjectDataSource(t *testing.T) {
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project1.Timeout)),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test-id",
+						tfjsonpath.New("id"),
+						"data.awx_project.test-id",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test-id", "id",
-						"data.awx_project.test-id", "organization"),
-				),
 			},
 			// Read by name testing
 			{
@@ -98,11 +102,14 @@ func TestAccProjectDataSource(t *testing.T) {
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(int32(project2.Timeout)),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test-name",
+						tfjsonpath.New("id"),
+						"data.awx_project.test-name",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test-name", "id",
-						"data.awx_project.test-name", "organization"),
-				),
 			},
 		},
 	})

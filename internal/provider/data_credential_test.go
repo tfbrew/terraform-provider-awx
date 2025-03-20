@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -38,11 +39,14 @@ func TestAccCredentialDataSource(t *testing.T) {
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource1.Description),
 					),
+					statecheck.CompareValuePairs(
+						"data.awx_credential_type.test",
+						tfjsonpath.New("kind"),
+						"awx_credential.test",
+						tfjsonpath.New("kind"),
+						compare.ValuesSame(),
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("data.awx_credential_type.test", "kind",
-						"awx_credential.test", "kind"),
-				),
 			},
 		},
 	})

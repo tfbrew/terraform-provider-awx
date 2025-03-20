@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccInventoryResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	resource1 := InventoryAPIModel{
 		Name:        "test-inventory-" + acctest.RandString(5),
 		Description: "test description 1",
@@ -66,11 +67,14 @@ func TestAccInventoryResource(t *testing.T) {
 						tfjsonpath.New("host_filter"),
 						knownvalue.Null(),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("id"),
+						"awx_inventory.test",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
-						"awx_inventory.test", "organization"),
-				),
 			},
 			{
 				ResourceName:      "awx_inventory.test",
@@ -105,11 +109,14 @@ func TestAccInventoryResource(t *testing.T) {
 						tfjsonpath.New("host_filter"),
 						knownvalue.Null(),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("id"),
+						"awx_inventory.test",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
-						"awx_inventory.test", "organization"),
-				),
 			},
 			{
 				Config: testAccInventoryResource3Config(resource3),
@@ -139,11 +146,14 @@ func TestAccInventoryResource(t *testing.T) {
 						tfjsonpath.New("host_filter"),
 						knownvalue.StringExact(resource3.HostFilter),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test3",
+						tfjsonpath.New("id"),
+						"awx_inventory.test3",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test3", "id",
-						"awx_inventory.test3", "organization"),
-				),
 			},
 		},
 	})

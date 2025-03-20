@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccInventoryDataSource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	resource1 := InventoryAPIModel{
 		Name:         "test-inventory-" + acctest.RandString(5),
 		Description:  "test description 1",
@@ -63,11 +64,14 @@ func TestAccInventoryDataSource(t *testing.T) {
 						tfjsonpath.New("host_filter"),
 						knownvalue.Null(),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test1",
+						tfjsonpath.New("id"),
+						"data.awx_inventory.test1",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test1", "id",
-						"data.awx_inventory.test1", "organization"),
-				),
 			},
 			// Read smart inventory by ID
 			{
@@ -98,11 +102,14 @@ func TestAccInventoryDataSource(t *testing.T) {
 						tfjsonpath.New("host_filter"),
 						knownvalue.StringExact(resource2.HostFilter),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test2",
+						tfjsonpath.New("id"),
+						"data.awx_inventory.test2",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_organization.test2", "id",
-						"data.awx_inventory.test2", "organization"),
-				),
 			},
 		},
 	})

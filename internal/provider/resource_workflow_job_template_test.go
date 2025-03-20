@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccWorkflowJobTemplateResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	resource1 := WorkflowJobTemplateAPIModel{
 		Name: "test-workflow-job-template" + acctest.RandString(5),
 	}
@@ -35,13 +36,21 @@ func TestAccWorkflowJobTemplateResource(t *testing.T) {
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(resource1.Name),
 					),
+					statecheck.CompareValuePairs(
+						"awx_inventory.test",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template.test",
+						tfjsonpath.New("inventory"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template.test",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_inventory.test", "id",
-						"awx_workflow_job_template.test", "inventory"),
-					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
-						"awx_workflow_job_template.test", "organization"),
-				),
 			},
 			{
 				ResourceName:      "awx_workflow_job_template.test",
@@ -61,13 +70,21 @@ func TestAccWorkflowJobTemplateResource(t *testing.T) {
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource2.Description),
 					),
+					statecheck.CompareValuePairs(
+						"awx_inventory.test",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template.test",
+						tfjsonpath.New("inventory"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("id"),
+						"awx_workflow_job_template.test",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_inventory.test", "id",
-						"awx_workflow_job_template.test", "inventory"),
-					resource.TestCheckResourceAttrPair("awx_organization.test", "id",
-						"awx_workflow_job_template.test", "organization"),
-				),
 			},
 		},
 	})

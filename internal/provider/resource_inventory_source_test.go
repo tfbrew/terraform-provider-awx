@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccInventorySourceResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	inventory_source1 := InventorySourceAPIModel{
 		Name:                 "test-inventory-source-" + acctest.RandString(5),
 		Description:          "Example description 1",
@@ -76,13 +77,21 @@ func TestAccInventorySourceResource(t *testing.T) {
 						tfjsonpath.New("update_on_launch"),
 						knownvalue.Bool(inventory_source1.UpdateOnLaunch),
 					),
+					statecheck.CompareValuePairs(
+						"awx_inventory.test",
+						tfjsonpath.New("id"),
+						"awx_inventory_source.test",
+						tfjsonpath.New("inventory"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_project.test",
+						tfjsonpath.New("id"),
+						"awx_inventory_source.test",
+						tfjsonpath.New("source_project"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_inventory.test", "id",
-						"awx_inventory_source.test", "inventory"),
-					resource.TestCheckResourceAttrPair("awx_project.test", "id",
-						"awx_inventory_source.test", "source_project"),
-				),
 			},
 			{
 				ResourceName:      "awx_inventory_source.test",
@@ -127,13 +136,21 @@ func TestAccInventorySourceResource(t *testing.T) {
 						tfjsonpath.New("update_on_launch"),
 						knownvalue.Bool(inventory_source2.UpdateOnLaunch),
 					),
+					statecheck.CompareValuePairs(
+						"awx_inventory.test",
+						tfjsonpath.New("id"),
+						"awx_inventory_source.test",
+						tfjsonpath.New("inventory"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_project.test",
+						tfjsonpath.New("id"),
+						"awx_inventory_source.test",
+						tfjsonpath.New("source_project"),
+						IdCompare,
+					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_inventory.test", "id",
-						"awx_inventory_source.test", "inventory"),
-					resource.TestCheckResourceAttrPair("awx_project.test", "id",
-						"awx_inventory_source.test", "source_project"),
-				),
 			},
 		},
 	})

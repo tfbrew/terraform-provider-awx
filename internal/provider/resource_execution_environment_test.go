@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccExecutionEnvironmentResource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	resource1 := ExecutionEnvironmentAPIModel{
 		Name:        "test-ee-" + acctest.RandString(5),
 		Description: "test execution environment1",
@@ -66,10 +67,6 @@ func TestAccExecutionEnvironmentResource(t *testing.T) {
 			},
 			{
 				Config: testAccExecutionEnvironmentResource2Config(resource2),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("awx_credential.test", "id",
-						"awx_execution_environment.test", "credential"),
-				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"awx_execution_environment.test",
@@ -90,6 +87,13 @@ func TestAccExecutionEnvironmentResource(t *testing.T) {
 						"awx_execution_environment.test",
 						tfjsonpath.New("pull"),
 						knownvalue.StringExact(resource2.Pull),
+					),
+					statecheck.CompareValuePairs(
+						"awx_credential.test",
+						tfjsonpath.New("id"),
+						"awx_execution_environment.test",
+						tfjsonpath.New("credential"),
+						IdCompare,
 					),
 				},
 			},
