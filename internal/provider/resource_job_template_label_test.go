@@ -61,10 +61,11 @@ resource "awx_organization" "test" {
 }
 
 resource "awx_project" "test" {
-  name         = "%s"
-  allow_override = true
-  organization = awx_organization.test.id
-  scm_type = "git"
+	name         = "%s"
+	organization = awx_organization.test.id
+	allow_override = true
+	scm_type = "git"
+	scm_url = "https://github.com/fakerepo"
 }	
 
 resource "awx_job_template" "test" {
