@@ -14,7 +14,8 @@ import (
 
 func TestAccJobTemplateLabel_basic(t *testing.T) {
 	testingJobTemplateName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-	strinListComparer := &compareStringInList{}
+
+	stringListComparer := &compareStringInList{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -31,7 +32,7 @@ func TestAccJobTemplateLabel_basic(t *testing.T) {
 						tfjsonpath.New("id"),
 						"awx_job_template_label.test",
 						tfjsonpath.New("label_ids"),
-						strinListComparer,
+						stringListComparer,
 					),
 					statecheck.CompareValuePairs(
 						"awx_job_template.test",
@@ -59,15 +60,19 @@ resource "awx_organization" "test" {
   name        = "%s"
 }
 
-data "awx_project" "test" {
-  name         = "Demo Project"
+resource "awx_project" "test" {
+	name         = "%s"
+	organization = awx_organization.test.id
+	allow_override = true
+	scm_type = "git"
+	scm_url = "https://github.com/fakerepo"
 }	
 
 resource "awx_job_template" "test" {
 	name = "%s"
 	playbook = "hello_world.yml"
 	ask_inventory_on_launch = true
-	project = data.awx_project.test.id
+	project = awx_project.test.id
 }
 
 resource "awx_label" "test_label_1" {
@@ -80,5 +85,5 @@ resource "awx_job_template_label" "test" {
 	label_ids = [awx_label.test_label_1.id]
 }
 
-  `, acctest.RandString(5), jobTemplateName)
+  `, acctest.RandString(5), acctest.RandString(5), jobTemplateName)
 }
