@@ -14,10 +14,7 @@ import (
 )
 
 func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
-	orgName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	jtName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-
-	// idComparer := &compareTwoValuesAsStrings{}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -27,7 +24,7 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: specTestCaseSetup(orgName, jtName),
+				Config: specTestCaseSetup(jtName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"awx_job_template_survey_spec.example",
@@ -37,7 +34,7 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 					statecheck.CompareValuePairs(
 						"awx_job_template.example",
 						tfjsonpath.New("id"),
-						"awx_job_template_survey_spec.test",
+						"awx_job_template_survey_spec.example",
 						tfjsonpath.New("id"),
 						compare.ValuesSame(),
 					),
@@ -82,20 +79,15 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 								}),
 							}),
 							knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"max":                  knownvalue.Int32Exact(1024),
-								"min":                  knownvalue.Int32Exact(0),
+								"max":                  knownvalue.Int32Exact(999),
+								"min":                  knownvalue.Int32Exact(1),
 								"type":                 knownvalue.StringExact("integer"),
 								"question_name":        knownvalue.StringExact("Example question 3"),
 								"question_description": knownvalue.StringExact("example question 3"),
 								"variable":             knownvalue.StringExact("example_3_var"),
 								"required":             knownvalue.Bool(true),
 								"default":              knownvalue.StringExact("15"),
-								"choices": knownvalue.ListExact([]knownvalue.Check{
-									knownvalue.StringExact("stop"),
-									knownvalue.StringExact("start"),
-									knownvalue.StringExact("status"),
-									knownvalue.StringExact("restart"),
-								}),
+								"choices":              knownvalue.Null(),
 							}),
 						}),
 					),
@@ -110,22 +102,25 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 	})
 }
 
-func specTestCaseSetup(org, template_name string) string {
+func specTestCaseSetup(template_name string) string {
 	return fmt.Sprintf(`
-
-resouce "awx_organization" "test" {
+resource "awx_organization" "test" {
 	name = "%s"
 }
 
-data "awx_project" "test" {
-	name = "Demo Project"
+resource "awx_project" "test" {
+	name = "%s"
+	organization = awx_organization.test.id
+	allow_override = true
+	scm_type = "git"
+	scm_url = "fake"
 }
 
 resource "awx_job_template" "example" {
   job_type  = "run"
   name      = "%s"
   ask_inventory_on_launch = true
-  project   = data.awx_project.test.id
+  project   = awx_project.test.id
   playbook  = "hello_world.yml"
 }
 
@@ -158,7 +153,7 @@ resource "awx_job_template_survey_spec" "example" {
     },
     {
       default              = jsonencode(15)
-      max                  = 1024
+      max                  = 999
       min                  = 1
       question_description = "example question 3"
       question_name        = "Example question 3"
@@ -168,5 +163,5 @@ resource "awx_job_template_survey_spec" "example" {
     },
   ]
 }
-`, org, template_name)
+`, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), template_name)
 }
