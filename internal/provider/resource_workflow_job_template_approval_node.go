@@ -301,7 +301,7 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 		}
 	}
 
-	if !(data.Timeout.IsNull() && readAPIResponse.Timeout != nil) {
+	if !(data.Timeout.IsNull() && readAPIResponse.Timeout == nil) {
 		timeout, ok := readAPIResponse.Timeout.(float64)
 		if !ok {
 			resp.Diagnostics.AddError("couldn't convert any to float64", "unable to convert any to float64.")
