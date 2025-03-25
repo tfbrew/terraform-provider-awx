@@ -187,21 +187,21 @@ func (r *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("is_superuser"), responseData.IsSuperuser)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("is_system_auditor"), responseData.IsSystemAuditor)...)
 
-	if !(data.FirstName.IsNull() && responseData.FirstName == "") {
+	if !data.FirstName.IsNull() || responseData.FirstName != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("first_name"), responseData.FirstName)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.LastName.IsNull() && responseData.LastName == "") {
+	if !data.LastName.IsNull() || responseData.LastName != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("last_name"), responseData.LastName)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Email.IsNull() && responseData.Email == "") {
+	if !data.Email.IsNull() || responseData.Email != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("email"), responseData.Email)...)
 		if resp.Diagnostics.HasError() {
 			return

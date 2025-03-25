@@ -185,28 +185,28 @@ func (r *ExecutionEnvironmentResource) Read(ctx context.Context, req resource.Re
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("image"), responseData.Image)...)
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Pull.IsNull() && responseData.Pull == "") {
+	if !data.Pull.IsNull() || responseData.Pull != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("pull"), responseData.Pull)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+	if !data.Organization.IsNull() || responseData.Organization != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Credential.IsNull() && responseData.Credential == 0) {
+	if !data.Credential.IsNull() || responseData.Credential != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("credential"), responseData.Credential)...)
 		if resp.Diagnostics.HasError() {
 			return

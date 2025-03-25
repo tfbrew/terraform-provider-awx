@@ -150,14 +150,14 @@ func (r *LabelsResource) Read(ctx context.Context, req resource.ReadRequest, res
 			fmt.Sprintf("Error =  %v. ", err.Error()))
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+	if !data.Organization.IsNull() || responseData.Organization != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
 			return

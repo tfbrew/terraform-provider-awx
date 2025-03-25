@@ -186,7 +186,7 @@ func (d *InventorySourceDataSource) Read(ctx context.Context, req datasource.Rea
 	if responseData.Description != "" {
 		data.Description = types.StringValue(responseData.Description)
 	}
-	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == nil) {
+	if !data.ExecutionEnvironment.IsNull() || responseData.ExecutionEnvironment != nil {
 		execution_environment, ok := responseData.ExecutionEnvironment.(float64)
 		if !ok {
 			resp.Diagnostics.AddError("read of execution_environment failed", fmt.Sprintf("unable to cast execution_environment %v to float64", responseData.ExecutionEnvironment))

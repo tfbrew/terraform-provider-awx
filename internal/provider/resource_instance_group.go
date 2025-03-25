@@ -248,7 +248,7 @@ func (r *InstanceGroupResource) Read(ctx context.Context, req resource.ReadReque
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("policy_instance_percentage"), responseData.PolicyInstancePercentage)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("policy_instance_minimum"), responseData.PolicyInstanceMinimum)...)
 
-	if !(data.Credential.IsNull() && responseData.Credential == 0) {
+	if !data.Credential.IsNull() || responseData.Credential != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("credential"), responseData.Credential)...)
 		if resp.Diagnostics.HasError() {
 			return

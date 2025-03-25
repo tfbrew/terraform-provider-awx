@@ -173,7 +173,7 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("rrule"), responseData.Rrule)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("enabled"), responseData.Enabled)...)
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return

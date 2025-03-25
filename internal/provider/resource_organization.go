@@ -158,21 +158,21 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.DefaultEnv.IsNull() && responseData.DefaultEnv == 0) {
+	if !data.DefaultEnv.IsNull() || responseData.DefaultEnv != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("default_environment"), responseData.DefaultEnv)...)
 		if resp.Diagnostics.HasError() {
 			return

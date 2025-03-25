@@ -196,42 +196,42 @@ func (r *InventoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+	if !data.Organization.IsNull() || responseData.Organization != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Variables.IsNull() && responseData.Variables == "") {
+	if !data.Variables.IsNull() || responseData.Variables != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("variables"), responseData.Variables)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Kind.IsNull() && responseData.Kind == "") {
+	if !data.Kind.IsNull() || responseData.Kind != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("kind"), responseData.Kind)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.HostFilter.IsNull() && responseData.HostFilter == "") {
+	if !data.HostFilter.IsNull() || responseData.HostFilter != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host_filter"), responseData.HostFilter)...)
 		if resp.Diagnostics.HasError() {
 			return

@@ -345,21 +345,21 @@ func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("source"), responseData.Source)...)
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Credential.IsNull() && responseData.Credential == 0) {
+	if !data.Credential.IsNull() || responseData.Credential != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("credential"), responseData.Credential)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == nil) {
+	if !data.ExecutionEnvironment.IsNull() || responseData.ExecutionEnvironment != nil {
 		execution_environment, ok := responseData.ExecutionEnvironment.(float64)
 		if !ok {
 			resp.Diagnostics.AddError("read of execution_environment failed", fmt.Sprintf("unable to cast execution_environment %v to float64", responseData.ExecutionEnvironment))
@@ -371,28 +371,28 @@ func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadReq
 		}
 	}
 
-	if !(data.SourcePath.IsNull() && responseData.SourcePath == "") {
+	if !data.SourcePath.IsNull() || responseData.SourcePath != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("source_path"), responseData.SourcePath)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.EnabledValue.IsNull() && responseData.EnabledValue == "") {
+	if !data.EnabledValue.IsNull() || responseData.EnabledValue != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("enabled_value"), responseData.EnabledValue)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.EnabledVar.IsNull() && responseData.EnabledVar == "") {
+	if !data.EnabledVar.IsNull() || responseData.EnabledVar != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("enabled_var"), responseData.EnabledVar)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.HostFilter.IsNull() && responseData.HostFilter == "") {
+	if !data.HostFilter.IsNull() || responseData.HostFilter != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host_filter"), responseData.HostFilter)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -402,28 +402,28 @@ func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("overwrite_vars"), responseData.OverwriteVars)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("overwrite"), responseData.Overwrite)...)
 
-	if !(data.SourceVars.IsNull() && responseData.SourceVars == "") {
+	if !data.SourceVars.IsNull() || responseData.SourceVars != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("source_vars"), responseData.SourceVars)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.SourceProject.IsNull() && responseData.SourceProject == 0) {
+	if !data.SourceProject.IsNull() || responseData.SourceProject != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("source_project"), responseData.SourceProject)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.ScmBranch.IsNull() && responseData.ScmBranch == "") {
+	if !data.ScmBranch.IsNull() || responseData.ScmBranch != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.UpdateCacheTimeout.IsNull() && responseData.UpdateCacheTimeout == 0) {
+	if !data.UpdateCacheTimeout.IsNull() || responseData.UpdateCacheTimeout != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("update_cache_timeout"), responseData.UpdateCacheTimeout)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -432,7 +432,7 @@ func (r *InventorySourceResource) Read(ctx context.Context, req resource.ReadReq
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("update_on_launch"), responseData.UpdateOnLaunch)...)
 
-	if !(data.Verbosity.IsNull() && responseData.Verbosity == 0) {
+	if !data.Verbosity.IsNull() || responseData.Verbosity != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("verbosity"), responseData.Verbosity)...)
 		if resp.Diagnostics.HasError() {
 			return

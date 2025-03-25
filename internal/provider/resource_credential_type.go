@@ -202,21 +202,21 @@ func (r *CredentialTypeResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Inputs.IsNull() && responseData.Inputs == "") {
+	if !data.Inputs.IsNull() || responseData.Inputs != "" {
 		rawInputs := responseData.Inputs
 		rawInputsType := reflect.TypeOf(rawInputs)
 
@@ -246,7 +246,7 @@ func (r *CredentialTypeResource) Read(ctx context.Context, req resource.ReadRequ
 		}
 	}
 
-	if !(data.Injectors.IsNull() && responseData.Injectors == "") {
+	if !data.Injectors.IsNull() || responseData.Injectors != "" {
 		rawInjectors := responseData.Injectors
 		rawInjectorsType := reflect.TypeOf(rawInjectors)
 		if rawInjectorsType.Kind() == reflect.Map {
@@ -275,7 +275,7 @@ func (r *CredentialTypeResource) Read(ctx context.Context, req resource.ReadRequ
 		}
 	}
 
-	if !(data.Kind.IsNull() && responseData.Kind == "") {
+	if !data.Kind.IsNull() || responseData.Kind != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("kind"), responseData.Kind)...)
 		if resp.Diagnostics.HasError() {
 			return

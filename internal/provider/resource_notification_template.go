@@ -260,7 +260,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -272,14 +272,14 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+	if !data.Organization.IsNull() || responseData.Organization != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.NotificationType.IsNull() && responseData.NotificationType == "") {
+	if !data.NotificationType.IsNull() || responseData.NotificationType != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("notification_type"), responseData.NotificationType)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -524,7 +524,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 			return
 		}
 
-		if !(data.Messages.IsNull() && responseData.Messages == nil) && foundOneMessageVal {
+		if (!data.Messages.IsNull() || responseData.Messages != nil) && foundOneMessageVal {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("messages"), string(msgJson))...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -554,7 +554,7 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 
 	bodyData.Name = data.Name.ValueString()
 
-	if !(data.Description.IsNull() && data.Description.ValueString() != "") {
+	if !data.Description.IsNull() && data.Description.ValueString() != "" {
 		bodyData.Description = data.Description.ValueString()
 	}
 	bodyData.Organization = int(data.Organization.ValueInt32())
