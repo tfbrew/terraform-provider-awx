@@ -217,28 +217,28 @@ func (r *CredentialResource) Read(ctx context.Context, req resource.ReadRequest,
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("credential_type"), responseData.CredentialType)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("kind"), responseData.Kind)...)
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+	if !data.Organization.IsNull() || responseData.Organization != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Team.IsNull() && responseData.Team == 0) {
+	if !data.Team.IsNull() || responseData.Team != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("team"), responseData.Team)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.User.IsNull() && responseData.User == 0) {
+	if !data.User.IsNull() || responseData.User != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("user"), responseData.User)...)
 		if resp.Diagnostics.HasError() {
 			return

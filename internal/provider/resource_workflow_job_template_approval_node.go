@@ -282,14 +282,14 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 		return
 	}
 
-	if !(data.Name.IsNull() && readAPIResponse.Name == "") {
+	if !data.Name.IsNull() || readAPIResponse.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), readAPIResponse.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Description.IsNull() && readAPIResponse.Description == "") {
+	if !data.Description.IsNull() || readAPIResponse.Description != "" {
 		descrString, ok := readAPIResponse.Description.(string)
 		if !ok {
 			resp.Diagnostics.AddError("couldn't convert any to string", "unable to convert any to string.")
@@ -301,7 +301,7 @@ func (r *WorkflowJobTemplateApprovalNode) Read(ctx context.Context, req resource
 		}
 	}
 
-	if !(data.Timeout.IsNull() && readAPIResponse.Timeout == nil) {
+	if !data.Timeout.IsNull() || readAPIResponse.Timeout != nil {
 		timeout, ok := readAPIResponse.Timeout.(float64)
 		if !ok {
 			resp.Diagnostics.AddError("couldn't convert any to float64", "unable to convert any to float64.")

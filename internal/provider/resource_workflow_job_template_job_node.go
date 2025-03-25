@@ -293,19 +293,19 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 		return
 	}
 
-	if !(data.WorkflowJobId.IsNull() && responseData.WorkflowJobId == 0) {
+	if !data.WorkflowJobId.IsNull() || responseData.WorkflowJobId != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("workflow_job_template_id"), responseData.WorkflowJobId)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.UnifiedJobTemplateId.IsNull() && responseData.UnifiedJobTemplateId == 0) {
+	if !data.UnifiedJobTemplateId.IsNull() || responseData.UnifiedJobTemplateId != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("unified_job_template"), responseData.UnifiedJobTemplateId)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.Inventory.IsNull() && responseData.Inventory == nil) {
+	if !data.Inventory.IsNull() || responseData.Inventory != nil {
 		inventory, ok := responseData.Inventory.(float64)
 		if !ok {
 			resp.Diagnostics.AddError("read of inventory failed", fmt.Sprintf("unable to cast inventory %v to float64", responseData.Inventory))
@@ -352,7 +352,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 	if rawType.Kind() == reflect.String {
 
 		if extraDataProper, ok := responseData.ExtraData.(string); ok {
-			if !(data.ExtraData.IsNull() && (extraDataProper == "" || extraDataProper == "{}")) {
+			if !data.ExtraData.IsNull() || (extraDataProper != "" && extraDataProper != "{}") {
 				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), responseData.ExtraData)...)
 				if resp.Diagnostics.HasError() {
 					return
@@ -366,31 +366,31 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 		}
 	}
 
-	if !(data.ScmBranch.IsNull() && (responseData.ScmBranch == "")) {
+	if !data.ScmBranch.IsNull() || responseData.ScmBranch != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.JobType.IsNull() && (responseData.JobType == "")) {
+	if !data.JobType.IsNull() || responseData.JobType != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_type"), responseData.JobType)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.JobTags.IsNull() && (responseData.JobTags == "")) {
+	if !data.JobTags.IsNull() || responseData.JobTags != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_tags"), responseData.JobTags)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.SkipTags.IsNull() && (responseData.SkipTags == "")) {
+	if !data.SkipTags.IsNull() || responseData.SkipTags != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_tags"), responseData.SkipTags)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.Limit.IsNull() && (responseData.Limit == "")) {
+	if !data.Limit.IsNull() || responseData.Limit != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("limit"), responseData.Limit)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -413,7 +413,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 			}
 		}
 	}
-	if !(data.Verbosity.IsNull() && (responseData.Verbosity == 0)) {
+	if !data.Verbosity.IsNull() || responseData.Verbosity != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("verbosity"), responseData.Verbosity)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -425,7 +425,7 @@ func (r *WorkflowJobTemplatesJobNodeResource) Read(ctx context.Context, req reso
 		return
 	}
 
-	if !(data.Identifier.IsNull() && (responseData.Identifier == "")) {
+	if !data.Identifier.IsNull() || responseData.Identifier != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("identifier"), responseData.Identifier)...)
 		if resp.Diagnostics.HasError() {
 			return

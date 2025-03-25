@@ -443,49 +443,49 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_update_on_launch"), responseData.ScmUpdOnLaunch)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), responseData.Timeout)...)
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Credential.IsNull() && responseData.Credential == 0) {
+	if !data.Credential.IsNull() || responseData.Credential != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("credential"), responseData.Credential)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.DefaultEnv.IsNull() && responseData.DefaultEnv == 0) {
+	if !data.DefaultEnv.IsNull() || responseData.DefaultEnv != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("default_environment"), responseData.DefaultEnv)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.LocalPath.IsNull() && responseData.LocalPath == "") {
+	if !data.LocalPath.IsNull() || responseData.LocalPath != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("local_path"), responseData.LocalPath)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.ScmBranch.IsNull() && responseData.ScmBranch == "") {
+	if !data.ScmBranch.IsNull() || responseData.ScmBranch != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.ScmRefSpec.IsNull() && responseData.ScmRefSpec == "") {
+	if !data.ScmRefSpec.IsNull() || responseData.ScmRefSpec != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_refspec"), responseData.ScmRefSpec)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.ScmUrl.IsNull() && responseData.ScmUrl == "") {
+	if !data.ScmUrl.IsNull() || responseData.ScmUrl != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_url"), responseData.ScmUrl)...)
 		if resp.Diagnostics.HasError() {
 			return

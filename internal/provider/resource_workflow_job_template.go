@@ -297,28 +297,28 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Description.IsNull() && responseData.Description == "") {
+	if !data.Description.IsNull() || responseData.Description != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), responseData.Description)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.ExtraVars.IsNull() && responseData.ExtraVars == "") {
+	if !data.ExtraVars.IsNull() || responseData.ExtraVars != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_vars"), responseData.ExtraVars)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Organization.IsNull() && responseData.Organization == 0) {
+	if !data.Organization.IsNull() || responseData.Organization != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization"), responseData.Organization)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -340,7 +340,7 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	if !(data.Inventory.IsNull() && responseData.Inventory == nil) {
+	if !data.Inventory.IsNull() || responseData.Inventory != nil {
 		convertInt, ok := responseData.Inventory.(float64)
 		if !ok {
 			resp.Diagnostics.AddError("Unable to convert any to float64.", fmt.Sprintf("Unable to convert %v to float64.", responseData.Inventory))
@@ -352,13 +352,13 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 			return
 		}
 	}
-	if !(data.Limit.IsNull() && responseData.Limit == "") {
+	if !data.Limit.IsNull() || responseData.Limit != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("limit"), responseData.Limit)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.ScmBranch.IsNull() && responseData.ScmBranch == "") {
+	if !data.ScmBranch.IsNull() || responseData.ScmBranch != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -385,7 +385,7 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == "") {
+	if !data.WebhookCredential.IsNull() || responseData.WebhookCredential != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), responseData.WebhookCredential)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -407,13 +407,13 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	if !(data.SkipTags.IsNull() && responseData.SkipTags == "") {
+	if !data.SkipTags.IsNull() || responseData.SkipTags != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_tags"), responseData.SkipTags)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
-	if !(data.JobTags.IsNull() && responseData.JobTags == "") {
+	if !data.JobTags.IsNull() || responseData.JobTags != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_tags"), responseData.JobTags)...)
 		if resp.Diagnostics.HasError() {
 			return

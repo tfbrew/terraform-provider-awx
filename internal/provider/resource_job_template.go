@@ -567,7 +567,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	if !(data.Name.IsNull() && responseData.Name == "") {
+	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -584,21 +584,21 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	if !(data.Inventory.IsNull() && responseData.Inventory == 0) {
+	if !data.Inventory.IsNull() || responseData.Inventory != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Project.IsNull() && responseData.Project == 0) {
+	if !data.Project.IsNull() || responseData.Project != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project"), responseData.Project)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
 
-	if !(data.Playbook.IsNull() && responseData.Playbook == "") {
+	if !data.Playbook.IsNull() || responseData.Playbook != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("playbook"), responseData.Playbook)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -660,7 +660,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	if !(data.ExecutionEnvironment.IsNull() && responseData.ExecutionEnvironment == 0) {
+	if !data.ExecutionEnvironment.IsNull() || responseData.ExecutionEnvironment != 0 {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), responseData.ExecutionEnvironment)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -772,7 +772,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	if !(data.CustomVirtualEnv.IsNull() && responseData.CustomVirtualEnv == nil) {
+	if !data.CustomVirtualEnv.IsNull() || responseData.CustomVirtualEnv != nil {
 		if data.CustomVirtualEnv.ValueString() == "" && responseData.CustomVirtualEnv == nil {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("custom_virtualenv"), "")...)
 		} else {
@@ -802,7 +802,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	if !(data.WebhookCredential.IsNull() && responseData.WebhookCredential == nil) {
+	if !data.WebhookCredential.IsNull() || responseData.WebhookCredential != nil {
 		if data.WebhookCredential.ValueString() == "" && responseData.WebhookCredential == nil {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("webhook_credential"), "")...)
 		} else {
