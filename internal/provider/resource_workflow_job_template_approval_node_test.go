@@ -48,10 +48,20 @@ func TestAccWkflwJobTemplApprovalNodeResource(t *testing.T) {
 						tfjsonpath.New("timeout"),
 						knownvalue.Int32Exact(360),
 					),
+					statecheck.ExpectKnownValue(
+						"awx_workflow_job_template_approval_node.test_timeoutdefault",
+						tfjsonpath.New("timeout"),
+						knownvalue.Int32Exact(0),
+					),
 				},
 			},
 			{
 				ResourceName:      "awx_workflow_job_template_approval_node.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "awx_workflow_job_template_approval_node.test_timeoutdefault",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -93,5 +103,11 @@ resource "awx_workflow_job_template_approval_node" "test" {
   description = "a description for testing"
   timeout = 360
 }
-  `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), nodeName)
+
+resource "awx_workflow_job_template_approval_node" "test_timeoutdefault" {
+  workflow_job_template_id 	= awx_workflow_job_template.test.id
+  name = "%s"
+  description = "a description for testing"
+}
+  `, acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), acctest.RandString(5), nodeName, nodeName+"1")
 }

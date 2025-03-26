@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -80,6 +81,8 @@ func (r *WorkflowJobTemplateApprovalNode) Schema(ctx context.Context, req resour
 			"timeout": schema.Int32Attribute{
 				Optional:    true,
 				Description: "The number of seconds for timeout.",
+				Default:     int32default.StaticInt32(0),
+				Computed:    true,
 			},
 		},
 	}
