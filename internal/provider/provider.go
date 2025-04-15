@@ -135,7 +135,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		username = data.Username.ValueString()
 	}
 
-	if data.Password.IsNull() {
+	if !data.Password.IsNull() {
 		password = data.Password.ValueString()
 	}
 
