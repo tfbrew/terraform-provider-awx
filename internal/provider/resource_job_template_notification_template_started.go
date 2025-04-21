@@ -127,11 +127,16 @@ func (r *JobTemplateNotifTemplStartedResource) Read(ctx context.Context, req res
 
 	url := fmt.Sprintf("/api/v2/job_templates/%d/notification_templates_started/", id)
 
-	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
+	}
+
+	if statusCode == 404 {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

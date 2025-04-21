@@ -266,11 +266,16 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 	url := fmt.Sprintf("/api/v2/job_templates/%d/survey_spec", id)
 
-	httpResponse, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+	httpResponse, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
 			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
+	}
+
+	if statusCode == 404 {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
