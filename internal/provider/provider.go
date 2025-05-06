@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/providervalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -62,6 +64,13 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 			"password": schema.StringAttribute{
 				Description: "AWX password (instead of token)",
 				Optional:    true,
+			},
+			"platform": schema.StringAttribute{
+				Description: "Does the endpoint point to an AAP or AWX environment? Acceptable values are AAP or AWX.",
+				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf("AAP", "AWX"),
+				},
 			},
 		},
 	}
