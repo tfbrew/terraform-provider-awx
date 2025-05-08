@@ -17,6 +17,6 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatal("TOWER_HOST must be set for acceptance tests")
 	}
 	if v := os.Getenv("TOWER_OAUTH_TOKEN"); v == "" {
-		t.Fatal("AWX_USERNAME must be set for acceptance tests")
+		t.Fatal("TOWER_OAUTH_TOKEN must be set for acceptance tests")
 	}
 }
