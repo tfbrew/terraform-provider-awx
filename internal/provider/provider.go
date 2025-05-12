@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -38,6 +39,7 @@ type awxProviderModel struct {
 	Token    types.String `tfsdk:"token"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
+	Platform types.String `tfsdk:"platform"`
 }
 
 func (p *awxProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -47,7 +49,7 @@ func (p *awxProvider) Metadata(ctx context.Context, req provider.MetadataRequest
 
 func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "**Warning**: All v0 releases are considered alpha and subject to breaking changes at any time.",
+		Description: "This is a Terraform Provider for managing resources in AWX/Tower or Ansible Automation Platform (AAP).",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				Description: "URL for AWX (i.e. https://tower.example.com)",
@@ -66,10 +68,12 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Optional:    true,
 			},
 			"platform": schema.StringAttribute{
-				Description: "Does the endpoint point to an AAP or AWX environment? Acceptable values are AAP or AWX.",
-				Required:    true,
+				Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5 or AWX/Tower environment? Acceptable values are aap2.5 or awx. We only support AAP version 2.5.",
+				// Required:    true,
+				Computed: true,
+				Default:  stringdefault.StaticString("awx"),
 				Validators: []validator.String{
-					stringvalidator.OneOf("AAP", "AWX"),
+					stringvalidator.OneOf("aap2.5", "awx"),
 				},
 			},
 		},
