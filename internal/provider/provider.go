@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -68,10 +67,8 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Optional:    true,
 			},
 			"platform": schema.StringAttribute{
-				Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5 or AWX/Tower environment? Acceptable values are aap2.5 or awx. We only support AAP version 2.5.",
-				// Required:    true,
-				Computed: true,
-				Default:  stringdefault.StaticString("awx"),
+				Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5 or AWX/Tower environment? Acceptable values are `awx` or `aap2.5`. We only support AAP version 2.5. A default value of `awx` will be assumed if this field is not set.",
+				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("aap2.5", "awx"),
 				},
