@@ -3,12 +3,12 @@
 page_title: "awx_credential_input_sources Resource - awx"
 subcategory: ""
 description: |-
-  Manage an Credential Input Source.
+  Manage Credential Input Sources.
 ---
 
 # awx_credential_input_sources (Resource)
 
-Manage an Credential Input Source.
+Manage Credential Input Sources.
 
 ## Example Usage
 
@@ -104,5 +104,5 @@ resource "awx_credential_input_sources" "example_hashi_cred_input_src_2" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import a_credential_input_sources.example 9
+terraform import awx_credential_input_sources.example 9
 ```

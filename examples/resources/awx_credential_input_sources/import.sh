@@ -1,1 +1,1 @@
-terraform import a_credential_input_sources.example 9
+terraform import awx_credential_input_sources.example 9

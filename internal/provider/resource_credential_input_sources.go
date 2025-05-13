@@ -32,7 +32,7 @@ func (r *CredentialInputSourcesResource) Metadata(ctx context.Context, req resou
 
 func (r *CredentialInputSourcesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `Manage an Credential Input Source.`,
+		Description: `Manage Credential Input Sources.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Credential Input Source ID.",
