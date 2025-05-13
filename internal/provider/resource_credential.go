@@ -138,15 +138,18 @@ func (r *CredentialResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	inputsDataMap := new(map[string]any)
-	err := json.Unmarshal([]byte(data.Inputs.ValueString()), &inputsDataMap)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to unmarshal map to json",
-			fmt.Sprintf("Unable to process inputs: %+v. ", data.Inputs))
-		return
-	}
 
-	bodyData.Inputs = inputsDataMap
+	if !data.Inputs.IsNull() {
+		err := json.Unmarshal([]byte(data.Inputs.ValueString()), &inputsDataMap)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to unmarshal map to json",
+				fmt.Sprintf("Unable to process inputs: %+v. ", data.Inputs))
+			return
+		}
+
+		bodyData.Inputs = inputsDataMap
+	}
 
 	url := "/api/v2/credentials/"
 	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
