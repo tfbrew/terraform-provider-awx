@@ -457,7 +457,7 @@ type WorkflowJobTemplateAPIModel struct {
 	JobTags              string `json:"job_tags,omitempty"`
 }
 
-type CredentialInputSourcesResourceModel struct {
+type CredentialInputSourcesModel struct {
 	Id               types.String `tfsdk:"id"`
 	Description      types.String `tfsdk:"description"`
 	InputFieldName   types.String `tfsdk:"input_field_name"`

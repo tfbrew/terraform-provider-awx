@@ -84,7 +84,7 @@ func (r *CredentialInputSourcesResource) Configure(ctx context.Context, req reso
 }
 
 func (r *CredentialInputSourcesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data CredentialInputSourcesResourceModel
+	var data CredentialInputSourcesModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -136,7 +136,7 @@ func (r *CredentialInputSourcesResource) Create(ctx context.Context, req resourc
 }
 
 func (r *CredentialInputSourcesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data CredentialInputSourcesResourceModel
+	var data CredentialInputSourcesModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -190,7 +190,7 @@ func (r *CredentialInputSourcesResource) Read(ctx context.Context, req resource.
 }
 
 func (r *CredentialInputSourcesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data CredentialInputSourcesResourceModel
+	var data CredentialInputSourcesModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -238,9 +238,8 @@ func (r *CredentialInputSourcesResource) Update(ctx context.Context, req resourc
 
 }
 
-// Left Intentionally blank, as there is no API endpoint to delete a credential input source.
 func (r *CredentialInputSourcesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data CredentialInputSourcesResourceModel
+	var data CredentialInputSourcesModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
