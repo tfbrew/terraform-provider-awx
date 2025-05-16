@@ -174,7 +174,20 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.endpoint = endpoint
 	client.auth = auth
 
-	url := "/api/v2/me/"
+	if data.Platform.IsNull() {
+		client.platform = "awx"
+	} else {
+		client.platform = data.Platform.ValueString()
+	}
+
+	if client.platform == "awx" {
+		client.urlPrefix = "/api/v2/"
+	} else { // aap
+		client.urlPrefix = "/api/controller/v2/"
+	}
+
+	url := "me/"
+
 	_, _, err := client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 	if err != nil {
 		resp.Diagnostics.AddError(

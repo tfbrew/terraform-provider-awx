@@ -11,15 +11,18 @@ import (
 )
 
 type AwxClient struct {
-	client   *http.Client
-	endpoint string
-	auth     string
+	client    *http.Client
+	endpoint  string
+	auth      string
+	platform  string
+	urlPrefix string
 }
 
 // A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
 // headers and then makes the actual http request.
 func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
-	url = c.endpoint + url
+
+	url = c.buildAPIUrl(url)
 
 	var body io.Reader
 
@@ -72,7 +75,8 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 }
 
 func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, statusCode int, errorMessage error) {
-	url = c.endpoint + url
+
+	url = c.buildAPIUrl(url)
 
 	var body io.Reader
 
@@ -128,6 +132,17 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	if err != nil {
 		errorMessage = errors.New("unable to unmarshal http request response body to retrieve returnedData")
 		return
+	}
+	return
+}
+
+func (c *AwxClient) buildAPIUrl(resourceUrl string) (url string) {
+	// in AAP, organiaztions api endpoint lives in /gateway/ instead of /controller/
+	//   as this is the only exception, hard code it here and rely on value in c.urlPrefix set during provider.go config
+	if strings.HasPrefix(resourceUrl, "organizations") && c.platform != "awx" {
+		url = c.endpoint + "/api/gateway/v1/" + resourceUrl
+	} else {
+		url = c.endpoint + c.urlPrefix + resourceUrl
 	}
 	return
 }
