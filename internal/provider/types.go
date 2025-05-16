@@ -456,3 +456,21 @@ type WorkflowJobTemplateAPIModel struct {
 	SkipTags             string `json:"skip_tags,omitempty"`
 	JobTags              string `json:"job_tags,omitempty"`
 }
+
+type CredentialInputSourcesModel struct {
+	Id               types.String `tfsdk:"id"`
+	Description      types.String `tfsdk:"description"`
+	InputFieldName   types.String `tfsdk:"input_field_name"`
+	Metadata         types.Map    `tfsdk:"metadata"`
+	TargetCredential types.Int32  `tfsdk:"target_credential"`
+	SourceCredential types.Int32  `tfsdk:"source_credential"`
+}
+
+type CredentialInputSourcesAPIModel struct {
+	Id               int               `json:"id,omitempty"`
+	Description      string            `json:"description"`
+	InputFieldName   string            `json:"input_field_name"`
+	Metadata         map[string]string `json:"metadata"`
+	TargetCredential int               `json:"target_credential"`
+	SourceCredential int               `json:"source_credential"`
+}
