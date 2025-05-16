@@ -199,7 +199,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 	if client.platform == "awx" || client.platform == "aap2.4" {
 		client.urlPrefix = "/api/v2/"
-	} else { // aap
+	} else { // aap2.5
 		client.urlPrefix = "/api/controller/v2/"
 	}
 
