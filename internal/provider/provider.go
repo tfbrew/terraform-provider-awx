@@ -67,10 +67,10 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Optional:    true,
 			},
 			"platform": schema.StringAttribute{
-				Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5 or AWX/Tower environment? Acceptable values are `awx` or `aap2.5`. We only support AAP version 2.5. A default value of `awx` will be assumed if this field is not set.",
+				Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `awx` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.",
 				Optional:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("aap2.5", "awx"),
+					stringvalidator.OneOf("aap2.4", "aap2.5", "awx"),
 				},
 			},
 		},
@@ -96,7 +96,7 @@ func (p *awxProvider) ConfigValidators(ctx context.Context) []provider.ConfigVal
 
 func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var (
-		token, endpoint, username, password, auth string
+		token, endpoint, username, password, auth, platform string
 	)
 
 	var data awxProviderModel
@@ -174,13 +174,23 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.endpoint = endpoint
 	client.auth = auth
 
-	if data.Platform.IsNull() {
-		client.platform = "awx"
-	} else {
-		client.platform = data.Platform.ValueString()
+	if !data.Platform.IsNull() {
+		platform = data.Platform.ValueString()
 	}
 
-	if client.platform == "awx" {
+	envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
+
+	if platformExists {
+		platform = envPlatform
+	}
+
+	if platform == "" {
+		platform = "awx"
+	}
+
+	client.platform = platform
+
+	if client.platform == "awx" || client.platform == "aap2.4" {
 		client.urlPrefix = "/api/v2/"
 	} else { // aap
 		client.urlPrefix = "/api/controller/v2/"

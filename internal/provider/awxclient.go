@@ -143,7 +143,7 @@ func (c *AwxClient) buildAPIUrl(resourceUrl string) (url string) {
 
 	aap_gateway_override_list := []string{"organizations", "users"}
 
-	if c.platform != "awx" {
+	if c.platform != "awx" && c.platform != "aap2.4" {
 		for _, v := range aap_gateway_override_list {
 			if strings.HasPrefix(resourceUrl, v) {
 				url = c.endpoint + "/api/gateway/v1/" + resourceUrl

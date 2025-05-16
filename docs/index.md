@@ -47,6 +47,6 @@ provider "awx" {
 
 - `endpoint` (String) URL for AWX (i.e. https://tower.example.com)
 - `password` (String) AWX password (instead of token)
-- `platform` (String) Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5 or AWX/Tower environment? Acceptable values are `awx` or `aap2.5`. We only support AAP version 2.5. A default value of `awx` will be assumed if this field is not set.
+- `platform` (String) Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `awx` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.
 - `token` (String) AWX access token (instead of username/password)
 - `username` (String) AWX username (instead of token)
