@@ -121,6 +121,13 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 				"configuration block endpoint attribute.",
 		)
 		// Not returning early allows the logic to collect all errors.
+	} else {
+		// strip trailing '/' character from endpoint if present
+		endpointRunes := []rune(endpoint)
+		lastChar := endpointRunes[len(endpointRunes)-1]
+		if lastChar == '/' {
+			endpoint = string(endpointRunes[:len(endpointRunes)-1])
+		}
 	}
 
 	envToken, tokenExists := os.LookupEnv("TOWER_OAUTH_TOKEN")
