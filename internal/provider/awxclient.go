@@ -137,12 +137,22 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 }
 
 func (c *AwxClient) buildAPIUrl(resourceUrl string) (url string) {
-	// in AAP, organiaztions api endpoint lives in /gateway/ instead of /controller/
-	//   as this is the only exception, hard code it here and rely on value in c.urlPrefix set during provider.go config
-	if strings.HasPrefix(resourceUrl, "organizations") && c.platform != "awx" {
-		url = c.endpoint + "/api/gateway/v1/" + resourceUrl
-	} else {
-		url = c.endpoint + c.urlPrefix + resourceUrl
+
+	// in AAP, most api endpoint live in /controller/
+	//   But, for the few exceptions, in list below, override to /gateway/v1/
+
+	aap_gateway_override_list := []string{"organizations", "users"}
+
+	if c.platform != "awx" {
+		for _, v := range aap_gateway_override_list {
+			if strings.HasPrefix(resourceUrl, v) {
+				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
+				return
+			}
+		}
 	}
+
+	url = c.endpoint + c.urlPrefix + resourceUrl
+
 	return
 }
