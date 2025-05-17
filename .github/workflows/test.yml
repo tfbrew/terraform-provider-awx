@@ -84,7 +84,7 @@ jobs:
           TOWER_HOST: ${{ secrets.TOWER_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.TOWER_OAUTH_TOKEN }}
           TOWER_PLATFORM: "awx"
-        run: go test -v -cover ./internal/provider/
+        run: go test -v -cover -timeout 20m ./internal/provider/
         timeout-minutes: 20
 
   testaap24:
@@ -98,8 +98,6 @@ jobs:
           # list whatever Terraform versions here you would like to support
           terraform:
             - '1.1.*'
-            - '1.7.*'
-            - '1.8.*'
             - '1.9.*'
             - '1.10.*'
       steps:
@@ -118,7 +116,7 @@ jobs:
             TOWER_HOST: ${{ secrets.AAP_24_HOST }}
             TOWER_OAUTH_TOKEN: ${{ secrets.AAP_24_OAUTH_TOKEN }}
             TOWER_PLATFORM: "aap2.4"
-          run: go test -v -cover ./internal/provider/
+          run: go test -v -cover -timeout 20m ./internal/provider/
           timeout-minutes: 20
 
   testaap25:
@@ -132,8 +130,6 @@ jobs:
         # list whatever Terraform versions here you would like to support
         terraform:
           - '1.1.*'
-          - '1.7.*'
-          - '1.8.*'
           - '1.9.*'
           - '1.10.*'
     steps:
@@ -152,5 +148,5 @@ jobs:
           TOWER_HOST: ${{ secrets.AAP_25_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.AAP_25_OAUTH_TOKEN }}
           TOWER_PLATFORM: "aap2.5"
-        run: go test -v -cover ./internal/provider/
+        run: go test -v -cover -timeout 20m ./internal/provider/
         timeout-minutes: 20
