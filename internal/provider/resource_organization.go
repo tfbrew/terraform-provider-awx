@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -51,15 +52,48 @@ func (r *OrganizationResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"default_environment": schema.Int32Attribute{
 				Optional:    true,
-				Description: "The fallback execution environment that will be used for jobs inside of this organization if not explicitly assigned at the project, job template or workflow level.",
+				Description: "AWX/AAP2.4 only. The fallback execution environment that will be used for jobs inside of this organization if not explicitly assigned at the project, job template or workflow level.",
 			},
 			"max_hosts": schema.Int32Attribute{
 				Optional:    true,
-				Description: "Maximum number of hosts allowed to be managed by this organization.",
+				Description: "AWX/AAP2.4 only Maximum number of hosts allowed to be managed by this organization.",
 				Default:     int32default.StaticInt32(0),
 				Computed:    true,
 			},
 		},
+	}
+}
+
+func (r OrganizationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data OrganizationModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	// Disallow default_environment for >AAP2.5
+	platform, ok := os.LookupEnv("TOWER_PLATFORM")
+	if !ok {
+		return
+	}
+
+	if platform == "awx" || platform == "aap2.4" || data.DefaultEnv.IsNull() {
+	} else {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("default_environment"),
+			"Invalid Attribute Configuration",
+			"Attribute default_environment is not supported in this version of the provider.",
+		)
+		return
+	}
+
+	if platform == "awx" || platform == "aap2.4" || data.MaxHosts.IsNull() || data.MaxHosts.ValueInt32() == 0 {
+		return
+	} else {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("max_hosts"),
+			"Invalid Attribute Configuration",
+			"Attribute max_hosts is not supported in this version of the provider.",
+		)
+		return
 	}
 }
 
