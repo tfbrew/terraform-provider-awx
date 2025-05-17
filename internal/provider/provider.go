@@ -183,6 +183,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 	if !data.Platform.IsNull() {
 		platform = data.Platform.ValueString()
+		os.Setenv("TOWER_PLATFORM", platform)
 	}
 
 	envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
