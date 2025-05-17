@@ -128,7 +128,7 @@ func (r *WorkflowJobTemplatesNodeFailureResource) Read(ctx context.Context, req 
 			fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 		return
 	}
-	url := fmt.Sprintf("workflow_job_template_nodes/%d/failure_nodes", id)
+	url := fmt.Sprintf("workflow_job_template_nodes/%d/failure_nodes/", id)
 
 	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
