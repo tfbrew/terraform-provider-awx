@@ -141,16 +141,16 @@ func (c *AwxClient) buildAPIUrl(resourceUrl string) (url string) {
 	// in AAP, most api endpoint live in /controller/
 	//   But, for the few exceptions, in list below, override to /gateway/v1/
 
-	aap_gateway_override_list := []string{"organizations", "users"}
+	// aap_gateway_override_list := []string{"organizations", "users"}
 
-	if c.platform != "awx" && c.platform != "aap2.4" {
-		for _, v := range aap_gateway_override_list {
-			if strings.HasPrefix(resourceUrl, v) {
-				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
-				return
-			}
-		}
-	}
+	// if c.platform != "awx" && c.platform != "aap2.4" {
+	// 	for _, v := range aap_gateway_override_list {
+	// 		if strings.HasPrefix(resourceUrl, v) {
+	// 			url = c.endpoint + "/api/gateway/v1/" + resourceUrl
+	// 			return
+	// 		}
+	// 	}
+	// }
 
 	url = c.endpoint + c.urlPrefix + resourceUrl
 
