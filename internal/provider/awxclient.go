@@ -22,7 +22,7 @@ type AwxClient struct {
 // headers and then makes the actual http request.
 func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(url)
+	url = c.buildAPIUrl(url, method)
 
 	var body io.Reader
 
@@ -76,7 +76,7 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 
 func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(url)
+	url = c.buildAPIUrl(url, method)
 
 	var body io.Reader
 
@@ -136,15 +136,26 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	return
 }
 
-func (c *AwxClient) buildAPIUrl(resourceUrl string) (url string) {
+func (c *AwxClient) buildAPIUrl(resourceUrl, httpMethod string) (url string) {
 
 	// in AAP, most api endpoint live in /controller/
 	//   But, for the few exceptions, in list below, override to /gateway/v1/
 
-	aap_gateway_override_list := []string{"organizations", "users"}
+	aap_gateway_override_cud_list := []string{"organizations"}
+
+	if c.platform != "awx" && c.platform != "aap2.4" && httpMethod != http.MethodGet {
+		for _, v := range aap_gateway_override_cud_list {
+			if strings.HasPrefix(resourceUrl, v) {
+				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
+				return
+			}
+		}
+	}
+
+	aap_gateway_override_all_list := []string{"users"}
 
 	if c.platform != "awx" && c.platform != "aap2.4" {
-		for _, v := range aap_gateway_override_list {
+		for _, v := range aap_gateway_override_all_list {
 			if strings.HasPrefix(resourceUrl, v) {
 				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
 				return
