@@ -42,6 +42,9 @@ func (r *OrganizationResource) Schema(ctx context.Context, req resource.SchemaRe
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"aap25_gateway_id": schema.StringAttribute{
+				Computed: true,
+			},
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the organization.",
@@ -147,7 +150,40 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
+	// organizations must be created using the /gateway/ instead of /controller/ api endpoint. But,
+	//  the same org may get 2 different IDs and we need the ID from the controller in order to use
+	//  the organization ID.
+	data.Aap25GatewayId = types.StringValue(strconv.Itoa(int(returnedData["id"].(float64))))
+
+	if r.client.platform == "aap2.5" {
+
+		// overwrite returnedData with Get against org's /controller/ endpoint
+		id, err := strconv.Atoi(data.Aap25GatewayId.ValueString())
+
+		url := fmt.Sprintf("organizations/%d/", id)
+		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error making API http request",
+				fmt.Sprintf("Error was: %s.", err.Error()))
+			return
+		}
+		// get id
+		nameResult := struct {
+			Id int `json:"id"`
+		}{}
+		err = json.Unmarshal(responseBodyData, &nameResult)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to unmarshal response body into result object",
+				fmt.Sprintf("Error:  %v.", err.Error()))
+			return
+		}
+		data.Id = types.StringValue(strconv.Itoa(nameResult.Id))
+
+	} else {
+		data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -192,6 +228,44 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
+	// if aap2.5 get the /gateway/ id and set the related field
+	if r.client.platform == "aap2.5" {
+
+		url := fmt.Sprintf("organizations/?name=%s", responseData.Name)
+		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error making API http request",
+				fmt.Sprintf("Error was: %s.", err.Error()))
+			return
+		}
+
+		var nameResult JTChildAPIRead
+		err = json.Unmarshal(responseBodyData, &nameResult)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to unmarshal response body into result object",
+				fmt.Sprintf("Error:  %v.", err.Error()))
+			return
+		}
+		if nameResult.Count != 1 {
+			resp.Diagnostics.AddError(
+				"Expected only one org result from gateway",
+				fmt.Sprintf("Got count of %d instead.", nameResult.Count))
+			return
+		}
+
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("aap25_gateway_id"), strconv.Itoa(nameResult.Results[0].Id))...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	} else {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("aap25_gateway_id"), data.Id.ValueString())...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	if !data.Name.IsNull() || responseData.Name != "" {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), responseData.Name)...)
 		if resp.Diagnostics.HasError() {
@@ -224,7 +298,15 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	id, err := strconv.Atoi(data.Id.ValueString())
+	var id int
+	var err error
+
+	if r.client.platform == "aap2.5" {
+		id, err = strconv.Atoi(data.Aap25GatewayId.ValueString())
+	} else {
+		id, err = strconv.Atoi(data.Id.ValueString())
+	}
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",
@@ -267,7 +349,15 @@ func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	id, err := strconv.Atoi(data.Id.ValueString())
+	var id int
+	var err error
+
+	if r.client.platform == "aap2.5" {
+		id, err = strconv.Atoi(data.Aap25GatewayId.ValueString())
+	} else {
+		id, err = strconv.Atoi(data.Id.ValueString())
+	}
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable convert id from string to int",

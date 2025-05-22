@@ -152,7 +152,7 @@ func (c *AwxClient) buildAPIUrl(resourceUrl, httpMethod string) (url string) {
 		}
 	}
 
-	aap_gateway_override_all_list := []string{"users"}
+	aap_gateway_override_all_list := []string{"users", "organizations/?name"}
 
 	if c.platform != "awx" && c.platform != "aap2.4" {
 		for _, v := range aap_gateway_override_all_list {

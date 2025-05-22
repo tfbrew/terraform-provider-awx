@@ -314,11 +314,12 @@ type LabelAPIModel struct {
 }
 
 type OrganizationModel struct {
-	Id          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	DefaultEnv  types.Int32  `tfsdk:"default_environment"`
-	MaxHosts    types.Int32  `tfsdk:"max_hosts"`
+	Id             types.String `tfsdk:"id"`
+	Aap25GatewayId types.String `tfsdk:"aap25_gateway_id"`
+	Name           types.String `tfsdk:"name"`
+	Description    types.String `tfsdk:"description"`
+	DefaultEnv     types.Int32  `tfsdk:"default_environment"`
+	MaxHosts       types.Int32  `tfsdk:"max_hosts"`
 }
 
 type OrganizationAPIModel struct {
