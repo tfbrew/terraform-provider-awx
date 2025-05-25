@@ -157,7 +157,14 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	// organizations must be created using the /gateway/ instead of /controller/ api endpoint. But,
 	//  the same org may get 2 different IDs and we need the ID from the controller in order to use
 	//  the organization ID.
-	data.Aap25GatewayId = types.Int32Value(int32(returnedData["id"].(float64)))
+	id, ok := returnedData["id"].(float64)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"unable to cast ID as float64",
+			fmt.Sprintf("Value provided was: %v.", returnedData["id"]))
+		return
+	}
+	data.Aap25GatewayId = types.Int32Value(int32(id))
 
 	if r.client.platform == "aap2.5" {
 
