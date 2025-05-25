@@ -34,6 +34,7 @@ resource "awx_organization" "example" {
 
 ### Read-Only
 
+- `aap25_gateway_id` (Number)
 - `id` (String) The ID of this resource.
 
 ## Import

@@ -37,6 +37,9 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 				Description: "Organization ID",
 				Optional:    true,
 			},
+			"aap25_gateway_id": schema.Int32Attribute{
+				Computed: true,
+			},
 			"name": schema.StringAttribute{
 				Description: "Organization name",
 				Optional:    true,
