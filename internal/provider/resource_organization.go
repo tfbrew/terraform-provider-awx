@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -42,8 +43,11 @@ func (r *OrganizationResource) Schema(ctx context.Context, req resource.SchemaRe
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"aap25_gateway_id": schema.StringAttribute{
+			"aap25_gateway_id": schema.Int32Attribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -153,14 +157,13 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	// organizations must be created using the /gateway/ instead of /controller/ api endpoint. But,
 	//  the same org may get 2 different IDs and we need the ID from the controller in order to use
 	//  the organization ID.
-	data.Aap25GatewayId = types.StringValue(strconv.Itoa(int(returnedData["id"].(float64))))
+	data.Aap25GatewayId = types.Int32Value(int32(returnedData["id"].(float64)))
 
 	if r.client.platform == "aap2.5" {
 
 		// overwrite returnedData with Get against org's /controller/ endpoint
-		id, err := strconv.Atoi(data.Aap25GatewayId.ValueString())
 
-		url := fmt.Sprintf("organizations/%d/", id)
+		url := fmt.Sprintf("organizations/%d/", data.Aap25GatewayId.ValueInt32())
 		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -255,12 +258,21 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 			return
 		}
 
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("aap25_gateway_id"), strconv.Itoa(nameResult.Results[0].Id))...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("aap25_gateway_id"), nameResult.Results[0].Id)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 	} else {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("aap25_gateway_id"), data.Id.ValueString())...)
+		var id int
+		var err error
+
+		id, err = strconv.Atoi(data.Id.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("can't convert Id to int", "unable to convert ID to int.")
+			return
+		}
+
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("aap25_gateway_id"), id)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -302,7 +314,7 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	var err error
 
 	if r.client.platform == "aap2.5" {
-		id, err = strconv.Atoi(data.Aap25GatewayId.ValueString())
+		id = int(data.Aap25GatewayId.ValueInt32())
 	} else {
 		id, err = strconv.Atoi(data.Id.ValueString())
 	}
@@ -353,7 +365,7 @@ func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRe
 	var err error
 
 	if r.client.platform == "aap2.5" {
-		id, err = strconv.Atoi(data.Aap25GatewayId.ValueString())
+		id = int(data.Aap25GatewayId.ValueInt32())
 	} else {
 		id, err = strconv.Atoi(data.Id.ValueString())
 	}
