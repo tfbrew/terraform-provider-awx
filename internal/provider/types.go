@@ -322,6 +322,8 @@ type OrganizationModel struct {
 	MaxHosts       types.Int32  `tfsdk:"max_hosts"`
 }
 
+type contextKey string
+
 type OrganizationAPIModel struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`

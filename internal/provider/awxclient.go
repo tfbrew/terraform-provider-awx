@@ -22,7 +22,7 @@ type AwxClient struct {
 // headers and then makes the actual http request.
 func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(url, method)
+	url = c.buildAPIUrl(ctx, url, method)
 
 	var body io.Reader
 
@@ -76,7 +76,7 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 
 func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(url, method)
+	url = c.buildAPIUrl(ctx, url, method)
 
 	var body io.Reader
 
@@ -136,10 +136,11 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	return
 }
 
-func (c *AwxClient) buildAPIUrl(resourceUrl, httpMethod string) (url string) {
+// In AAP, most api endpoint live in /controller/. But, for the few exceptions, in list below, override to /gateway/v1/.
+func (c *AwxClient) buildAPIUrl(ctx context.Context, resourceUrl, httpMethod string) (url string) {
 
-	// in AAP, most api endpoint live in /controller/
-	//   But, for the few exceptions, in list below, override to /gateway/v1/
+	var contextKey contextKey = "dataSource"
+	dataSource := ctx.Value(contextKey)
 
 	aap_gateway_override_cud_list := []string{"organizations"}
 
@@ -152,10 +153,22 @@ func (c *AwxClient) buildAPIUrl(resourceUrl, httpMethod string) (url string) {
 		}
 	}
 
-	aap_gateway_override_all_list := []string{"users", "organizations/?name"}
+	aap_gateway_override_all_list := []string{"users"}
 
 	if c.platform != "awx" && c.platform != "aap2.4" {
 		for _, v := range aap_gateway_override_all_list {
+			if strings.HasPrefix(resourceUrl, v) {
+				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
+				return
+			}
+		}
+	}
+
+	// use controller for data source URLs, but not in resources
+	aap_gateway_override_non_data_source := []string{"organizations/?name"}
+
+	if c.platform != "awx" && c.platform != "aap2.4" && dataSource == nil {
+		for _, v := range aap_gateway_override_non_data_source {
 			if strings.HasPrefix(resourceUrl, v) {
 				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
 				return
