@@ -136,12 +136,11 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	return
 }
 
+// In AAP, most api endpoint live in /controller/. But, for the few exceptions, in list below, override to /gateway/v1/.
 func (c *AwxClient) buildAPIUrl(ctx context.Context, resourceUrl, httpMethod string) (url string) {
 
-	// in AAP, most api endpoint live in /controller/
-	//   But, for the few exceptions, in list below, override to /gateway/v1/
-
-	dataSource := ctx.Value("dataSource")
+	var contextKey contextKey = "dataSource"
+	dataSource := ctx.Value(contextKey)
 
 	aap_gateway_override_cud_list := []string{"organizations"}
 

@@ -34,7 +34,7 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 		Description: "Get organization datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Organization ID. If using a provider-level `platform` field value of `aap2.5` then be sure this ID is the controller ID, note the gateway ID.",
+				Description: "Organization ID. If using a provider-level `platform` field value of `aap2.5` then be sure this ID is the controller ID, not the gateway ID.",
 				Optional:    true,
 			},
 			"aap25_gateway_id": schema.Int32Attribute{
@@ -116,7 +116,9 @@ func (d *OrganizationDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	// let function know we're a data source instead of a resource
-	ctx = context.WithValue(ctx, "dataSource", true)
+	var contextKey contextKey = "dataSource"
+
+	ctx = context.WithValue(ctx, contextKey, true)
 	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
 	if err != nil {
 		resp.Diagnostics.AddError(
