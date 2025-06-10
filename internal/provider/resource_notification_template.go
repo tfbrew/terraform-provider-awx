@@ -30,53 +30,6 @@ type NotificationTemplatesResource struct {
 	client *AwxClient
 }
 
-type NotificationTemplatesResourceModel struct {
-	Id                        types.String `tfsdk:"id"`
-	Name                      types.String `tfsdk:"name"`
-	Description               types.String `tfsdk:"description"`
-	Organization              types.Int32  `tfsdk:"organization"`
-	NotificationType          types.String `tfsdk:"notification_type"`
-	NotificationConfiguration types.String `tfsdk:"notification_configuration"`
-	Messages                  types.String `tfsdk:"messages"`
-}
-
-type NotificationTemplateAPI struct {
-	Id                        int    `json:"id"`
-	Name                      string `json:"name"`
-	Description               string `json:"description,omitempty"`
-	Organization              int    `json:"organization"`
-	NotificationType          string `json:"notification_type"`
-	NotificationConfiguration any    `json:"notification_configuration,omitempty"`
-	Messages                  any    `json:"messages,omitempty"`
-}
-
-type SlackConfiguration struct {
-	Channels  []string `json:"channels"`
-	HexColors string   `json:"hex_color"`
-	Token     string   `json:"token"`
-}
-
-type WebhookConfiguration struct {
-	Url                    string         `json:"url"`
-	Headers                map[string]any `json:"headers"`
-	Password               string         `json:"password"`
-	Username               string         `json:"username"`
-	HttpMethod             string         `json:"http_method"`
-	DisableSslVerification bool           `json:"disable_ssl_verification"`
-}
-
-type MessageValue struct {
-	Body    string `json:"body"`
-	Message string `json:"message"`
-}
-
-type Messages struct {
-	Error            MessageValue            `json:"error"`
-	Started          MessageValue            `json:"started"`
-	Success          MessageValue            `json:"success"`
-	WorkflowApproval map[string]MessageValue `json:"workflow_approval"`
-}
-
 func (r *NotificationTemplatesResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_notification_template"
 }
@@ -145,7 +98,7 @@ func (r *NotificationTemplatesResource) Configure(ctx context.Context, req resou
 }
 
 func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data NotificationTemplatesResourceModel
+	var data NotificationTemplateModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -153,7 +106,7 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	var bodyData NotificationTemplateAPI
+	var bodyData NotificationTemplateAPIModel
 	bodyData.Name = data.Name.ValueString()
 	bodyData.Description = data.Description.ValueString()
 	bodyData.Organization = int(data.Organization.ValueInt32())
@@ -221,7 +174,7 @@ func (r *NotificationTemplatesResource) Create(ctx context.Context, req resource
 }
 
 func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data NotificationTemplatesResourceModel
+	var data NotificationTemplateModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
@@ -250,7 +203,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 		resp.State.RemoveResource(ctx)
 		return
 	}
-	var responseData NotificationTemplateAPI
+	var responseData NotificationTemplateAPIModel
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
@@ -418,17 +371,17 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 							messages.Error = MessageValue{Body: msg_body, Message: msg_message}
 						} else {
 							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-								"Unexpected error in esource_notification_templates with. error msg_message is not the right type",
+								"Unexpected error in resource_notification_templates with. error msg_message is not the right type",
 							)
 						}
 					} else {
 						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-							"Unexpected error in esource_notification_templates with. error msg_body is not the right type",
+							"Unexpected error in resource_notification_templates with. error msg_body is not the right type",
 						)
 					}
 				} else {
 					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-						"Unexpected error in esource_notification_templates with. error msg is not the right type",
+						"Unexpected error in resource_notification_templates with. error msg is not the right type",
 					)
 					return
 				}
@@ -441,17 +394,17 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 							messages.Started = MessageValue{Body: msg_body, Message: msg_message}
 						} else {
 							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-								"Unexpected error in esource_notification_templates with. started msg_message is not the right type",
+								"Unexpected error in resource_notification_templates with. started msg_message is not the right type",
 							)
 						}
 					} else {
 						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-							"Unexpected error in esource_notification_templates with. started msg_body is not the right type",
+							"Unexpected error in resource_notification_templates with. started msg_body is not the right type",
 						)
 					}
 				} else {
 					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-						"Unexpected error in esource_notification_templates with. started msg is not the right type",
+						"Unexpected error in resource_notification_templates with. started msg is not the right type",
 					)
 					return
 				}
@@ -463,17 +416,17 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 							messages.Success = MessageValue{Body: msg_body, Message: msg_message}
 						} else {
 							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-								"Unexpected error in esource_notification_templates with. started msg_message is not the right type",
+								"Unexpected error in resource_notification_templates with. started msg_message is not the right type",
 							)
 						}
 					} else {
 						resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-							"Unexpected error in esource_notification_templates with. started msg_body is not the right type",
+							"Unexpected error in resource_notification_templates with. started msg_body is not the right type",
 						)
 					}
 				} else {
 					resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-						"Unexpected error in esource_notification_templates with. started msg is not the right type",
+						"Unexpected error in resource_notification_templates with. started msg is not the right type",
 					)
 					return
 				}
@@ -490,17 +443,17 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 									wka[key] = MessageValue{Body: msg_body, Message: msg_message}
 								} else {
 									resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-										"Unexpected error in esource_notification_templates with. val msg_message is not the right type",
+										"Unexpected error in resource_notification_templates with. val msg_message is not the right type",
 									)
 								}
 							} else {
 								resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-									"Unexpected error in esource_notification_templates with. val msg_body is not the right type",
+									"Unexpected error in resource_notification_templates with. val msg_body is not the right type",
 								)
 							}
 						} else {
 							resp.Diagnostics.AddError("Unexpected error in resource_notification_templates",
-								"Unexpected error in esource_notification_templates with. val msg is not the right type",
+								"Unexpected error in resource_notification_templates with. val msg is not the right type",
 							)
 							return
 						}
@@ -534,7 +487,7 @@ func (r *NotificationTemplatesResource) Read(ctx context.Context, req resource.R
 }
 
 func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data NotificationTemplatesResourceModel
+	var data NotificationTemplateModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -550,7 +503,7 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	var bodyData NotificationTemplateAPI
+	var bodyData NotificationTemplateAPIModel
 
 	bodyData.Name = data.Name.ValueString()
 
@@ -624,7 +577,7 @@ func (r *NotificationTemplatesResource) Update(ctx context.Context, req resource
 }
 
 func (r *NotificationTemplatesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data NotificationTemplatesResourceModel
+	var data NotificationTemplateModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 

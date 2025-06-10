@@ -262,6 +262,7 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewInventorySourceDataSource,
 		NewInstanceGroupDataSource,
 		NewJobTemplateDataSource,
+		NewNotificationTemplateDataSource,
 		NewOrganizationDataSource,
 		NewProjectDataSource,
 		NewScheduleDataSource,
