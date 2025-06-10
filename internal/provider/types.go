@@ -313,6 +313,53 @@ type LabelAPIModel struct {
 	Organization int    `json:"organization"`
 }
 
+type NotificationTemplateModel struct {
+	Id                        types.String `tfsdk:"id"`
+	Name                      types.String `tfsdk:"name"`
+	Description               types.String `tfsdk:"description"`
+	Organization              types.Int32  `tfsdk:"organization"`
+	NotificationType          types.String `tfsdk:"notification_type"`
+	NotificationConfiguration types.String `tfsdk:"notification_configuration"`
+	Messages                  types.String `tfsdk:"messages"`
+}
+
+type NotificationTemplateAPIModel struct {
+	Id                        int    `json:"id"`
+	Name                      string `json:"name"`
+	Description               string `json:"description,omitempty"`
+	Organization              int    `json:"organization"`
+	NotificationType          string `json:"notification_type"`
+	NotificationConfiguration any    `json:"notification_configuration,omitempty"`
+	Messages                  any    `json:"messages,omitempty"`
+}
+
+type SlackConfiguration struct {
+	Channels  []string `json:"channels"`
+	HexColors string   `json:"hex_color"`
+	Token     string   `json:"token"`
+}
+
+type WebhookConfiguration struct {
+	Url                    string         `json:"url"`
+	Headers                map[string]any `json:"headers"`
+	Password               string         `json:"password"`
+	Username               string         `json:"username"`
+	HttpMethod             string         `json:"http_method"`
+	DisableSslVerification bool           `json:"disable_ssl_verification"`
+}
+
+type MessageValue struct {
+	Body    string `json:"body"`
+	Message string `json:"message"`
+}
+
+type Messages struct {
+	Error            MessageValue            `json:"error"`
+	Started          MessageValue            `json:"started"`
+	Success          MessageValue            `json:"success"`
+	WorkflowApproval map[string]MessageValue `json:"workflow_approval"`
+}
+
 type OrganizationModel struct {
 	Id             types.String `tfsdk:"id"`
 	Aap25GatewayId types.Int32  `tfsdk:"aap25_gateway_id"`
