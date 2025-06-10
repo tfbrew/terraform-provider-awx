@@ -313,8 +313,8 @@ func (d *JobTemplateDataSource) Read(ctx context.Context, req datasource.ReadReq
 			responseData = nameResult.Results[0]
 		} else {
 			resp.Diagnostics.AddError(
-				"Incorrect number of execution_environments returned by name",
-				fmt.Sprintf("Unable to read execution_environment as API returned %v execution_environments.", nameResult.Count))
+				"Incorrect number of job_template[s] returned by name",
+				fmt.Sprintf("Unable to read job_template as API returned %v job_template[s].", nameResult.Count))
 			return
 		}
 	}
