@@ -362,7 +362,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	url := "projects/"
-	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -404,7 +404,7 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	url := fmt.Sprintf("projects/%d/", id)
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -561,7 +561,7 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	url := fmt.Sprintf("projects/%d/", id)
-	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -608,7 +608,7 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	var del_err error
 	var statusCode int
 	for attempt := 0; attempt < attempts; attempt++ {
-		_, statusCode, del_err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+		_, statusCode, del_err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204}, "")
 		if del_err == nil {
 			if attempt > 0 {
 				resp.Diagnostics.AddWarning(

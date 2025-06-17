@@ -498,7 +498,7 @@ func (r *JobTemplateResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	url := "job_templates/"
-	returnedData, statusCode, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200, 201})
+	returnedData, statusCode, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200, 201}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -544,7 +544,7 @@ func (r *JobTemplateResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	url := fmt.Sprintf("job_templates/%d/", id)
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -892,7 +892,7 @@ func (r *JobTemplateResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	url := fmt.Sprintf("job_templates/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -919,7 +919,7 @@ func (r *JobTemplateResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 	url := fmt.Sprintf("job_templates/%d/", id)
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

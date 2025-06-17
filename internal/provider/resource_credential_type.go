@@ -138,7 +138,7 @@ func (r *CredentialTypeResource) Create(ctx context.Context, req resource.Create
 	}
 
 	url := "credential_types/"
-	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -179,7 +179,7 @@ func (r *CredentialTypeResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	url := fmt.Sprintf("credential_types/%d/", id)
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -335,7 +335,7 @@ func (r *CredentialTypeResource) Update(ctx context.Context, req resource.Update
 	}
 
 	url := fmt.Sprintf("credential_types/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -364,7 +364,7 @@ func (r *CredentialTypeResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	url := fmt.Sprintf("credential_types/%d/", id)
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

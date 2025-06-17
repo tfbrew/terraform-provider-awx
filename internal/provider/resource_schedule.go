@@ -105,7 +105,7 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	url := "schedules/"
-	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -145,7 +145,7 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	url := fmt.Sprintf("schedules/%d/", id)
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -209,7 +209,7 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	url := fmt.Sprintf("schedules/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -237,7 +237,7 @@ func (r *ScheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	url := fmt.Sprintf("schedules/%d/", id)
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

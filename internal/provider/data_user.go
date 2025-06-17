@@ -124,7 +124,7 @@ func (d *UserDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		url = fmt.Sprintf("users/?username=%s", name)
 	}
 
-	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "gateway")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",

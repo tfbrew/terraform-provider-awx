@@ -146,7 +146,7 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	url := "organizations/"
-	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201}, "gateway")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -170,8 +170,8 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 
 		// overwrite returnedData with Get against org's /controller/ endpoint
 
-		url := fmt.Sprintf("organizations/%d/", data.Aap25GatewayId.ValueInt32())
-		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+		url := fmt.Sprintf("organizations/?name=%s", data.Name.ValueString())
+		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "controller")
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error making API http request",
@@ -179,9 +179,7 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 			return
 		}
 		// get id
-		nameResult := struct {
-			Id int `json:"id"`
-		}{}
+		var nameResult JTChildAPIRead
 		err = json.Unmarshal(responseBodyData, &nameResult)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -189,7 +187,13 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 				fmt.Sprintf("Error:  %v.", err.Error()))
 			return
 		}
-		data.Id = types.StringValue(strconv.Itoa(nameResult.Id))
+		if nameResult.Count != 1 {
+			resp.Diagnostics.AddError(
+				"Org controller result count not 1.",
+				fmt.Sprintf("Querying for org by name against controller endpoint resulted in result count of %d isntead of 1.", nameResult.Count))
+			return
+		}
+		data.Id = types.StringValue(strconv.Itoa(nameResult.Results[0].Id))
 
 	} else {
 		data.Id = types.StringValue(fmt.Sprintf("%v", returnedData["id"]))
@@ -215,7 +219,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	url := fmt.Sprintf("organizations/%d/", id)
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -242,7 +246,7 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 	if r.client.platform == "aap2.5" {
 
 		url := fmt.Sprintf("organizations/?name=%s", responseData.Name)
-		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "gateway")
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error making API http request",
@@ -349,7 +353,7 @@ func (r *OrganizationResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	url := fmt.Sprintf("organizations/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "gateway")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -385,7 +389,7 @@ func (r *OrganizationResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 	url := fmt.Sprintf("organizations/%d/", id)
 
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204}, "gateway")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

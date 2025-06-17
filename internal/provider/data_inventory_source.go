@@ -149,7 +149,7 @@ func (d *InventorySourceDataSource) Read(ctx context.Context, req datasource.Rea
 	}
 
 	url = fmt.Sprintf("inventory_sources/%d/", id)
-	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
