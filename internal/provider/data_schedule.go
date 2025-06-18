@@ -96,7 +96,7 @@ func (d *ScheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	url = fmt.Sprintf("schedules/%d/", id)
-	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",

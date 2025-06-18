@@ -238,7 +238,7 @@ func (r *JobTemplateSurveyResource) Create(ctx context.Context, req resource.Cre
 
 	bodyData.Spec = specs
 
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -266,7 +266,7 @@ func (r *JobTemplateSurveyResource) Read(ctx context.Context, req resource.ReadR
 
 	url := fmt.Sprintf("job_templates/%d/survey_spec/", id)
 
-	httpResponse, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	httpResponse, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -448,7 +448,7 @@ func (r *JobTemplateSurveyResource) Update(ctx context.Context, req resource.Upd
 
 	bodyData.Spec = specs
 
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -477,7 +477,7 @@ func (r *JobTemplateSurveyResource) Delete(ctx context.Context, req resource.Del
 
 	url := fmt.Sprintf("job_templates/%d/survey_spec/", id)
 
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{200})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",

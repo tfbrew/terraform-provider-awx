@@ -272,7 +272,7 @@ func (d *JobTemplateDataSource) Read(ctx context.Context, req datasource.ReadReq
 		url = fmt.Sprintf("job_templates/?name=%s", name)
 	}
 
-	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",

@@ -100,7 +100,7 @@ func (r *JobTemplateNotifTemplErrResource) Create(ctx context.Context, req resou
 		var bodyData ChildResult
 		bodyData.Id = val
 
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
@@ -127,7 +127,7 @@ func (r *JobTemplateNotifTemplErrResource) Read(ctx context.Context, req resourc
 
 	url := fmt.Sprintf("job_templates/%d/notification_templates_error/", id)
 
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -182,7 +182,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 
 	url := fmt.Sprintf("job_templates/%d/notification_templates_error/", id)
 
-	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -219,7 +219,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 			var bodyData ChildDissasocBody
 			bodyData.Id = v
 
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
@@ -232,7 +232,7 @@ func (r *JobTemplateNotifTemplErrResource) Update(ctx context.Context, req resou
 			var bodyData ChildResult
 			bodyData.Id = v
 
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
@@ -275,7 +275,7 @@ func (r *JobTemplateNotifTemplErrResource) Delete(ctx context.Context, req resou
 		bodyData.Id = val
 		bodyData.Disassociate = true
 
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 			return

@@ -20,9 +20,9 @@ type AwxClient struct {
 
 // A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
 // headers and then makes the actual http request.
-func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (responseBody []byte, statusCode int, errorMessage error) {
+func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int, aap25_api_endpoint_hint string) (responseBody []byte, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(ctx, url, method)
+	url = c.buildAPIUrl(url, aap25_api_endpoint_hint)
 
 	var body io.Reader
 
@@ -74,9 +74,9 @@ func (c *AwxClient) GenericAPIRequest(ctx context.Context, method, url string, r
 	return
 }
 
-func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int) (returnedData map[string]any, statusCode int, errorMessage error) {
+func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int, aap25_api_endpoint_hint string) (returnedData map[string]any, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(ctx, url, method)
+	url = c.buildAPIUrl(url, aap25_api_endpoint_hint)
 
 	var body io.Reader
 
@@ -136,47 +136,14 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 	return
 }
 
-// In AAP, most api endpoint live in /controller/. But, for the few exceptions, in list below, override to /gateway/v1/.
-func (c *AwxClient) buildAPIUrl(ctx context.Context, resourceUrl, httpMethod string) (url string) {
+// In AAP, most api endpoint live in /controller/. But, sometimes they specifyc gateway endpoint instead.
+func (c *AwxClient) buildAPIUrl(resourceUrl, aap25_api_endpoint_hint string) (url string) {
 
-	var contextKey contextKey = "dataSource"
-	dataSource := ctx.Value(contextKey)
-
-	aap_gateway_override_cud_list := []string{"organizations"}
-
-	if c.platform != "awx" && c.platform != "aap2.4" && httpMethod != http.MethodGet {
-		for _, v := range aap_gateway_override_cud_list {
-			if strings.HasPrefix(resourceUrl, v) {
-				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
-				return
-			}
-		}
+	if aap25_api_endpoint_hint == "gateway" && c.platform == "aap2.5" {
+		url = c.endpoint + "/api/gateway/v1/" + resourceUrl
+	} else {
+		url = c.endpoint + c.urlPrefix + resourceUrl
 	}
-
-	aap_gateway_override_all_list := []string{"users"}
-
-	if c.platform != "awx" && c.platform != "aap2.4" {
-		for _, v := range aap_gateway_override_all_list {
-			if strings.HasPrefix(resourceUrl, v) {
-				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
-				return
-			}
-		}
-	}
-
-	// use controller for data source URLs, but not in resources
-	aap_gateway_override_non_data_source := []string{"organizations/?name"}
-
-	if c.platform != "awx" && c.platform != "aap2.4" && dataSource == nil {
-		for _, v := range aap_gateway_override_non_data_source {
-			if strings.HasPrefix(resourceUrl, v) {
-				url = c.endpoint + "/api/gateway/v1/" + resourceUrl
-				return
-			}
-		}
-	}
-
-	url = c.endpoint + c.urlPrefix + resourceUrl
 
 	return
 }

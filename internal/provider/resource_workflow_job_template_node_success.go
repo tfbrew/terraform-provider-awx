@@ -101,7 +101,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Create(ctx context.Context, re
 		bodyData.Id = val
 		bodyData.Associate = true
 
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
@@ -130,7 +130,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Read(ctx context.Context, req 
 	}
 	url := fmt.Sprintf("workflow_job_template_nodes/%d/success_nodes/", id)
 
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -185,7 +185,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, re
 
 	url := fmt.Sprintf("workflow_job_template_nodes/%d/success_nodes/", id)
 
-	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -222,7 +222,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, re
 			var bodyData ChildDissasocBody
 			bodyData.Id = v
 
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
@@ -236,7 +236,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Update(ctx context.Context, re
 			bodyData.Id = v
 			bodyData.Associate = true
 
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
@@ -279,7 +279,7 @@ func (r *WorkflowJobTemplatesNodeSuccessResource) Delete(ctx context.Context, re
 		bodyData.Id = val
 		bodyData.Disassociate = true
 
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 			return

@@ -100,7 +100,7 @@ func (r *JobTemplateLabelsResource) Create(ctx context.Context, req resource.Cre
 		var bodyData LabelResult
 		bodyData.Id = val
 
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return
@@ -127,7 +127,7 @@ func (r *JobTemplateLabelsResource) Read(ctx context.Context, req resource.ReadR
 
 	url := fmt.Sprintf("job_templates/%d/labels/", id)
 
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -182,7 +182,7 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 
 	url := fmt.Sprintf("job_templates/%d/labels/", id)
 
-	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200})
+	body, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -219,7 +219,7 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 			var bodyData LabelDissasocBody
 			bodyData.Id = v
 
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to disassociate child.", err.Error())
 				return
@@ -232,7 +232,7 @@ func (r *JobTemplateLabelsResource) Update(ctx context.Context, req resource.Upd
 			var bodyData LabelResult
 			bodyData.Id = v
 
-			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+			_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 				return
@@ -275,7 +275,7 @@ func (r *JobTemplateLabelsResource) Delete(ctx context.Context, req resource.Del
 		bodyData.Id = val
 		bodyData.Disassociate = true
 
-		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204})
+		_, _, err = r.client.GenericAPIRequest(ctx, http.MethodPost, url, bodyData, []int{204}, "")
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to associate child.", err.Error())
 			return

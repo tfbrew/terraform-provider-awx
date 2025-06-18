@@ -129,7 +129,7 @@ func (d *InstanceGroupDataSource) Read(ctx context.Context, req datasource.ReadR
 		url = fmt.Sprintf("instance_groups/?name=%s", name)
 	}
 
-	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",

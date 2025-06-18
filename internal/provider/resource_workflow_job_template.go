@@ -236,7 +236,7 @@ func (r *WorkflowJobTemplatesResource) Create(ctx context.Context, req resource.
 	}
 
 	url := "workflow_job_templates/"
-	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -276,7 +276,7 @@ func (r *WorkflowJobTemplatesResource) Read(ctx context.Context, req resource.Re
 	}
 
 	url := fmt.Sprintf("workflow_job_templates/%d/", id)
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -470,7 +470,7 @@ func (r *WorkflowJobTemplatesResource) Update(ctx context.Context, req resource.
 	bodyData.JobTags = data.JobTags.ValueString()
 
 	url := fmt.Sprintf("workflow_job_templates/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -497,7 +497,7 @@ func (r *WorkflowJobTemplatesResource) Delete(ctx context.Context, req resource.
 	}
 
 	url := fmt.Sprintf("workflow_job_templates/%d/", id)
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",

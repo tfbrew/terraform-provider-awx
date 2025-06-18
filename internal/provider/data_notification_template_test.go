@@ -110,7 +110,7 @@ func TestAccNotificationTemplateDataSource(t *testing.T) {
 					statecheck.CompareValuePairs(
 						"data.awx_notification_template.example-slack-type",
 						tfjsonpath.New("organization"),
-						"awx_organization.example",
+						"awx_organization.example2",
 						tfjsonpath.New("id"),
 						IdComparer,
 					),
@@ -173,15 +173,15 @@ data "awx_notification_template" "example-webhook-type" {
 
 func testAccNotifTmplSlackDataSource2Config(objectName, notifConfig string) string {
 	return fmt.Sprintf(`
-resource "awx_organization" "example" { 
+resource "awx_organization" "example2" { 
 	name = "%s" 
-	description = "testing example" 
+	description = "testing example2" 
 }
 
 resource "awx_notification_template" "example-slack-type" {
 	name              = "%s"
 	notification_type = "slack"
-	organization      = awx_organization.example.id
+	organization      = awx_organization.example2.id
   notification_configuration = jsonencode(%s)
 }
 data "awx_notification_template" "example-slack-type" {
@@ -193,7 +193,7 @@ func testAccNotifTmplSlackWithMessagesDataSourceConfig(objectName, notifConfig s
 	return fmt.Sprintf(`
 resource "awx_organization" "example" { 
 	name = "%s" 
-	description = "testing example" 
+	description = "testing example3" 
 }
 
 resource "awx_notification_template" "example-slack-and-message" {

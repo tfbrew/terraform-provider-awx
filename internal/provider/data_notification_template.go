@@ -121,7 +121,7 @@ func (d *NotificationTemplateDataSource) Read(ctx context.Context, req datasourc
 		url = fmt.Sprintf("notification_templates/?name=%s", name)
 	}
 
-	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",

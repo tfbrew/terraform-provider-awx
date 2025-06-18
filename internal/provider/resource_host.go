@@ -115,7 +115,7 @@ func (r *HostResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	url := "hosts/"
-	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201})
+	returnedData, _, err := r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -155,7 +155,7 @@ func (r *HostResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	url := fmt.Sprintf("hosts/%d/", id)
-	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404})
+	body, statusCode, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -227,7 +227,7 @@ func (r *HostResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	url := fmt.Sprintf("hosts/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200})
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API update request",
@@ -255,7 +255,7 @@ func (r *HostResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	url := fmt.Sprintf("hosts/%d/", id)
-	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204})
+	_, _, err = r.client.GenericAPIRequest(ctx, http.MethodDelete, url, nil, []int{202, 204}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",
