@@ -230,25 +230,29 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		client.urlPrefix = "/api/controller/v2/"
 	}
 
-	apiRetryCount, ok := data.APIretry.Attributes()["api_retry_count"].(types.Int32)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Couldn't convert api_retry_count to int32",
-			fmt.Sprintf("Couldn't convert api_retry_count to int32, value provided was %v", data.APIretry.Attributes()["api_retry_count"].String()),
-		)
-		return
+	if data.APIretry.Attributes()["api_retry_count"] != nil {
+		apiRetryCount, ok := data.APIretry.Attributes()["api_retry_count"].(types.Int32)
+		if !ok {
+			resp.Diagnostics.AddError(
+				"Couldn't convert api_retry_count to int32",
+				fmt.Sprintf("Couldn't convert api_retry_count to int32, value provided was %v", data.APIretry.Attributes()["api_retry_count"].String()),
+			)
+			return
+		}
+		client.apiRetryCount = apiRetryCount.ValueInt32()
 	}
-	client.apiRetryCount = apiRetryCount.ValueInt32()
 
-	apiRetryDelay, ok := data.APIretry.Attributes()["api_retry_delay_seconds"].(types.Int32)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Couldn't convert api_retry_delay_seconds to int32",
-			fmt.Sprintf("Couldn't convert api_retry_delay_seconds to int32, value provided was %v", data.APIretry.Attributes()["api_retry_delay_seconds"].String()),
-		)
-		return
+	if data.APIretry.Attributes()["api_retry_delay_seconds"] != nil {
+		apiRetryDelay, ok := data.APIretry.Attributes()["api_retry_delay_seconds"].(types.Int32)
+		if !ok {
+			resp.Diagnostics.AddError(
+				"Couldn't convert api_retry_delay_seconds to int32",
+				fmt.Sprintf("Couldn't convert api_retry_delay_seconds to int32, value provided was %v", data.APIretry.Attributes()["api_retry_delay_seconds"].String()),
+			)
+			return
+		}
+		client.apiRetryDelaySeconds = apiRetryDelay.ValueInt32()
 	}
-	client.apiRetryDelaySeconds = apiRetryDelay.ValueInt32()
 
 	url := "me/"
 
