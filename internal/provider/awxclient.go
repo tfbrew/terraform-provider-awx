@@ -139,7 +139,7 @@ func (c *AwxClient) CreateUpdateAPIRequest(ctx context.Context, method, url stri
 // In AAP, most api endpoint live in /controller/. But, sometimes they specifyc gateway endpoint instead.
 func (c *AwxClient) buildAPIUrl(resourceUrl, aap25_api_endpoint_hint string) (url string) {
 
-	if aap25_api_endpoint_hint == "gateway" {
+	if aap25_api_endpoint_hint == "gateway" && c.platform == "aap2.5" {
 		url = c.endpoint + "/api/gateway/v1/" + resourceUrl
 	} else {
 		url = c.endpoint + c.urlPrefix + resourceUrl
