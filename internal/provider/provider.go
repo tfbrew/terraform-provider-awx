@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/providervalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -39,6 +40,7 @@ type awxProviderModel struct {
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 	Platform types.String `tfsdk:"platform"`
+	APIretry types.Object `tfsdk:"api_retry"`
 }
 
 func (p *awxProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -73,6 +75,26 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 					stringvalidator.OneOf("aap2.4", "aap2.5", "awx"),
 				},
 			},
+			"api_retry": schema.SingleNestedAttribute{
+				Description: "An optional block to define if the provider should retry GET/read API requests that intitially fail.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"api_retry_count": schema.Int32Attribute{
+						Description: "The number of times a GET/read API request should be reattempted should it not succeed on the first try. Can be useful when the number of Terraform objects in your plan creates many API calls and causes the AWX/AAP platform to bog down. Valid values are integers between 1 and 5.",
+						Optional:    true,
+						Validators: []validator.Int32{
+							int32validator.Between(1, 5),
+						},
+					},
+					"api_retry_delay_seconds": schema.Int32Attribute{
+						Description: "The number of seconds this provider should wait before making a retry attempt. The value must be an integer value of 1 or greater.",
+						Optional:    true,
+						Validators: []validator.Int32{
+							int32validator.AtLeast(1),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -90,6 +112,10 @@ func (p *awxProvider) ConfigValidators(ctx context.Context) []provider.ConfigVal
 		providervalidator.RequiredTogether(
 			path.MatchRoot("username"),
 			path.MatchRoot("password"),
+		),
+		providervalidator.RequiredTogether(
+			path.MatchRoot("api_retry").AtName("api_retry_count"),
+			path.MatchRoot("api_retry").AtName("api_retry_delay_seconds"),
 		),
 	}
 }
@@ -203,6 +229,26 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	} else { // aap2.5
 		client.urlPrefix = "/api/controller/v2/"
 	}
+
+	apiRetryCount, ok := data.APIretry.Attributes()["api_retry_count"].(types.Int32)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Couldn't convert api_retry_count to int32",
+			fmt.Sprintf("Couldn't convert api_retry_count to int32, value provided was %v", data.APIretry.Attributes()["api_retry_count"].String()),
+		)
+		return
+	}
+	client.apiRetryCount = apiRetryCount.ValueInt32()
+
+	apiRetryDelay, ok := data.APIretry.Attributes()["api_retry_delay_seconds"].(types.Int32)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Couldn't convert api_retry_delay_seconds to int32",
+			fmt.Sprintf("Couldn't convert api_retry_delay_seconds to int32, value provided was %v", data.APIretry.Attributes()["api_retry_delay_seconds"].String()),
+		)
+		return
+	}
+	client.apiRetryDelaySeconds = apiRetryDelay.ValueInt32()
 
 	url := "me/"
 
