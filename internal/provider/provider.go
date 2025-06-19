@@ -87,14 +87,14 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Attributes: map[string]schema.Attribute{
 					"api_retry_count": schema.Int32Attribute{
 						Description: "The number of times a GET/read API request should be reattempted should it not succeed on the first try. Can be useful when the number of Terraform objects in your plan creates many API calls and causes the AWX/AAP platform to bog down. Valid values are integers between 1 and 5.",
-						Optional:    true,
+						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(1, 5),
 						},
 					},
 					"api_retry_delay_seconds": schema.Int32Attribute{
 						Description: "The number of seconds this provider should wait before making a retry attempt. The value must be an integer value of 1 or greater.",
-						Optional:    true,
+						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.AtLeast(1),
 						},
@@ -118,10 +118,6 @@ func (p *awxProvider) ConfigValidators(ctx context.Context) []provider.ConfigVal
 		providervalidator.RequiredTogether(
 			path.MatchRoot("username"),
 			path.MatchRoot("password"),
-		),
-		providervalidator.RequiredTogether(
-			path.MatchRoot("api_retry").AtName("api_retry_count"),
-			path.MatchRoot("api_retry").AtName("api_retry_delay_seconds"),
 		),
 	}
 }
@@ -245,13 +241,8 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			return
 		}
 
-		if !retryBlock.APIretryCount.IsNull() {
-			client.apiRetryCount = retryBlock.APIretryCount.ValueInt32()
-		}
-
-		if !retryBlock.APIretryDelaySeconds.IsNull() {
-			client.apiRetryDelaySeconds = retryBlock.APIretryDelaySeconds.ValueInt32()
-		}
+		client.apiRetryCount = retryBlock.APIretryCount.ValueInt32()
+		client.apiRetryDelaySeconds = retryBlock.APIretryDelaySeconds.ValueInt32()
 	}
 
 	url := "me/"

@@ -65,7 +65,7 @@ provider "awx" {
 <a id="nestedatt--api_retry"></a>
 ### Nested Schema for `api_retry`
 
-Optional:
+Required:
 
 - `api_retry_count` (Number) The number of times a GET/read API request should be reattempted should it not succeed on the first try. Can be useful when the number of Terraform objects in your plan creates many API calls and causes the AWX/AAP platform to bog down. Valid values are integers between 1 and 5.
 - `api_retry_delay_seconds` (Number) The number of seconds this provider should wait before making a retry attempt. The value must be an integer value of 1 or greater.
