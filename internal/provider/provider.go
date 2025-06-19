@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure Provider satisfies various provider interfaces.
@@ -41,6 +42,11 @@ type awxProviderModel struct {
 	Password types.String `tfsdk:"password"`
 	Platform types.String `tfsdk:"platform"`
 	APIretry types.Object `tfsdk:"api_retry"`
+}
+
+type apiRetryModel struct {
+	APIretryCount        types.Int32 `tfsdk:"api_retry_count"`
+	APIretryDelaySeconds types.Int32 `tfsdk:"api_retry_delay_seconds"`
 }
 
 func (p *awxProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -230,28 +236,22 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		client.urlPrefix = "/api/controller/v2/"
 	}
 
-	if data.APIretry.Attributes()["api_retry_count"] != nil {
-		apiRetryCount, ok := data.APIretry.Attributes()["api_retry_count"].(types.Int32)
-		if !ok {
-			resp.Diagnostics.AddError(
-				"Couldn't convert api_retry_count to int32",
-				fmt.Sprintf("Couldn't convert api_retry_count to int32, value provided was %v", data.APIretry.Attributes()["api_retry_count"].String()),
-			)
-			return
-		}
-		client.apiRetryCount = apiRetryCount.ValueInt32()
-	}
+	if !data.APIretry.IsNull() {
+		var retryBlock apiRetryModel
 
-	if data.APIretry.Attributes()["api_retry_delay_seconds"] != nil {
-		apiRetryDelay, ok := data.APIretry.Attributes()["api_retry_delay_seconds"].(types.Int32)
-		if !ok {
-			resp.Diagnostics.AddError(
-				"Couldn't convert api_retry_delay_seconds to int32",
-				fmt.Sprintf("Couldn't convert api_retry_delay_seconds to int32, value provided was %v", data.APIretry.Attributes()["api_retry_delay_seconds"].String()),
-			)
+		resp.Diagnostics.Append(data.APIretry.As(ctx, &retryBlock, basetypes.ObjectAsOptions{})...)
+
+		if resp.Diagnostics.HasError() {
 			return
 		}
-		client.apiRetryDelaySeconds = apiRetryDelay.ValueInt32()
+
+		if !retryBlock.APIretryCount.IsNull() {
+			client.apiRetryCount = retryBlock.APIretryCount.ValueInt32()
+		}
+
+		if !retryBlock.APIretryDelaySeconds.IsNull() {
+			client.apiRetryDelaySeconds = retryBlock.APIretryDelaySeconds.ValueInt32()
+		}
 	}
 
 	url := "me/"
