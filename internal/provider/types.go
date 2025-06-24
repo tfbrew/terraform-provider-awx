@@ -133,6 +133,15 @@ type GroupAPIModel struct {
 	Variables   string `json:"variables,omitempty"`
 }
 
+type GroupHostModel struct {
+	GroupId types.String `tfsdk:"group_id"`
+	HostId  types.String `tfsdk:"host_id"`
+}
+
+type GroupHostAssocAPIModel struct {
+	Id int `json:"id"`
+}
+
 type InstanceGroupModel struct {
 	Id                       types.String `tfsdk:"id"`
 	Name                     types.String `tfsdk:"name"`
