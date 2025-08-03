@@ -300,6 +300,7 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewCredentialDataSource,
 		NewCredentialTypeDataSource,
 		NewExecutionEnvironmentDataSource,
+		NewGroupDataSource,
 		NewHostDataSource,
 		NewInventoryDataSource,
 		NewInventorySourceDataSource,
