@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -63,15 +64,15 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Optional:    true,
 			},
 			"token": schema.StringAttribute{
-				Description: "AWX access token (instead of username/password)",
+				Description: "AWX access token (instead of username/password). You can also set this using the TOWER_OAUTH_TOKEN environment variable.",
 				Optional:    true,
 			},
 			"username": schema.StringAttribute{
-				Description: "AWX username (instead of token)",
+				Description: "AWX username (instead of token). You can also set this using the TOWER_USERNAME environment variable.",
 				Optional:    true,
 			},
 			"password": schema.StringAttribute{
-				Description: "AWX password (instead of token)",
+				Description: "AWX password (instead of token). You can also set this using the TOWER_PASSWORD environment variable.",
 				Optional:    true,
 			},
 			"platform": schema.StringAttribute{
@@ -86,14 +87,14 @@ func (p *awxProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"api_retry_count": schema.Int32Attribute{
-						Description: "The number of times a GET/read API request should be reattempted should it not succeed on the first try. Can be useful when the number of Terraform objects in your plan creates many API calls and causes the AWX/AAP platform to bog down. Valid values are integers between 1 and 5.",
+						Description: "The number of times a GET/read API request should be reattempted should it not succeed on the first try. Can be useful when the number of Terraform objects in your plan creates many API calls and causes the AWX/AAP platform to bog down. Valid values are integers between 1 and 5. You can also set this using the TOWER_API_RETRY_COUNT environment variable.",
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(1, 5),
 						},
 					},
 					"api_retry_delay_seconds": schema.Int32Attribute{
-						Description: "The number of seconds this provider should wait before making a retry attempt. The value must be an integer value of 1 or greater.",
+						Description: "The number of seconds this provider should wait before making a retry attempt. The value must be an integer value of 1 or greater. You can also set this using the TOWER_API_RETRY_DELAY_SECONDS environment variable.",
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.AtLeast(1),
@@ -232,6 +233,38 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		client.urlPrefix = "/api/controller/v2/"
 	}
 
+	if data.APIretry.IsNull() {
+		envAPIRRetryCount, envAPIRetryCountExists := os.LookupEnv("TOWER_API_RETRY_COUNT")
+		envAPIRetryDelaySeconds, envAPIRetryDelaySecondsExists := os.LookupEnv("TOWER_API_RETRY_DELAY_SECONDS")
+
+		if envAPIRetryCountExists != envAPIRetryDelaySecondsExists {
+			resp.Diagnostics.AddError(
+				"Provider Configuration Error",
+				"Both TOWER_API_RETRY_COUNT and TOWER_API_RETRY_DELAY_SECONDS environment variables must be set together.",
+			)
+			return
+		} else if envAPIRetryCountExists && envAPIRetryDelaySecondsExists {
+			retryCountInt, err := strconv.Atoi(envAPIRRetryCount)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Provider Configuration Error",
+					fmt.Sprintf("TOWER_API_RETRY_COUNT must be an integer, got: %s", envAPIRRetryCount),
+				)
+				return
+			}
+			retryDelayInt, err := strconv.Atoi(envAPIRetryDelaySeconds)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Provider Configuration Error",
+					fmt.Sprintf("TOWER_API_RETRY_DELAY_SECONDS must be an integer, got: %s", envAPIRetryDelaySeconds),
+				)
+				return
+			}
+			client.apiRetryCount = int32(retryCountInt)
+			client.apiRetryDelaySeconds = int32(retryDelayInt)
+		}
+	}
+
 	if !data.APIretry.IsNull() {
 		var retryBlock apiRetryModel
 
@@ -284,6 +317,7 @@ func (p *awxProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewOrganizationResource,
 		NewProjectResource,
 		NewScheduleResource,
+		NewTeamResource,
 		NewUserResource,
 		NewWorkflowJobTemplatesResource,
 		NewWorkflowJobTemplatesJobNodeResource,
@@ -300,6 +334,7 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewCredentialDataSource,
 		NewCredentialTypeDataSource,
 		NewExecutionEnvironmentDataSource,
+		NewGroupDataSource,
 		NewHostDataSource,
 		NewInventoryDataSource,
 		NewInventorySourceDataSource,
@@ -309,6 +344,7 @@ func (p *awxProvider) DataSources(ctx context.Context) []func() datasource.DataS
 		NewOrganizationDataSource,
 		NewProjectDataSource,
 		NewScheduleDataSource,
+		NewTeamDataSource,
 		NewUserDataSource,
 	}
 }

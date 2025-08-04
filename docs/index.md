@@ -57,15 +57,15 @@ provider "awx" {
 
 - `api_retry` (Attributes) An optional block to define if the provider should retry GET/read API requests that intitially fail. (see [below for nested schema](#nestedatt--api_retry))
 - `endpoint` (String) URL for AWX (i.e. https://tower.example.com)
-- `password` (String) AWX password (instead of token)
+- `password` (String) AWX password (instead of token). You can also set this using the TOWER_PASSWORD environment variable.
 - `platform` (String) Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `awx` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.
-- `token` (String) AWX access token (instead of username/password)
-- `username` (String) AWX username (instead of token)
+- `token` (String) AWX access token (instead of username/password). You can also set this using the TOWER_OAUTH_TOKEN environment variable.
+- `username` (String) AWX username (instead of token). You can also set this using the TOWER_USERNAME environment variable.
 
 <a id="nestedatt--api_retry"></a>
 ### Nested Schema for `api_retry`
 
 Required:
 
-- `api_retry_count` (Number) The number of times a GET/read API request should be reattempted should it not succeed on the first try. Can be useful when the number of Terraform objects in your plan creates many API calls and causes the AWX/AAP platform to bog down. Valid values are integers between 1 and 5.
-- `api_retry_delay_seconds` (Number) The number of seconds this provider should wait before making a retry attempt. The value must be an integer value of 1 or greater.
+- `api_retry_count` (Number) The number of times a GET/read API request should be reattempted should it not succeed on the first try. Can be useful when the number of Terraform objects in your plan creates many API calls and causes the AWX/AAP platform to bog down. Valid values are integers between 1 and 5. You can also set this using the TOWER_API_RETRY_COUNT environment variable.
+- `api_retry_delay_seconds` (Number) The number of seconds this provider should wait before making a retry attempt. The value must be an integer value of 1 or greater. You can also set this using the TOWER_API_RETRY_DELAY_SECONDS environment variable.

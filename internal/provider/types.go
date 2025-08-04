@@ -462,6 +462,20 @@ type ScheduleAPIModel struct {
 	Enabled            bool   `json:"enabled"`
 }
 
+type TeamModel struct {
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Organization types.Int32  `tfsdk:"organization"`
+	Description  types.String `tfsdk:"description"`
+}
+
+type TeamAPIModel struct {
+	Id           int    `json:"id"`
+	Name         string `json:"name"`
+	Organization int    `json:"organization"`
+	Description  string `json:"description,omitempty"`
+}
+
 type UserModel struct {
 	Id              types.String `tfsdk:"id"`
 	Username        types.String `tfsdk:"username"`
