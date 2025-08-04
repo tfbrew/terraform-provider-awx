@@ -237,13 +237,13 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		envAPIRRetryCount, envAPIRetryCountExists := os.LookupEnv("TOWER_API_RETRY_COUNT")
 		envAPIRetryDelaySeconds, envAPIRetryDelaySecondsExists := os.LookupEnv("TOWER_API_RETRY_DELAY_SECONDS")
 
-		if !envAPIRetryCountExists || !envAPIRetryDelaySecondsExists {
+		if envAPIRetryCountExists != envAPIRetryDelaySecondsExists {
 			resp.Diagnostics.AddError(
 				"Provider Configuration Error",
 				"Both TOWER_API_RETRY_COUNT and TOWER_API_RETRY_DELAY_SECONDS environment variables must be set together.",
 			)
 			return
-		} else {
+		} else if envAPIRetryCountExists && envAPIRetryDelaySecondsExists {
 			retryCountInt, err := strconv.Atoi(envAPIRRetryCount)
 			if err != nil {
 				resp.Diagnostics.AddError(
