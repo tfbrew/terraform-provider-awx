@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccTeamDataSource(t *testing.T) {
+	IdCompare := &compareTwoValuesAsStrings{}
 	teamName := "test-team-" + acctest.RandString(5)
 	teamDesc := "Test team description"
 	orgName := "test-org-" + acctest.RandString(5)
@@ -38,6 +39,13 @@ func TestAccTeamDataSource(t *testing.T) {
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(teamDesc),
 					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("aap25_gateway_id"),
+						"data.awx_team.test-id",
+						tfjsonpath.New("organization"),
+						IdCompare,
+					),
 				},
 			},
 			// Lookup by name
@@ -53,6 +61,13 @@ func TestAccTeamDataSource(t *testing.T) {
 						"data.awx_team.test-name",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(teamDesc),
+					),
+					statecheck.CompareValuePairs(
+						"awx_organization.test",
+						tfjsonpath.New("aap25_gateway_id"),
+						"data.awx_team.test-name",
+						tfjsonpath.New("organization"),
+						IdCompare,
 					),
 				},
 			},
@@ -86,7 +101,7 @@ resource "awx_organization" "test" {
 
 resource "awx_team" "test" {
   name         = "%s"
-  organization = awx_organization.test.id
+  organization = awx_organization.test.aap25_gateway_id
   description  = "%s"
 }
 

@@ -67,7 +67,7 @@ func TestAccTeamResource(t *testing.T) {
 					),
 					statecheck.CompareValuePairs(
 						"awx_organization.test",
-						tfjsonpath.New("id"),
+						tfjsonpath.New("aap25_gateway_id"),
 						"awx_team.test",
 						tfjsonpath.New("organization"),
 						IdCompare,
@@ -86,7 +86,7 @@ resource "awx_organization" "test" {
 
 resource "awx_team" "test" {
   name         = "%s"
-  organization = awx_organization.test.id
+  organization = awx_organization.test.aap25_gateway_id
   description  = "%s"
 }
 `, acctest.RandString(5), teamName, teamDesc)

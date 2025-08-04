@@ -46,7 +46,7 @@ func (r *TeamResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"organization": schema.Int32Attribute{
 				Required:    true,
-				Description: "Organization ID of the team.",
+				Description: "Organization ID of the team. If using AAP 2.5, this should be the gateway ID of the organization, not the controller ID.",
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
