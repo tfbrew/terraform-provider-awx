@@ -17,6 +17,7 @@ func TestAccCredentialInputSourcesResource(t *testing.T) {
 	orgName := acctest.RandString(8)
 	srcCredName := acctest.RandString(8)
 	tgtCredName := acctest.RandString(8)
+	secKey := "secret/tower/username"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -27,7 +28,7 @@ func TestAccCredentialInputSourcesResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1 - basic test with multiple input sources
 			{
-				Config: testAccCredInputSrcStep1Config(orgName, srcCredName, tgtCredName),
+				Config: testAccCredInputSrcStep1Config(orgName, srcCredName, tgtCredName, secKey),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// first input source
 					statecheck.ExpectKnownValue(
@@ -97,7 +98,7 @@ func TestAccCredentialInputSourcesResource(t *testing.T) {
 							"auth_path":      knownvalue.StringExact(""),
 							"secret_backend": knownvalue.StringExact(""),
 							"secret_key":     knownvalue.StringExact("acce-ansible-2"),
-							"secret_path":    knownvalue.StringExact("secret/tower/username"),
+							"secret_path":    knownvalue.StringExact(secKey),
 							"secret_version": knownvalue.StringExact(""),
 						}),
 					),
@@ -109,11 +110,89 @@ func TestAccCredentialInputSourcesResource(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			}, // end Step 2
+			// Step 3 - test change to input source metadata
+			{
+				Config: testAccCredInputSrcStep1Config(orgName, srcCredName, tgtCredName, secKey+"_2"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// first input source
+					statecheck.ExpectKnownValue(
+						"awx_credential_input_sources.example_hashi_cred_input_src",
+						tfjsonpath.New("description"),
+						knownvalue.StringExact("Testing create"),
+					),
+					statecheck.ExpectKnownValue(
+						"awx_credential_input_sources.example_hashi_cred_input_src",
+						tfjsonpath.New("input_field_name"),
+						knownvalue.StringExact("ssh_key_data"),
+					),
+					statecheck.CompareValuePairs(
+						"awx_credential.example_hashi_target_cred",
+						tfjsonpath.New("id"),
+						"awx_credential_input_sources.example_hashi_cred_input_src",
+						tfjsonpath.New("target_credential"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_credential.example_hashi_source_cred",
+						tfjsonpath.New("id"),
+						"awx_credential_input_sources.example_hashi_cred_input_src",
+						tfjsonpath.New("source_credential"),
+						IdCompare,
+					),
+					statecheck.ExpectKnownValue(
+						"awx_credential_input_sources.example_hashi_cred_input_src",
+						tfjsonpath.New("metadata"),
+						knownvalue.MapExact(map[string]knownvalue.Check{
+							"auth_path":      knownvalue.StringExact(""),
+							"secret_backend": knownvalue.StringExact(""),
+							"secret_key":     knownvalue.StringExact("acce-ansible"),
+							"secret_path":    knownvalue.StringExact("secret/tower/deploy-keys"),
+							"secret_version": knownvalue.StringExact(""),
+						}),
+					),
+					// second input source
+					statecheck.ExpectKnownValue(
+						"awx_credential_input_sources.example_hashi_cred_input_src_2",
+						tfjsonpath.New("description"),
+						knownvalue.StringExact("Testing create2"),
+					),
+					statecheck.ExpectKnownValue(
+						"awx_credential_input_sources.example_hashi_cred_input_src_2",
+						tfjsonpath.New("input_field_name"),
+						knownvalue.StringExact("username"),
+					),
+					statecheck.CompareValuePairs(
+						"awx_credential.example_hashi_target_cred",
+						tfjsonpath.New("id"),
+						"awx_credential_input_sources.example_hashi_cred_input_src_2",
+						tfjsonpath.New("target_credential"),
+						IdCompare,
+					),
+					statecheck.CompareValuePairs(
+						"awx_credential.example_hashi_source_cred",
+						tfjsonpath.New("id"),
+						"awx_credential_input_sources.example_hashi_cred_input_src_2",
+						tfjsonpath.New("source_credential"),
+						IdCompare,
+					),
+					statecheck.ExpectKnownValue(
+						"awx_credential_input_sources.example_hashi_cred_input_src_2",
+						tfjsonpath.New("metadata"),
+						knownvalue.MapExact(map[string]knownvalue.Check{
+							"auth_path":      knownvalue.StringExact(""),
+							"secret_backend": knownvalue.StringExact(""),
+							"secret_key":     knownvalue.StringExact("acce-ansible-2"),
+							"secret_path":    knownvalue.StringExact(secKey + "_2"),
+							"secret_version": knownvalue.StringExact(""),
+						}),
+					),
+				},
+			}, // end Step 3
 		}, // end all Steps
 	}) // close TestCase structure & resource.Test() function all
 } // end func TestAccCredentialInputSourcesResource
 
-func testAccCredInputSrcStep1Config(orgName, srcCredName, tgtCredName string) string {
+func testAccCredInputSrcStep1Config(orgName, srcCredName, tgtCredName, secretKey string) string {
 	return fmt.Sprintf(`
 resource "awx_organization" "example" {
   name        = "%s"
@@ -172,11 +251,11 @@ resource "awx_credential_input_sources" "example_hashi_cred_input_src_2" {
     metadata = {
         "auth_path": ""
         "secret_key": "acce-ansible-2"
-        "secret_path": "secret/tower/username"
+        "secret_path": "%s"
         "secret_backend": ""
         "secret_version": ""
     }
     target_credential = awx_credential.example_hashi_target_cred.id
     source_credential = awx_credential.example_hashi_source_cred.id
-}`, orgName, srcCredName, tgtCredName)
+}`, orgName, srcCredName, tgtCredName, secretKey)
 }

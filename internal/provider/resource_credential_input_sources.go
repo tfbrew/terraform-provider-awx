@@ -206,7 +206,7 @@ func (r *CredentialInputSourcesResource) Update(ctx context.Context, req resourc
 	}
 
 	bodyData.SourceCredential = int(data.SourceCredential.ValueInt32())
-	bodyData.SourceCredential = int(data.TargetCredential.ValueInt32())
+	bodyData.TargetCredential = int(data.TargetCredential.ValueInt32())
 
 	var metadataMap map[string]string
 
@@ -226,7 +226,7 @@ func (r *CredentialInputSourcesResource) Update(ctx context.Context, req resourc
 	}
 
 	url := fmt.Sprintf("credential_input_sources/%d/", id)
-	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPost, url, bodyData, []int{201}, "")
+	_, _, err = r.client.CreateUpdateAPIRequest(ctx, http.MethodPut, url, bodyData, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
