@@ -1,3 +1,4 @@
+# SPECIAL: Hardcoded provider prefix required in this file
 default: fmt lint install generate
 
 build:
@@ -17,9 +18,11 @@ fmt:
 	gofmt -s -w -e .
 
 test:
+# SPECIAL: add -tags=repoAWX or -tags=repoAAP
 	go test -v -cover -timeout=120s -parallel=10 -tags=repoAWX ./internal/provider
 
 testacc:
+# SPECIAL: add -tags=repoAWX or -tags=repoAAP
 	TF_ACC=1 go test -tags=repoAWX -v -cover ./internal/provider
 
 .PHONY: fmt lint test testacc build install generate
