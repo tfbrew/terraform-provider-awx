@@ -1,3 +1,4 @@
+// SPECIAL: This file may require repo or controller-specific things.
 package provider
 
 import (
