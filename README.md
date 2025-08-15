@@ -1,7 +1,9 @@
 <!-- SPECIAL: This readme should be altered to match each repo to which it is included.  -->
-# Terraform Provider AWX (AWX, AAP2.4, AAP2.5)
+# Terraform Provider AWX (AWX, AAP2.4)
 
-This is a terraform provider for AWX, AAP2.4 & AAP2.5 built with the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework) and based on the [Terraform Provider Scafolding Framework](https://github.com/hashicorp/terraform-provider-scaffolding-framework).
+**See [tfbrew/terraform-provider-aap](https://github.com/tfbrew/terraform-provider-aap) for support for Ansible Automation Platform (AAP) versions 2.5 or greater.**
+
+This is a terraform provider for AWX and AAP2.4  built with the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework) and based on the [Terraform Provider Scafolding Framework](https://github.com/hashicorp/terraform-provider-scaffolding-framework).
 
 If you find any bugs or have a feature request, please open a GitHub issue.
 
