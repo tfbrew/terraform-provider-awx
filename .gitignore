@@ -35,3 +35,4 @@ website/vendor
 *.winfile eol=crlf
 .vscode/settings.json
 .vscode/launch.json
+.ansible/.lock
