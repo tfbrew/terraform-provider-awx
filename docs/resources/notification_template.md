@@ -63,7 +63,7 @@ resource "awx_notification_template" "example-webhook-type" {
   notification_configuration = jsonencode({
     url = "https://webhooktarget.com"
     headers = {
-      httpheader1 = "travis"
+      httpheader1 = "example12"
       httpheader2 = 2
     }
     password                 = "thepassword"
@@ -87,7 +87,7 @@ resource "awx_notification_template" "example-webhook-type" {
 
 - `description` (String) Defaults to `""`
 - `messages` (String) json
-- `notification_configuration` (String) json. This value depends on the `notification_type` chosen. But, the value should be json. E.g. `notification_configuration = jsonencode(blah blah blah)`. The AWX Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.
+- `notification_configuration` (String) json. This value depends on the `notification_type` chosen. But, the value should be json. E.g. `notification_configuration = jsonencode(blah blah blah)`. The Automation Controller Tower API never returns a value for Token. So, this provider is coded to ignore changes to that field.
 
 ### Read-Only
 

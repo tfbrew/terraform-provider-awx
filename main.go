@@ -1,3 +1,5 @@
+// SPECIAL: Hardcoded provider prefix required in this file
+
 package main
 
 import (
@@ -5,7 +7,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/TravisStratton/terraform-provider-awx/internal/provider"
+	"github.com/tfbrew/terraform-provider-awx/internal/provider"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
@@ -26,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/travisstratton/awx",
+		Address: "registry.terraform.io/tfbrew/awx",
 		Debug:   debug,
 	}
 

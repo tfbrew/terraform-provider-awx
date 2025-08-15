@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
 func TestAccGroupDataSource(t *testing.T) {
@@ -30,17 +31,17 @@ func TestAccGroupDataSource(t *testing.T) {
 				Config: testAccGroupDataSourceConfig(group),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"data.awx_group.test",
+						fmt.Sprintf("data.%s_group.test", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(group.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_group.test",
+						fmt.Sprintf("data.%s_group.test", configprefix.Prefix),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(group.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_group.test",
+						fmt.Sprintf("data.%s_group.test", configprefix.Prefix),
 						tfjsonpath.New("variables"),
 						knownvalue.StringExact(group.Variables),
 					),
@@ -51,17 +52,17 @@ func TestAccGroupDataSource(t *testing.T) {
 				Config: testAccGroupDataSourceConfigByName(group),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"data.awx_group.by_name",
+						fmt.Sprintf("data.%s_group.by_name", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(group.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_group.by_name",
+						fmt.Sprintf("data.%s_group.by_name", configprefix.Prefix),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(group.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_group.by_name",
+						fmt.Sprintf("data.%s_group.by_name", configprefix.Prefix),
 						tfjsonpath.New("variables"),
 						knownvalue.StringExact(group.Variables),
 					),
@@ -72,7 +73,7 @@ func TestAccGroupDataSource(t *testing.T) {
 }
 
 func testAccGroupDataSourceConfig(resource GroupAPIModel) string {
-	return fmt.Sprintf(`
+	return configprefix.ReplaceText(fmt.Sprintf(`
 resource "awx_organization" "example" {
   name        = "test-organization-%s"
   description = "test"
@@ -91,11 +92,11 @@ resource "awx_group" "test" {
 data "awx_group" "test" {
   id = awx_group.test.id
 }
-`, acctest.RandString(5), acctest.RandString(5), resource.Name, resource.Description, resource.Variables)
+`, acctest.RandString(5), acctest.RandString(5), resource.Name, resource.Description, resource.Variables))
 }
 
 func testAccGroupDataSourceConfigByName(resource GroupAPIModel) string {
-	return fmt.Sprintf(`
+	return configprefix.ReplaceText(fmt.Sprintf(`
 resource "awx_organization" "example" {
   name        = "test-organization-%s"
   description = "test"
@@ -115,5 +116,5 @@ data "awx_group" "by_name" {
   name      = awx_group.test.name
   inventory = awx_inventory.example.id
 }
-`, acctest.RandString(5), acctest.RandString(5), resource.Name, resource.Description, resource.Variables)
+`, acctest.RandString(5), acctest.RandString(5), resource.Name, resource.Description, resource.Variables))
 }

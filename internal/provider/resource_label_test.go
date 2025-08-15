@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
 func TestAccLabel_basic(t *testing.T) {
@@ -28,14 +29,14 @@ func TestAccLabel_basic(t *testing.T) {
 				Config: labelTestCaseSetup(orgName, labelName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.CompareValuePairs(
-						"awx_organization.testorg",
+						fmt.Sprintf("%s_organization.testorg", configprefix.Prefix),
 						tfjsonpath.New("id"),
-						"awx_label.test",
+						fmt.Sprintf("%s_label.test", configprefix.Prefix),
 						tfjsonpath.New("organization"),
 						idComparer,
 					),
 					statecheck.ExpectKnownValue(
-						"awx_label.test",
+						fmt.Sprintf("%s_label.test", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(labelName),
 					),
@@ -51,7 +52,7 @@ func TestAccLabel_basic(t *testing.T) {
 }
 
 func labelTestCaseSetup(org, name string) string {
-	return fmt.Sprintf(`
+	return configprefix.ReplaceText(fmt.Sprintf(`
 resource "awx_organization" "testorg" {
 	name = "%s"
 }
@@ -60,5 +61,5 @@ resource "awx_label" "test" {
 	name = "%s"
 	organization = awx_organization.testorg.id
 }
-`, org, name)
+`, org, name))
 }

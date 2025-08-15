@@ -1,14 +1,14 @@
 terraform {
   required_providers {
     awx = {
-      source = "TravisStratton/awx"
+      source = "tfbrew/awx"
     }
   }
 }
 
 provider "awx" {
   endpoint = "https://tower.example.com"
-  token    = "awxtoken"
+  token    = "token"
 }
 
 provider "awx" {

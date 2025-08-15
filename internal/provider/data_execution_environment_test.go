@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
 func TestAccExecutionEnvironmentDataSource(t *testing.T) {
@@ -31,22 +32,22 @@ func TestAccExecutionEnvironmentDataSource(t *testing.T) {
 				Config: testAccExecutionEnvironmentDataSourceConfig(resource1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-id",
+						fmt.Sprintf("data.%s_execution_environment.test-id", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(resource1.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-id",
+						fmt.Sprintf("data.%s_execution_environment.test-id", configprefix.Prefix),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource1.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-id",
+						fmt.Sprintf("data.%s_execution_environment.test-id", configprefix.Prefix),
 						tfjsonpath.New("image"),
 						knownvalue.StringExact(resource1.Image),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-id",
+						fmt.Sprintf("data.%s_execution_environment.test-id", configprefix.Prefix),
 						tfjsonpath.New("pull"),
 						knownvalue.StringExact(resource1.Pull),
 					),
@@ -57,22 +58,22 @@ func TestAccExecutionEnvironmentDataSource(t *testing.T) {
 				Config: testAccExecutionEnvironmentDataSourceConfig(resource1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-name",
+						fmt.Sprintf("data.%s_execution_environment.test-name", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(resource1.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-name",
+						fmt.Sprintf("data.%s_execution_environment.test-name", configprefix.Prefix),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource1.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-name",
+						fmt.Sprintf("data.%s_execution_environment.test-name", configprefix.Prefix),
 						tfjsonpath.New("image"),
 						knownvalue.StringExact(resource1.Image),
 					),
 					statecheck.ExpectKnownValue(
-						"data.awx_execution_environment.test-name",
+						fmt.Sprintf("data.%s_execution_environment.test-name", configprefix.Prefix),
 						tfjsonpath.New("pull"),
 						knownvalue.StringExact(resource1.Pull),
 					),
@@ -83,7 +84,7 @@ func TestAccExecutionEnvironmentDataSource(t *testing.T) {
 }
 
 func testAccExecutionEnvironmentDataSourceConfig(resource ExecutionEnvironmentAPIModel) string {
-	return fmt.Sprintf(`
+	return configprefix.ReplaceText(fmt.Sprintf(`
 resource "awx_execution_environment" "test" {
   name        	= "%s"
   description 	= "%s"
@@ -96,5 +97,5 @@ data "awx_execution_environment" "test-id" {
 data "awx_execution_environment" "test-name" {
   name = awx_execution_environment.test.name
 }
-`, resource.Name, resource.Description, resource.Image, resource.Pull)
+`, resource.Name, resource.Description, resource.Image, resource.Pull))
 }

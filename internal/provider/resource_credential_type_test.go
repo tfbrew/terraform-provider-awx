@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
 func TestAccCredentialTypeResource(t *testing.T) {
@@ -34,17 +35,17 @@ func TestAccCredentialTypeResource(t *testing.T) {
 				Config: testAccCredentialTypeConfig(resource1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"awx_credential_type.test",
+						fmt.Sprintf("%s_credential_type.test", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(resource1.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_credential_type.test",
+						fmt.Sprintf("%s_credential_type.test", configprefix.Prefix),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource1.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_credential_type.test",
+						fmt.Sprintf("%s_credential_type.test", configprefix.Prefix),
 						tfjsonpath.New("kind"),
 						knownvalue.StringExact(resource1.Kind),
 					),
@@ -59,17 +60,17 @@ func TestAccCredentialTypeResource(t *testing.T) {
 				Config: testAccCredentialTypeConfig(resource2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"awx_credential_type.test",
+						fmt.Sprintf("%s_credential_type.test", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(resource2.Name),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_credential_type.test",
+						fmt.Sprintf("%s_credential_type.test", configprefix.Prefix),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource2.Description),
 					),
 					statecheck.ExpectKnownValue(
-						"awx_credential_type.test",
+						fmt.Sprintf("%s_credential_type.test", configprefix.Prefix),
 						tfjsonpath.New("kind"),
 						knownvalue.StringExact(resource1.Kind),
 					),
@@ -80,10 +81,10 @@ func TestAccCredentialTypeResource(t *testing.T) {
 }
 
 func testAccCredentialTypeConfig(resource CredentialTypeAPIModel) string {
-	return fmt.Sprintf(`
+	return configprefix.ReplaceText(fmt.Sprintf(`
 resource "awx_credential_type" "test" {
   name         = "%s"
   description  = "%s"
 }
-  `, resource.Name, resource.Description)
+  `, resource.Name, resource.Description))
 }
