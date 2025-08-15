@@ -42,7 +42,8 @@ type theProviderModel struct {
 	Token    types.String `tfsdk:"token"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
-	Platform types.String `tfsdk:"platform"`
+	// SPECIAL: not used for tfbrew versions of this provider
+	// Platform types.String `tfsdk:"platform"`
 	APIretry types.Object `tfsdk:"api_retry"`
 }
 
@@ -212,20 +213,23 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.endpoint = endpoint
 	client.auth = auth
 
-	if !data.Platform.IsNull() {
-		platform = data.Platform.ValueString()
-		os.Setenv("TOWER_PLATFORM", platform)
-	}
+	// SPECIAL: hard code platform in tfbrew versions of repo
+	// if !data.Platform.IsNull() {
+	// 	platform = data.Platform.ValueString()
+	// 	os.Setenv("TOWER_PLATFORM", platform)
+	// }
 
-	envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
+	// envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
 
-	if platformExists {
-		platform = envPlatform
-	}
+	// if platformExists {
+	// 	platform = envPlatform
+	// }
 
-	if platform == "" {
-		platform = "awx"
-	}
+	// if platform == "" {
+	// 	platform = "awx"
+	// }
+
+	platform = "awx"
 
 	client.platform = platform
 
