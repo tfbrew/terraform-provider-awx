@@ -31,7 +31,7 @@ Search all files in this repository for the phrase `SPECIAL` to find files that 
 
 When writing acceptance test, you often have to write Terraform HCL code. Make sure to write your embedded HCL such that it will use the configprefix.Prefix to prefix the resource ID properly.
 
-If you are creating functions to generate HCL, you can wrap the returned string in a function called **configprefix.ReplaceText()** to automatically convert the instances of awx_ or aap_ strings into the one matching your build tag.
+If you are creating functions to generate HCL, you can wrap the returned string in a function called **configprefix.ReplaceText()** to automatically convert the instances of `awx_` or `aap_` strings into the one matching your build tag.
 
 For example:
 
