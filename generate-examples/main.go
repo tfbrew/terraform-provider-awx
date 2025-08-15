@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TravisStratton/terraform-provider-awx/internal/configprefix"
+	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
 func main() {
