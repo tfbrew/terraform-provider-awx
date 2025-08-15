@@ -58,7 +58,6 @@ provider "awx" {
 - `api_retry` (Attributes) An optional block to define if the provider should retry GET/read API requests that intitially fail. (see [below for nested schema](#nestedatt--api_retry))
 - `endpoint` (String) URL for automation controller (i.e. https://tower.example.com)
 - `password` (String) Automation controller password (instead of token). You can also set this using the TOWER_PASSWORD environment variable.
-- `platform` (String) Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `Automation Controller` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.
 - `token` (String) Automation controller access token (instead of username/password). You can also set this using the TOWER_OAUTH_TOKEN environment variable.
 - `username` (String) Automation controller username (instead of token). You can also set this using the TOWER_USERNAME environment variable.
 
