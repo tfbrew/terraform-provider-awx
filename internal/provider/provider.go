@@ -44,6 +44,8 @@ type theProviderModel struct {
 	Password types.String `tfsdk:"password"`
 	// SPECIAL: not used for tfbrew versions of this provider
 	// Platform types.String `tfsdk:"platform"`
+	// SPECIAL: not used for tfbrew versions of this provider
+	// Platform types.String `tfsdk:"platform"`
 	APIretry types.Object `tfsdk:"api_retry"`
 }
 
@@ -77,6 +79,14 @@ func (p *theProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Description: "Automation controller password (instead of token). You can also set this using the TOWER_PASSWORD environment variable.",
 				Optional:    true,
 			},
+			// SPECIAL: this is commented out for the tfbrew/awx provider as it only supports awx/aap2.4
+			// "platform": schema.StringAttribute{
+			// 	Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `Automation Controller` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.",
+			// 	Optional:    true,
+			// 	Validators: []validator.String{
+			// 		stringvalidator.OneOf("aap2.4", "aap2.5", "awx"),
+			// 	},
+			// },
 			// SPECIAL: this is commented out for the tfbrew/awx provider as it only supports awx/aap2.4
 			// "platform": schema.StringAttribute{
 			// 	Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `Automation Controller` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.",
@@ -218,9 +228,18 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	// 	platform = data.Platform.ValueString()
 	// 	os.Setenv("TOWER_PLATFORM", platform)
 	// }
+	// SPECIAL: hard code platform in tfbrew versions of repo
+	// if !data.Platform.IsNull() {
+	// 	platform = data.Platform.ValueString()
+	// 	os.Setenv("TOWER_PLATFORM", platform)
+	// }
 
 	// envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
+	// envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
 
+	// if platformExists {
+	// 	platform = envPlatform
+	// }
 	// if platformExists {
 	// 	platform = envPlatform
 	// }
