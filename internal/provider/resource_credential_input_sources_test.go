@@ -107,7 +107,7 @@ func TestAccCredentialInputSourcesResource(t *testing.T) {
 			}, // end Step 1
 			// Step 2
 			{
-				ResourceName:      "awx_credential_input_sources.example_hashi_cred_input_src",
+				ResourceName:      fmt.Sprintf("%s_credential_input_sources.example_hashi_cred_input_src", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			}, // end Step 2

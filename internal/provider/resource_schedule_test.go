@@ -68,7 +68,7 @@ func TestAccScheduleResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_schedule.test",
+				ResourceName:      fmt.Sprintf("%s_schedule.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

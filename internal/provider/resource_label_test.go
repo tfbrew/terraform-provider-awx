@@ -43,7 +43,7 @@ func TestAccLabel_basic(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_label.test",
+				ResourceName:      fmt.Sprintf("%s_label.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

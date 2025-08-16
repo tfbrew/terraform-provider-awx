@@ -68,7 +68,7 @@ func TestAccGroupResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_group.test",
+				ResourceName:      fmt.Sprintf("%s_group.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -104,7 +104,7 @@ func TestAccGroupResource(t *testing.T) {
 				Config: testAccSecondInvResourceConfig(ReplacementInventory) + testAccInvPlanRecreateConfig(Group2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("awx_group.test2", plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(fmt.Sprintf("%s_group.test2", configprefix.Prefix), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 			},

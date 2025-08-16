@@ -45,10 +45,10 @@ func TestAccJobTemplateLabel_basic(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:                         "awx_job_template_label.test",
+				ResourceName:                         fmt.Sprintf("%s_job_template_label.test", configprefix.Prefix),
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateIdFunc:                    importStateJobTemplateID("awx_job_template_label.test"),
+				ImportStateIdFunc:                    importStateJobTemplateID(fmt.Sprintf("%s_job_template_label.test", configprefix.Prefix)),
 				ImportStateVerifyIdentifierAttribute: ("job_template_id"),
 			},
 		},

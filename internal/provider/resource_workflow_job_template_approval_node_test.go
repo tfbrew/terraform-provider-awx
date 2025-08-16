@@ -57,12 +57,12 @@ func TestAccWkflwJobTemplApprovalNodeResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_workflow_job_template_approval_node.test",
+				ResourceName:      fmt.Sprintf("%s_workflow_job_template_approval_node.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
-				ResourceName:      "awx_workflow_job_template_approval_node.test_timeoutdefault",
+				ResourceName:      fmt.Sprintf("%s_workflow_job_template_approval_node.test_timeoutdefault", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

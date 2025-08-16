@@ -42,7 +42,7 @@ func TestAccWkflwJobTemplJobNodeFailureResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_workflow_job_template_node_failure.test",
+				ResourceName:      fmt.Sprintf("%s_workflow_job_template_node_failure.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
