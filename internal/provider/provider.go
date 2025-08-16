@@ -9,8 +9,7 @@ import (
 	"os"
 	"strconv"
 	"time"
-github.com/tfbrew/terraform-provider-aap
-	"github.com/TravisStratton/terraform-provider-awx/internal/configprefix"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/providervalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -22,6 +21,7 @@ github.com/tfbrew/terraform-provider-aap
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/tfbrew/terraform-provider-aap/internal/configprefix"
 )
 
 // Ensure Provider satisfies various provider interfaces.
@@ -42,7 +42,8 @@ type theProviderModel struct {
 	Token    types.String `tfsdk:"token"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
-	Platform types.String `tfsdk:"platform"`
+	// SPECIAL: not used for tfbrew versions of this provider
+	// Platform types.String `tfsdk:"platform"`
 	APIretry types.Object `tfsdk:"api_retry"`
 }
 
@@ -212,20 +213,23 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.endpoint = endpoint
 	client.auth = auth
 
-	if !data.Platform.IsNull() {
-		platform = data.Platform.ValueString()
-		os.Setenv("TOWER_PLATFORM", platform)
-	}
+	// SPECIAL: hard code platform in tfbrew versions of repo
+	// if !data.Platform.IsNull() {
+	// 	platform = data.Platform.ValueString()
+	// 	os.Setenv("TOWER_PLATFORM", platform)
+	// }
 
-	envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
+	// envPlatform, platformExists := os.LookupEnv("TOWER_PLATFORM")
 
-	if platformExists {
-		platform = envPlatform
-	}
+	// if platformExists {
+	// 	platform = envPlatform
+	// }
 
-	if platform == "" {
-		platform = "awx"
-	}
+	// if platform == "" {
+	// 	platform = "awx"
+	// }
+
+	platform = "aap"
 
 	client.platform = platform
 
