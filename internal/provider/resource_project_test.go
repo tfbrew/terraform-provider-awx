@@ -105,7 +105,7 @@ func TestAccProjectResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_project.test",
+				ResourceName:      fmt.Sprintf("%s_project.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

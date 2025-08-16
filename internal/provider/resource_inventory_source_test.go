@@ -95,7 +95,7 @@ func TestAccInventorySourceResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_inventory_source.test",
+				ResourceName:      fmt.Sprintf("%s_inventory_source.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

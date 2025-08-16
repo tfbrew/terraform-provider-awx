@@ -74,7 +74,7 @@ func TestAccJobTemplateResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_job_template.test",
+				ResourceName:      fmt.Sprintf("%s_job_template.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

@@ -49,7 +49,7 @@ func TestAccTeamResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_team.test",
+				ResourceName:      fmt.Sprintf("%s_team.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

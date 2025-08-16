@@ -31,7 +31,7 @@ func TestAccInstanceGroupResource(t *testing.T) {
 	resource3 := InstanceGroupAPIModel{
 		Name:             "test-container-group-" + acctest.RandString(5),
 		IsContainerGroup: true,
-		PodSpecOverride:  "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"namespace\":\"awx\"},\"spec\":{\"automountServiceAccountToken\":false,\"containers\":[{\"args\":[\"ansible-runner\",\"worker\",\"--private-data-dir=/runner\"],\"image\":\"quay.io/ansible/awx-ee:latest\",\"name\":\"worker\",\"resources\":{\"requests\":{\"cpu\":\"250m\",\"memory\":\"100Mi\"}}}],\"serviceAccountName\":\"default\"}}",
+		PodSpecOverride:  "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"namespace\":\"testspace\"},\"spec\":{\"automountServiceAccountToken\":false,\"containers\":[{\"args\":[\"ansible-runner\",\"worker\",\"--private-data-dir=/runner\"],\"image\":\"quay.io/ansible/awx-ee:latest\",\"name\":\"worker\",\"resources\":{\"requests\":{\"cpu\":\"250m\",\"memory\":\"100Mi\"}}}],\"serviceAccountName\":\"default\"}}",
 	}
 	resource3podspecoverride, ok := resource3.PodSpecOverride.(string)
 	if !ok {
@@ -80,7 +80,7 @@ func TestAccInstanceGroupResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_instance_group.test-instance",
+				ResourceName:      fmt.Sprintf("%s_instance_group.test-instance", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
