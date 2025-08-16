@@ -248,7 +248,7 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	// 	platform = "awx"
 	// }
 
-	platform = "aap"
+	platform = "aap2.5"
 
 	client.platform = platform
 
