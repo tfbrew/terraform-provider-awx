@@ -27,7 +27,7 @@ data "awx_organization" "example-name" {
 
 ### Optional
 
-- `id` (String) Organization ID. If using a provider-level `platform` field value of `aap2.5` then be sure this ID is the controller ID, not the gateway ID.
+- `id` (String) Organization ID. Be sure this ID is the controller ID, not the gateway ID.
 - `name` (String) Organization name
 
 ### Read-Only

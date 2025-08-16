@@ -18,7 +18,7 @@ Manage a team.
 ### Required
 
 - `name` (String) Name of the team.
-- `organization` (Number) Organization ID of the team. If using AAP 2.5, this should be the gateway ID of the organization, not the controller ID.
+- `organization` (Number) Organization ID of the team. This should be the gateway ID of the organization, not the controller ID.
 
 ### Optional
 
