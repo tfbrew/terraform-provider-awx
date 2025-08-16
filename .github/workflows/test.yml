@@ -1,4 +1,4 @@
-# SPECIAL: This file must be hand altered to match if it runs for AWX, AAP, or both 
+# SPECIAL: This file must be hand altered to match if it runs for AWX, AAP, or both
 
 # Terraform Provider testing workflow.
 name: Tests
