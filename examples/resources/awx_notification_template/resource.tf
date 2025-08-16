@@ -48,7 +48,7 @@ resource "awx_notification_template" "example-webhook-type" {
   notification_configuration = jsonencode({
     url = "https://webhooktarget.com"
     headers = {
-      httpheader1 = "travis"
+      httpheader1 = "example12"
       httpheader2 = 2
     }
     password                 = "thepassword"
