@@ -36,3 +36,5 @@ website/vendor
 .vscode/settings.json
 .vscode/launch.json
 gitlog.txt
+.ansible/.lock
+
