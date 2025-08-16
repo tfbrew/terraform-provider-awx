@@ -34,7 +34,8 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 		Description: "Get organization datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Organization ID. If using a provider-level `platform` field value of `aap2.5` then be sure this ID is the controller ID, not the gateway ID.",
+				// SPECIAL: Let them know that for 2.5 (this provider) this is the case
+				Description: "Organization ID. Be sure this ID is the controller ID, not the gateway ID.",
 				Optional:    true,
 			},
 			"aap25_gateway_id": schema.Int32Attribute{

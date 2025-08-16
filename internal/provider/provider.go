@@ -13,7 +13,6 @@ github.com/tfbrew/terraform-provider-aap
 	"github.com/TravisStratton/terraform-provider-awx/internal/configprefix"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/providervalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -77,13 +76,14 @@ func (p *theProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 				Description: "Automation controller password (instead of token). You can also set this using the TOWER_PASSWORD environment variable.",
 				Optional:    true,
 			},
-			"platform": schema.StringAttribute{
-				Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `Automation Controller` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf("aap2.4", "aap2.5", "awx"),
-				},
-			},
+			// SPECIAL: this is commented out for the tfbrew/awx provider as it only supports awx/aap2.4
+			// "platform": schema.StringAttribute{
+			// 	Description: "Does the endpoint point to an Ansible Automation Platform (AAP) version 2.5, verion 2.4, or AWX/Tower environment? Acceptable values are `awx`, `aap2.4`, or `aap2.5`. A default value of `Automation Controller` will be assumed if this field is not set. You can also set this using the TOWER_PLATFORM environment variable.",
+			// 	Optional:    true,
+			// 	Validators: []validator.String{
+			// 		stringvalidator.OneOf("aap2.4", "aap2.5", "awx"),
+			// 	},
+			// },
 			"api_retry": schema.SingleNestedAttribute{
 				Description: "An optional block to define if the provider should retry GET/read API requests that intitially fail.",
 				Optional:    true,
