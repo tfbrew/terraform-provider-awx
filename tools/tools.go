@@ -1,5 +1,6 @@
 //go:build generate
 
+// SPECIAL: Hardcoded provider prefix required in this file
 package tools
 
 import (
