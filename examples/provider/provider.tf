@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     awx = {
-      source = "TravisStratton/awx"
+      source = "tfbrew/aap"
     }
   }
 }

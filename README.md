@@ -11,7 +11,7 @@ If you find any bugs or have a feature request, please open a GitHub issue.
 
 This code is used for three different providers:
 
-- The original one: TravisStratton/awx. This one supports awx, aap2.4, and aap2.5
+- The original one: tfbrew/aap. This one supports awx, aap2.4, and aap2.5
 - tfbrew/aap: Supports aap2.5 and greater.
 - tfbrew/awx: Supports awx and aap2.4.
 

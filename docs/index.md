@@ -16,7 +16,7 @@ This is a Terraform Provider for managing resources in Automation Controller suc
 terraform {
   required_providers {
     awx = {
-      source = "TravisStratton/awx"
+      source = "tfbrew/aap"
     }
   }
 }
