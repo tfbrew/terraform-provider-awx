@@ -1,4 +1,4 @@
-module github.com/TravisStratton/terraform-provider-awx
+module github.com/tfbrew/terraform-provider-aap
 
 go 1.23.0
 

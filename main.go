@@ -7,7 +7,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/TravisStratton/terraform-provider-awx/internal/provider"
+	"github.com/tfbrew/terraform-provider-aap/internal/provider"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
