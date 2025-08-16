@@ -8,8 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
 
+// SPECIAL: change this key value from awx or app appropriately.
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"awx": providerserver.NewProtocol6WithError(New("test")()),
+	"aap": providerserver.NewProtocol6WithError(New("test")()),
 }
 
 func testAccPreCheck(t *testing.T) {
