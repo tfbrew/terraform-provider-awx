@@ -1,0 +1,1 @@
+terraform import aap_label.example 1

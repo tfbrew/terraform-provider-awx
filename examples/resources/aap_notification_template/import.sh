@@ -1,0 +1,1 @@
+terraform import aap_notification_template.example 100

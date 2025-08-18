@@ -1,30 +1,30 @@
 terraform {
   required_providers {
-    awx = {
+    aap = {
       source = "tfbrew/aap"
     }
   }
 }
 
-provider "awx" {
+provider "aap" {
   endpoint = "https://tower.example.com"
   token    = "token"
 }
 
-provider "awx" {
+provider "aap" {
   endpoint = "http://tower.example.com"
   username = "admin"
   password = "password"
 }
 
 
-provider "awx" {
+provider "aap" {
   endpoint = "http://aap.example.com"
   token    = "mysecrettoken"
   platform = "aap2.5"
 }
 
-provider "awx" {
+provider "aap" {
   endpoint = "http://aap.example.com"
   token    = "mysecrettoken"
   platform = "aap2.5"

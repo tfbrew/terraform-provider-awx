@@ -1,0 +1,1 @@
+terraform import aap_job_template_instance_group.example 100
