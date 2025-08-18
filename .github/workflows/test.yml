@@ -86,7 +86,7 @@ jobs:
           TOWER_HOST: ${{ secrets.TOWER_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.TOWER_OAUTH_TOKEN }}
           TOWER_PLATFORM: "awx"
-        run: go test -v -cover -timeout 20m ./internal/provider/
+        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/
         timeout-minutes: 20
 
   testaap24:
@@ -120,5 +120,5 @@ jobs:
           TOWER_PLATFORM: "aap2.4"
           TOWER_API_RETRY_COUNT: 1 # Run aap2.4 test with API_RETRY_COUNT
           TOWER_API_RETRY_DELAY_SECONDS: 2 # Run aap2.4 test with API_RETRY_DELAY_SECONDS
-        run: go test -v -cover -timeout 20m ./internal/provider/
+        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/
         timeout-minutes: 20
