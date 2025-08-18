@@ -19,8 +19,6 @@ func TestAccCredentialInputSourcesResource(t *testing.T) {
 	srcCredName := acctest.RandString(8)
 	tgtCredName := acctest.RandString(8)
 	secKey := "secret/tower/username"
-	thePrefix := configprefix.Prefix
-	fmt.Println(thePrefix)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
