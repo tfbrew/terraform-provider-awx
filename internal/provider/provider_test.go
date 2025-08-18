@@ -6,11 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/tfbrew/terraform-provider-aap/internal/configprefix"
 )
 
-// SPECIAL: change this key value from awx or app appropriately.
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"aap": providerserver.NewProtocol6WithError(New("test")()),
+	configprefix.Prefix: providerserver.NewProtocol6WithError(New("test")()),
 }
 
 func testAccPreCheck(t *testing.T) {
