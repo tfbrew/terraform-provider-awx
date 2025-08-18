@@ -95,7 +95,7 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_job_template_survey_spec.example",
+				ResourceName:      fmt.Sprintf("%s_job_template_survey_spec.example", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

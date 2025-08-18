@@ -96,7 +96,7 @@ func TestAccUserResource(t *testing.T) {
 				},
 				// ImportState testing
 				{
-					ResourceName:            "awx_user.test",
+					ResourceName:            fmt.Sprintf("%s_user.test", configprefix.Prefix),
 					ImportState:             true,
 					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"password"},
@@ -301,7 +301,7 @@ func TestAccUserResource(t *testing.T) {
 				},
 				// ImportState testing
 				{
-					ResourceName:            "awx_user.test",
+					ResourceName:            fmt.Sprintf("%s_user.test", configprefix.Prefix),
 					ImportState:             true,
 					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"password"},

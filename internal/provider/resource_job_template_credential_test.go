@@ -34,10 +34,10 @@ func TestAccJobTemplateCredentialResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:                         "awx_job_template_credential.test",
+				ResourceName:                         fmt.Sprintf("%s_job_template_credential.test", configprefix.Prefix),
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateIdFunc:                    importStateJobTemplateID("awx_job_template_credential.test"),
+				ImportStateIdFunc:                    importStateJobTemplateID(fmt.Sprintf("%s_job_template_credential.test", configprefix.Prefix)),
 				ImportStateVerifyIdentifierAttribute: ("job_template_id"),
 			},
 			{

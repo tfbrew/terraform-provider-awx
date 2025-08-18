@@ -103,7 +103,7 @@ func TestAccNotificationTemplateResource(t *testing.T) {
 			},
 			// test import
 			{
-				ResourceName:            "awx_notification_template.example-webhook-type",
+				ResourceName:            fmt.Sprintf("%s_notification_template.example-webhook-type", configprefix.Prefix),
 				ImportState:             true,
 				ImportStateVerifyIgnore: []string{"notification_configuration"},
 			},

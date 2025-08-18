@@ -52,7 +52,7 @@ func TestAccCredentialTypeResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_credential_type.test",
+				ResourceName:      fmt.Sprintf("%s_credential_type.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

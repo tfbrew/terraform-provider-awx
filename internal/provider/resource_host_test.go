@@ -61,7 +61,7 @@ func TestAccHostResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_host.test",
+				ResourceName:      fmt.Sprintf("%s_host.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
