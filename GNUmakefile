@@ -11,7 +11,7 @@ lint:
 	golangci-lint run
 
 generate:
-	go run generate-examples/main.go
+	go run -tags=repoAWX generate-examples/main.go
 	cd tools; go generate ./...
 
 fmt:
