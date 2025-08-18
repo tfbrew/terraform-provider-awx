@@ -5,8 +5,8 @@ package configprefix
 
 import "strings"
 
-const Prefix = "awx"
+const Prefix = "aap"
 
 func ReplaceText(input string) string {
-	return strings.ReplaceAll(input, "aap_", "awx_")
+	return strings.ReplaceAll(input, "awx_", "aap_")
 }

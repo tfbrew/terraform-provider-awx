@@ -11,8 +11,8 @@ lint:
 	golangci-lint run
 
 generate:
-	go run -tags=repoAAP generate-examples/main.go
-	cd tools; go generate -tags=repoAAP ./...
+	go run generate-examples/main.go
+	cd tools; go generate ./...
 
 fmt:
 	gofmt -s -w -e .
