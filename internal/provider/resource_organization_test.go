@@ -62,7 +62,7 @@ func TestAccOrganizationResource(t *testing.T) {
 				},
 				// ImportState testing
 				{
-					ResourceName:      "awx_organization.test",
+					ResourceName:      fmt.Sprintf("%s_organization.test", configprefix.Prefix),
 					ImportState:       true,
 					ImportStateVerify: true,
 				},
@@ -127,7 +127,7 @@ func TestAccOrganizationResource(t *testing.T) {
 				},
 				// ImportState testing
 				{
-					ResourceName:      "awx_organization.test",
+					ResourceName:      fmt.Sprintf("%s_organization.test", configprefix.Prefix),
 					ImportState:       true,
 					ImportStateVerify: true,
 				},

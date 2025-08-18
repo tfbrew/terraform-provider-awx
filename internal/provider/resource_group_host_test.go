@@ -74,7 +74,7 @@ func TestAccGroupHostResource(t *testing.T) {
 				Config: testAccGrpHstOrgInv() + testAccGrpHst1stPass() + testAccGrpHst2ndPassGrp2(),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("awx_group_host.grp2-host-link", plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(fmt.Sprintf("%s_group_host.grp2-host-link", configprefix.Prefix), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 			},

@@ -18,7 +18,7 @@ func TestAccCredentialDataSource(t *testing.T) {
 	resource1 := CredentialAPIModel{
 		Name:        "test-credential-" + acctest.RandString(5),
 		Description: "test description",
-		Inputs:      "{\"become_method\":\"sudo\",\"become_password\":\"ASK\",\"password\":\"test1234\",\"username\":\"awx\"}",
+		Inputs:      "{\"become_method\":\"sudo\",\"become_password\":\"ASK\",\"password\":\"test1234\",\"username\":\"tester\"}",
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },

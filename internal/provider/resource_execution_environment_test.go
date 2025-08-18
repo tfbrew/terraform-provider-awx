@@ -62,7 +62,7 @@ func TestAccExecutionEnvironmentResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      "awx_execution_environment.test",
+				ResourceName:      fmt.Sprintf("%s_execution_environment.test", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

@@ -48,7 +48,7 @@ func TestAccCredentialResource(t *testing.T) {
 	resource1 := CredentialAPIModel{
 		Name:        "test-credential-machine-" + acctest.RandString(5),
 		Description: "test description 1",
-		Inputs:      "{\"become_method\":\"sudo\",\"become_password\":\"ASK\",\"password\":\"test1234\",\"username\":\"awx\"}",
+		Inputs:      "{\"become_method\":\"sudo\",\"become_password\":\"ASK\",\"password\":\"test1234\",\"username\":\"testuser\"}",
 	}
 	resource1inputs, ok := resource1.Inputs.(string)
 	if !ok {
@@ -57,7 +57,7 @@ func TestAccCredentialResource(t *testing.T) {
 	resource2 := CredentialAPIModel{
 		Name:        "test-credential-source-control-" + acctest.RandString(5),
 		Description: "test description 2",
-		Inputs:      "{\"ssh_key_data\":\"" + opensshKey + "\",\"username\":\"awx\"}",
+		Inputs:      "{\"ssh_key_data\":\"" + opensshKey + "\",\"username\":\"testuser\"}",
 	}
 	resource2inputs, ok := resource2.Inputs.(string)
 	if !ok {
@@ -149,7 +149,7 @@ func TestAccCredentialResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            "awx_credential.test-container-registry",
+				ResourceName:            fmt.Sprintf("%s_credential.test-container-registry", configprefix.Prefix),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"inputs"},
