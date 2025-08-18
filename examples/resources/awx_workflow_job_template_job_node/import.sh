@@ -1,1 +1,0 @@
-terraform import awx_workflow_job_template_job_node.example_node 201

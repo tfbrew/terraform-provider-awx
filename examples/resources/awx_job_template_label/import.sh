@@ -1,1 +1,0 @@
-terraform import awx_job_template_label.example 100

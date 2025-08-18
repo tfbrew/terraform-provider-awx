@@ -1,1 +1,0 @@
-terraform import awx_label.example 1

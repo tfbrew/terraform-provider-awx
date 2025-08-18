@@ -1,1 +1,0 @@
-terraform import awx_job_template_notification_template_error.example 100
