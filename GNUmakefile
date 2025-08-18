@@ -12,7 +12,7 @@ lint:
 
 generate:
 	go run -tags=repoAAP generate-examples/main.go
-	cd tools; go generate ./...
+	cd tools; go generate -tags=repoAAP ./...
 
 fmt:
 	gofmt -s -w -e .
