@@ -27,6 +27,8 @@ This repo has 2 build tags: repoAWX and repoAAP. This is so that this code can b
 
 The scaffold template's GNUmakefile has been altered to include refencing these tags. Therefore, use the `make` commands to self-compile instead of just using `go` raw. For example, run `make install` instead fo `go install`.
 
+For **VS Code** this repo includes the workspace files `.vscode/settings.json` and `.vscode/launch.json` that set repo-specific flags necessary for linters and debugging with the appropriate build tag set.
+
 ## Special Handling for Each Repo
 
 Search all files in this repository for the phrase `SPECIAL` to find files that may need to be updated to be specfiic to the containing repository & whether this is targetted for an aap named provider or an awx named provider.
