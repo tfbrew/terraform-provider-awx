@@ -33,8 +33,6 @@ website/vendor
 
 # Keep windows files with windows line endings
 *.winfile eol=crlf
-.vscode/settings.json
-.vscode/launch.json
 gitlog.txt
 .ansible/.lock
 
