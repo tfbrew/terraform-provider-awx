@@ -20,11 +20,9 @@ fmt:
 	gofmt -s -w -e .
 
 test:
-# SPECIAL: add -tags=$(REPO_BUILD_TAG_VAL) or -tags=repoAAP
 	go test -v -cover -timeout=120s -parallel=10 -tags=$(REPO_BUILD_TAG_VAL) ./internal/provider
 
 testacc:
-# SPECIAL: add -tags=$(REPO_BUILD_TAG_VAL) or -tags=repoAAP
 	TF_ACC=1 go test -tags=$(REPO_BUILD_TAG_VAL) -v -cover ./internal/provider
 
 .PHONY: fmt lint test testacc build install generate
