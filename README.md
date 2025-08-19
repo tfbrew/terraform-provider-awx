@@ -7,6 +7,10 @@ This is a terraform provider for AAP >= 2.5 built with the [Terraform Plugin Fra
 
 If you find any bugs or have a feature request, please open a GitHub issue.
 
+# Use the GNUmakefile
+
+This repo has modified the GNUmake file inherited from the Terraform scaffold repo to ensure commands work with the internal/configprefix necessecity to define one of two build tags: repoAAP or repoAWX.
+
 ## Code sharing
 
 This code is used for three different providers:
@@ -22,6 +26,8 @@ This code is used for three different providers:
 This repo has 2 build tags: repoAWX and repoAAP. This is so that this code can be used for 2 differently named repositories & Terraform Providers.
 
 The scaffold template's GNUmakefile has been altered to include refencing these tags. Therefore, use the `make` commands to self-compile instead of just using `go` raw. For example, run `make install` instead fo `go install`.
+
+For **VS Code** this repo includes the workspace files `.vscode/settings.json` and `.vscode/launch.json` that set repo-specific flags necessary for linters and debugging with the appropriate build tag set.
 
 ## Special Handling for Each Repo
 
