@@ -1,3 +1,4 @@
+    // SPECIAL: This is repo specific and hard-coded AAP vs AWX.
     {
         /// NO SECRETS this is tracked in git - use your global VS Code settings.json.        
         
