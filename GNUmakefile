@@ -8,7 +8,7 @@ install: build
 	go install -v -tags=repoAWX ./...
 
 lint:
-	golangci-lint run --build-tags=repoAAP
+	golangci-lint run --build-tags=repoAWX
 
 generate:
 	go run generate-examples/main.go
