@@ -7,6 +7,10 @@ This is a terraform provider for AAP >= 2.5 built with the [Terraform Plugin Fra
 
 If you find any bugs or have a feature request, please open a GitHub issue.
 
+# Use the GNUmakefile
+
+This repo has modified the GNUmake file inherited from the Terraform scaffold repo to ensure commands work with the internal/configprefix necessecity to define one of two build tags: repoAAP or repoAWX.
+
 ## Code sharing
 
 This code is used for three different providers:
