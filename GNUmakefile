@@ -8,11 +8,11 @@ install: build
 	go install -v -tags=repoAWX ./...
 
 lint:
-	golangci-lint run
+	golangci-lint run --build-tags=repoAWX
 
 generate:
-	go run generate-examples/main.go
-	cd tools; go generate ./...
+	GOFLAGS="-tags=repoAWX" go run generate-examples/main.go
+	(cd tools && GOFLAGS="-tags=repoAWX" go generate ./...)
 
 fmt:
 	gofmt -s -w -e .

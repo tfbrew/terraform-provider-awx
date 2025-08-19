@@ -1,0 +1,26 @@
+//  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
+{
+    //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
+    "version": "0.2.0",
+    "configurations": [
+{
+    //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
+
+        "name": "AWX-AAP24",
+        "type": "go",
+        "request": "launch",
+        "mode": "debug",
+        "program": "${workspaceFolder}",
+        "env": {
+            "TOWER_OAUTH_TOKEN": "{env:TOWER_OAUTH_TOKEN}",
+            "TOWER_HOST": "{env:TOWER_HOST",
+            "TOWER_PLATFORM": "{env:TOWER_PLATFORM}"
+        },
+        "buildFlags": ["-tags=repoAWX"],
+        "args": ["-debug"]
+    }
+
+    //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
+
+    ]
+}
