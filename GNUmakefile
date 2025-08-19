@@ -8,7 +8,7 @@ install: build
 	go install -v -tags=repoAAP ./...
 
 lint:
-	golangci-lint run
+	golangci-lint run --build-tags=repoAAP
 
 generate:
 	GOFLAGS="-tags=repoAAP" go run generate-examples/main.go
