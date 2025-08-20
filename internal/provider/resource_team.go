@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
 var _ resource.Resource = &TeamResource{}
@@ -45,9 +46,8 @@ func (r *TeamResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Description: "Name of the team.",
 			},
 			"organization": schema.Int32Attribute{
-				Required: true,
-				// SPECIAL: remove reference to aap2.5
-				Description: "Organization ID of the team.",
+				Required:    true,
+				Description: configprefix.TeamResourceOrgIdDescription,
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,

@@ -1,6 +1,6 @@
-//go:build generate
+//go:build generate && repoAWX
 
-// SPECIAL: Hardcoded provider prefix required in this file
+// SPECIAL: Hardcoded provider prefix required in this file and added build tag
 package tools
 
 import (

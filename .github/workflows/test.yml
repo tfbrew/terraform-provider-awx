@@ -1,5 +1,3 @@
-# SPECIAL: This file must be hand altered to match if it runs for AWX, AAP, or both
-
 # Terraform Provider testing workflow.
 name: Tests
 
@@ -118,7 +116,6 @@ jobs:
           TF_ACC: "1"
           TOWER_HOST: ${{ secrets.AAP_24_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.AAP_24_OAUTH_TOKEN }}
-          TOWER_PLATFORM: "aap2.4"
           TOWER_API_RETRY_COUNT: 1 # Run aap2.4 test with API_RETRY_COUNT
           TOWER_API_RETRY_DELAY_SECONDS: 2 # Run aap2.4 test with API_RETRY_DELAY_SECONDS
         run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/

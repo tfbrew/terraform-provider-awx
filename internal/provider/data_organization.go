@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
 var _ datasource.DataSource = &OrganizationDataSource{}
@@ -34,8 +35,7 @@ func (d *OrganizationDataSource) Schema(ctx context.Context, req datasource.Sche
 		Description: "Get organization datasource",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				// SPECIAL: Remove reference to platform for tfbrew/awx
-				Description: "Organization ID.",
+				Description: configprefix.OrgDataSourceIdDescription,
 				Optional:    true,
 			},
 			"aap25_gateway_id": schema.Int32Attribute{

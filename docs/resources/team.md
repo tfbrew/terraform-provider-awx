@@ -18,7 +18,7 @@ Manage a team.
 ### Required
 
 - `name` (String) Name of the team.
-- `organization` (Number) Organization ID of the team.
+- `organization` (Number) Organization ID.
 
 ### Optional
 

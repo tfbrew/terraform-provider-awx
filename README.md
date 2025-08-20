@@ -7,7 +7,7 @@ This is a terraform provider for AWX and AAP2.4  built with the [Terraform Plugi
 
 If you find any bugs or have a feature request, please open a GitHub issue.
 
-# Use the GNUmakefile
+## Use the GNUmakefile
 
 This repo has modified the GNUmake file inherited from the Terraform scaffold repo to ensure commands work with the internal/configprefix necessecity to define one of two build tags: repoAAP or repoAWX.
 
@@ -29,7 +29,7 @@ The scaffold template's GNUmakefile has been altered to include refencing these 
 
 For **VS Code** this repo includes the workspace files `.vscode/settings.json` and `.vscode/launch.json` that set repo-specific flags necessary for linters and debugging with the appropriate build tag set.
 
-## Special Handling for Each Repo
+## Code Handling for Each Repo
 
 Search all files in this repository for the phrase `SPECIAL` to find files that may need to be updated to be specfiic to the containing repository & whether this is targetted for an aap named provider or an awx named provider.
 
