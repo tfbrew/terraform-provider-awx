@@ -14,9 +14,12 @@ builds:
     # they are unable to install libraries.
     - CGO_ENABLED=0
   mod_timestamp: '{{ .CommitTimestamp }}'
+  # SPECIAL REP_BUILD_TAG_VALUE is set in .github/workflows/release.yml
   flags:
     - -trimpath
-    - "-tags=${REPO_BUILD_TAG_VALUE}" # SPECIAL set in .github/workflows/release.yml
+    - -tags=${REPO_BUILD_TAG_VALUE}
+  tags:
+    - ${REPO_BUILD_TAG_VALUE}
   ldflags:
     - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
   goos:
@@ -34,7 +37,7 @@ builds:
       goarch: '386'
   binary: '{{ .ProjectName }}_v{{ .Version }}'
 archives:
-- format: zip
+- formats: ['zip']
   name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 checksum:
   extra_files:
