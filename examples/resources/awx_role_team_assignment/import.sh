@@ -1,0 +1,1 @@
+terraform import awx_role_team_assignment.example 1
