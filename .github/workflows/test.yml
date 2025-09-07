@@ -85,7 +85,7 @@ jobs:
           TOWER_HOST: ${{ secrets.TOWER_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.TOWER_OAUTH_TOKEN }}
           TOWER_PLATFORM: "awx"
-        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/
+        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m -run '^(?!TestAccRoleDefinitionResource).*' ./internal/provider/
         timeout-minutes: 20
 
   testaap24:
@@ -118,5 +118,12 @@ jobs:
           TOWER_OAUTH_TOKEN: ${{ secrets.AAP_24_OAUTH_TOKEN }}
           TOWER_API_RETRY_COUNT: 1 # Run aap2.4 test with API_RETRY_COUNT
           TOWER_API_RETRY_DELAY_SECONDS: 2 # Run aap2.4 test with API_RETRY_DELAY_SECONDS
-        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/
+          EXCLUDE_TESTS: | # List of tests incompatible with AAP 2.4
+            - TestAccRoleDefinitionResource
+            - TestAccRoleDefinitionDataSource
+            - TestAccRoleUserAssignmentResource
+            - TestAccRoleTeamAssignmentResource
+        run: |
+          EXCLUDES=$(echo "${{ env.EXCLUDE_TESTS }}" | sed 's/- //g' | paste -sd'|' -)
+          go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m -run "^(?!(${EXCLUDES})).*" ./internal/provider/
         timeout-minutes: 20

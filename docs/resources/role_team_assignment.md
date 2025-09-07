@@ -3,12 +3,12 @@
 page_title: "awx_role_team_assignment Resource - awx"
 subcategory: ""
 description: |-
-  Assign a team to a role definition for a specific object.
+  Assign a team to a role definition for a specific object. Only available in AWX, not AAP2.4.
 ---
 
 # awx_role_team_assignment (Resource)
 
-Assign a team to a role definition for a specific object.
+Assign a team to a role definition for a specific object. Only available in AWX, not AAP2.4.
 
 ## Example Usage
 

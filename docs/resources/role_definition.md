@@ -3,12 +3,12 @@
 page_title: "awx_role_definition Resource - awx"
 subcategory: ""
 description: |-
-  Manage a custom role definition.
+  Manage a custom role definition. Only available in AWX, not AAP2.4.
 ---
 
 # awx_role_definition (Resource)
 
-Manage a custom role definition.
+Manage a custom role definition. Only available in AWX, not AAP2.4.
 
 ## Example Usage
 

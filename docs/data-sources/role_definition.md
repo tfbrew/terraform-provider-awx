@@ -3,12 +3,12 @@
 page_title: "awx_role_definition Data Source - awx"
 subcategory: ""
 description: |-
-  Get role definition datasource
+  Role definition datasource. Only available in AWX, not AAP2.4.
 ---
 
 # awx_role_definition (Data Source)
 
-Get role definition datasource
+Role definition datasource. Only available in AWX, not AAP2.4.
 
 ## Example Usage
 

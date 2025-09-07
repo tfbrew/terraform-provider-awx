@@ -33,7 +33,7 @@ func (r *RoleTeamAssignmentResource) Metadata(ctx context.Context, req resource.
 
 func (r *RoleTeamAssignmentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Assign a team to a role definition for a specific object.",
+		Description: "Assign a team to a role definition for a specific object. Only available in AWX, not AAP2.4.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Assignment ID.",

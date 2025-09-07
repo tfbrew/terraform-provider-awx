@@ -32,7 +32,7 @@ func (r *RoleDefinitionResource) Metadata(ctx context.Context, req resource.Meta
 
 func (r *RoleDefinitionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: `Manage a custom role definition.`,
+		Description: `Manage a custom role definition. Only available in AWX, not AAP2.4.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Role definition ID.",

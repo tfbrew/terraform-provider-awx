@@ -30,7 +30,7 @@ func (d *RoleDefinitionDataSource) Metadata(ctx context.Context, req datasource.
 
 func (d *RoleDefinitionDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Get role definition datasource",
+		Description: "Role definition datasource. Only available in AWX, not AAP2.4.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "A valid role definition ID. You must specify either the `id` or `name` field, but not both.",

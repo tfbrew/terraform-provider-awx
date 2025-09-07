@@ -3,12 +3,12 @@
 page_title: "awx_role_user_assignment Resource - awx"
 subcategory: ""
 description: |-
-  Assign a user to a role definition for a specific object.
+  Assign a user to a role definition for a specific object. Only available in AWX, not AAP2.4.
 ---
 
 # awx_role_user_assignment (Resource)
 
-Assign a user to a role definition for a specific object.
+Assign a user to a role definition for a specific object. Only available in AWX, not AAP2.4.
 
 ## Example Usage
 
