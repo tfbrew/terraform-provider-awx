@@ -85,7 +85,7 @@ jobs:
           TOWER_HOST: ${{ secrets.TOWER_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.TOWER_OAUTH_TOKEN }}
           TOWER_PLATFORM: "awx"
-        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m -run '^(?!TestAccRoleDefinitionResource).*' ./internal/provider/
+        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/
         timeout-minutes: 20
 
   testaap24:
@@ -125,5 +125,10 @@ jobs:
             - TestAccRoleTeamAssignmentResource
         run: |
           EXCLUDES=$(echo "${{ env.EXCLUDE_TESTS }}" | sed 's/- //g' | paste -sd'|' -)
-          go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m -run "^(?!(${EXCLUDES})).*" ./internal/provider/
+          TESTS=$(go test -list '^TestAcc' ./internal/provider/ | grep -Ev "^($EXCLUDES)$" | tr '\n' '|' | sed 's/|$//')
+          if [ -z "$TESTS" ]; then
+            echo "No tests to run."
+            exit 0
+          fi
+          go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m -run "($TESTS)" ./internal/provider/
         timeout-minutes: 20
