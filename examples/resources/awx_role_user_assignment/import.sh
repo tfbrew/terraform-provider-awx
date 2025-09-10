@@ -1,0 +1,1 @@
+terraform import awx_role_user_assignment.example 1

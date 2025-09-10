@@ -118,5 +118,5 @@ jobs:
           TOWER_OAUTH_TOKEN: ${{ secrets.AAP_24_OAUTH_TOKEN }}
           TOWER_API_RETRY_COUNT: 1 # Run aap2.4 test with API_RETRY_COUNT
           TOWER_API_RETRY_DELAY_SECONDS: 2 # Run aap2.4 test with API_RETRY_DELAY_SECONDS
-        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/
+        run: go test -v -cover -tags=${{ vars.BUILD_TAG }} -skip "TestAccRoleDefinitionResource|TestAccRoleDefinitionDataSource|TestAccRoleUserAssignmentResource|TestAccRoleTeamAssignmentResource" -timeout 20m ./internal/provider/ # Exclude test incompatible with aap2.4
         timeout-minutes: 20
