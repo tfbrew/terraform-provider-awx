@@ -14,6 +14,7 @@
         "env": {
             "TOWER_OAUTH_TOKEN": "{env:TOWER_OAUTH_TOKEN}",
             "TOWER_HOST": "{env:TOWER_HOST",
+            "GOEXPERIMENT": "jsonv2"
         },
         "buildFlags": ["-tags=repoAWX"],
         "args": ["-debug"]

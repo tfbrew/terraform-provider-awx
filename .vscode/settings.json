@@ -1,12 +1,17 @@
     {
         /// NO SECRETS this is tracked in git - use your global VS Code settings.json.        
-        
-        // This is needed so that the linter knows this repo is the repoAAP. Without this,
+        // This is needed so that the linter knows this repo is the repoAWX. Without this,
         // you will get import errors for internal/configprefix as that code requires a build flag
         "go.buildFlags": [
-            "-tags",
-            "repoAWX"
-        ]
-
+            "-tags=repoAWX"
+        ],
+        "go.toolsEnvVars": {
+            "GOEXPERIMENT": "jsonv2"
+        },
+        "go.testTimeout": "5m",
+        "go.testEnvVars": {
+            "GOEXPERIMENT": "jsonv2",
+        },
+        "go.testEnvFile": "${workspaceFolder}/.env" // expects TOWER_HOST and TOWER_OAUTH_TOKEN
         /// NO SECRETS this is tracked in git - use your global VS Code settings.json.
     }
