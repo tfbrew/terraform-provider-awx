@@ -6,7 +6,9 @@
         "go.buildFlags": [
             "-tags",
             "repoAWX"
-        ]
-
+        ],
+        "go.toolsEnvVars": {
+             "GOEXPERIMENT": "jsonv2"
+        }
         /// NO SECRETS this is tracked in git - use your global VS Code settings.json.
     }
