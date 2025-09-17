@@ -37,3 +37,6 @@ website/vendor
 
 # Environment variable files
 .env
+githubaction-test-awx.vars
+gitactions-testing-awx.secrets
+
