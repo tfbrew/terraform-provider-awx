@@ -300,13 +300,17 @@ func (p *theProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewScheduleResource,
 		NewTeamResource,
 		NewUserResource,
-		NewWorkflowJobTemplatesResource,
-		NewWorkflowJobTemplatesJobNodeResource,
-		NewWorkflowJobTemplatesNodeLabelResource,
-		NewWorkflowJobTemplatesNodeSuccessResource,
-		NewWorkflowJobTemplatesNodeFailureResource,
-		NewWorkflowJobTemplatesNodeAlwaysResource,
 		NewWorkflowJobTemplateApprovalNodeResource,
+		NewWorkflowJobTemplateJobNodeResource,
+		NewWorkflowJobTemplateNodeLabelResource,
+		NewWorkflowJobTemplateNodeSuccessResource,
+		NewWorkflowJobTemplateNodeFailureResource,
+		NewWorkflowJobTemplateNodeAlwaysResource,
+		NewWorkflowJobTemplateNotifTemplApprovalsResource,
+		NewWorkflowJobTemplateNotifTemplErrorResource,
+		NewWorkflowJobTemplateNotifTemplStartedResource,
+		NewWorkflowJobTemplateNotifTemplSuccessResource,
+		NewWorkflowJobTemplateResource,
 	}
 }
 
