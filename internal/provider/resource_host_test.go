@@ -80,7 +80,7 @@ func TestAccHostResource(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						fmt.Sprintf("%s_host.test", configprefix.Prefix),
 						tfjsonpath.New("variables"),
-						knownvalue.Null(),
+						knownvalue.StringExact("---"),
 					),
 					statecheck.ExpectKnownValue(
 						fmt.Sprintf("%s_host.test", configprefix.Prefix),
