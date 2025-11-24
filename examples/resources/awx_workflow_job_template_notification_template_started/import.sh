@@ -1,1 +1,1 @@
-terraform import awxworkflow_job_template_notification_template_started.example 100
+terraform import awx_workflow_job_template_notification_template_started.example 100

@@ -32,5 +32,5 @@ resource "awx_workflow_job_template_notification_template_approvals" "example" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import awxworkflow_job_template_notification_template_approvals.example 100
+terraform import awx_workflow_job_template_notification_template_approvals.example 100
 ```
