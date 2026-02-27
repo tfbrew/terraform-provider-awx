@@ -12,8 +12,8 @@ resource "awx_team" "example" {
   organization = awx_organization.example.id
   description  = "Example team description"
 }
-resource "awx_role_user_assignment" "test" {
+resource "awx_role_team_assignment" "test" {
   object_id       = awx_organization.example.id
   role_definition = awx_role_definition.example.id
-  user            = awx_user.example.id
+  team            = awx_team.example.id
 }
