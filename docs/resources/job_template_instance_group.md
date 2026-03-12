@@ -31,6 +31,8 @@ resource "awx_job_template_instance_group" "default" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import awx_job_template_instance_group.example 100
 ```

@@ -43,6 +43,8 @@ resource "awx_workflow_job_template_approval_node" "example_node" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import awx_workflow_job_template_approval_node.example_node 201
 ```
