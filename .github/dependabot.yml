@@ -4,8 +4,8 @@ version: 2
 updates:
   - package-ecosystem: "gomod"
     directories:
-    - "/"
-    - "/tools/"
+      - "/"
+      - "/tools/"
     schedule:
       interval: "daily"
   - package-ecosystem: "github-actions"
