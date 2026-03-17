@@ -74,6 +74,20 @@ type CredentialDataModel struct {
 	InputsAsObject types.Dynamic `tfsdk:"inputs_as_object"`
 }
 
+type CredentialDissasocBody struct {
+	Id           int  `json:"id"`
+	Disassociate bool `json:"disassociate"`
+}
+
+type CredentialAPIRead struct {
+	Count   int                `json:"count"`
+	Results []CredentialResult `json:"results"`
+}
+
+type CredentialResult struct {
+	Id int `json:"id"`
+}
+
 type CredentialAPIModel struct {
 	Id             int            `json:"id"`
 	Name           string         `json:"name"`
