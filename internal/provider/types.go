@@ -533,6 +533,36 @@ type ScheduleAPIModel struct {
 	Enabled            bool   `json:"enabled"`
 }
 
+type Survey struct {
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Spec        []SurveySpec `json:"spec"`
+}
+
+type SurveySpec struct {
+	Max                 int    `json:"max"`
+	Min                 int    `json:"min"`
+	Type                string `json:"type"`
+	Choices             any    `json:"choices,omitempty"`
+	Default             any    `json:"default"`
+	Required            bool   `json:"required"`
+	Variable            string `json:"variable"`
+	QuestionName        string `json:"question_name"`
+	QuestionDescription string `json:"question_description"`
+}
+
+type SurveySpecModel struct {
+	Max                 types.Int32  `tfsdk:"max"`
+	Min                 types.Int32  `tfsdk:"min"`
+	Type                types.String `tfsdk:"type"`
+	Choices             types.List   `tfsdk:"choices"`
+	Default             types.String `tfsdk:"default"`
+	Required            types.Bool   `tfsdk:"required"`
+	Variable            types.String `tfsdk:"variable"`
+	QuestionName        types.String `tfsdk:"question_name"`
+	QuestionDescription types.String `tfsdk:"question_description"`
+}
+
 type TeamModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
