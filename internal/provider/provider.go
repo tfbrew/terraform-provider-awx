@@ -310,6 +310,7 @@ func (p *theProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewWorkflowJobTemplateNotifTemplErrorResource,
 		NewWorkflowJobTemplateNotifTemplStartedResource,
 		NewWorkflowJobTemplateNotifTemplSuccessResource,
+		NewWorkflowJobTemplateSurveyResource,
 		NewWorkflowJobTemplateResource,
 	}
 }

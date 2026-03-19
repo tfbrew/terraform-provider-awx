@@ -14,8 +14,8 @@ import (
 	"github.com/tfbrew/terraform-provider-awx/internal/configprefix"
 )
 
-func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
-	jtName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
+func TestAccWkflwJobTemplateSurveySpec(t *testing.T) {
+	wkflkJtName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -25,27 +25,27 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccJobTemplateSurveySpecConfig(jtName),
+				Config: testAccWkflwJobTemplateSurveySpecConfig(wkflkJtName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("%s_job_template_survey_spec.example", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.example", configprefix.Prefix),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact("example description"),
 					),
 					statecheck.CompareValuePairs(
-						fmt.Sprintf("%s_job_template.example", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template.example", configprefix.Prefix),
 						tfjsonpath.New("id"),
-						fmt.Sprintf("%s_job_template_survey_spec.example", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.example", configprefix.Prefix),
 						tfjsonpath.New("id"),
 						compare.ValuesSame(),
 					),
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("%s_job_template_survey_spec.example", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.example", configprefix.Prefix),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(""),
 					),
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("%s_job_template_survey_spec.example", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.example", configprefix.Prefix),
 						tfjsonpath.New("spec"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -95,7 +95,7 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      fmt.Sprintf("%s_job_template_survey_spec.example", configprefix.Prefix),
+				ResourceName:      fmt.Sprintf("%s_workflow_job_template_survey_spec.example", configprefix.Prefix),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -103,10 +103,15 @@ func TestAccJobTemplateSurveySpec_basic(t *testing.T) {
 	})
 }
 
-func testAccJobTemplateSurveySpecConfig(template_name string) string {
+func testAccWkflwJobTemplateSurveySpecConfig(workflow_template_name string) string {
 	return fmt.Sprintf(`
 resource "%[1]s_organization" "test" {
 	name = "%[2]s"
+}
+
+resource "%[1]s_inventory" "test" {
+  name         = "%[2]s"
+  organization = %[1]s_organization.test.id
 }
 
 resource "%[1]s_project" "test" {
@@ -117,7 +122,7 @@ resource "%[1]s_project" "test" {
 	scm_url = "fake"
 }
 
-resource "%[1]s_job_template" "example" {
+resource "%[1]s_job_template" "test" {
   job_type  = "run"
   name      = "%[4]s"
   ask_inventory_on_launch = true
@@ -125,9 +130,15 @@ resource "%[1]s_job_template" "example" {
   playbook  = "hello_world.yml"
 }
 
-resource "%[1]s_job_template_survey_spec" "example" {
+resource "%[1]s_workflow_job_template" "test" {
+  name                     = "%[2]s"
+  inventory                = %[1]s_inventory.test.id
+  organization             = %[1]s_organization.test.id
+}
+
+resource "%[1]s_workflow_job_template_survey_spec" "example" {
   description = "example description"
-  id          = %[1]s_job_template.example.id
+  id          = %[1]s_workflow_job_template.test.id
   name        = ""
   spec = [
     {
@@ -164,5 +175,5 @@ resource "%[1]s_job_template_survey_spec" "example" {
     },
   ]
 }
-`, configprefix.Prefix, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), template_name)
+`, configprefix.Prefix, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), workflow_template_name)
 }
