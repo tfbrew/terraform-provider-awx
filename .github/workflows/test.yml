@@ -4,12 +4,13 @@ name: Tests
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
-  pull_request:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
     paths-ignore:
       - 'README.md'
-  # push:
-  #   paths-ignore:
-  #     - 'README.md'
+  # Allows you to run this manually from the Actions tab
+  #  THIS SHOULD ONLY BE DONE if you are sure the code is safe.
+  workflow_dispatch:
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -19,6 +20,10 @@ jobs:
   # Ensure project builds before running testing matrix
   build:
     name: Build
+    if: |
+          github.event_name == 'workflow_dispatch' ||
+          github.event.pull_request.head.repo.full_name == github.repository ||
+          contains(github.event.pull_request.labels.*.name, 'ok-to-test')    
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -57,6 +62,10 @@ jobs:
   testawx:
     name: Terraform Provider Acceptance Tests AWX
     needs: build
+    if: |
+          github.event_name == 'workflow_dispatch' ||
+          github.event.pull_request.head.repo.full_name == github.repository ||
+          contains(github.event.pull_request.labels.*.name, 'ok-to-test')    
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -91,6 +100,10 @@ jobs:
   testaap24:
     name: Terraform Provider Acceptance Tests AAP 2.4
     needs: build
+    if: |
+          github.event_name == 'workflow_dispatch' ||
+          github.event.pull_request.head.repo.full_name == github.repository ||
+          contains(github.event.pull_request.labels.*.name, 'ok-to-test')    
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
