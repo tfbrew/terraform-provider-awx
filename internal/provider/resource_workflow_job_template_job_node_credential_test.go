@@ -34,11 +34,9 @@ func TestAccWkflwJobTemplJobNodeCredentialResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:                         fmt.Sprintf("%s_workflow_job_template_job_node_credential.test", configprefix.Prefix),
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateIdFunc:                    importStateJobTemplateID(fmt.Sprintf("%s_job_template_credential.test", configprefix.Prefix)),
-				ImportStateVerifyIdentifierAttribute: ("id"),
+				ResourceName:      fmt.Sprintf("%s_workflow_job_template_job_node_credential.test", configprefix.Prefix),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccWkflwJobTemplJobNodeCredentialResource2Config(),
