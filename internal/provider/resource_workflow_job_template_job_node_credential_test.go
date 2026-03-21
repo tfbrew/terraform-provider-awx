@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccWkflwJobTemplJobNodeCredentialResource(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	IdCompare := &compareTwoValuesAsStrings{}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -22,31 +23,29 @@ func TestAccWkflwJobTemplJobNodeCredentialResource(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccWkflwJobTemplJobNodeCredentialResource1Config(),
+				Config: testAccWkflwJobTemplJobNodeCredentialResource1Config(rName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.CompareValuePairs(
-						fmt.Sprintf("%s_workflow_job_template_job_node.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_job_node.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("id"),
-						fmt.Sprintf("%s_workflow_job_template_job_node_credential.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_job_node_credential.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("id"),
 						IdCompare,
 					),
 				},
 			},
 			{
-				ResourceName:                         fmt.Sprintf("%s_workflow_job_template_job_node_credential.test", configprefix.Prefix),
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateIdFunc:                    importStateJobTemplateID(fmt.Sprintf("%s_job_template_credential.test", configprefix.Prefix)),
-				ImportStateVerifyIdentifierAttribute: ("id"),
+				ResourceName:      fmt.Sprintf("%s_workflow_job_template_job_node_credential.%s", configprefix.Prefix, rName),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
-				Config: testAccWkflwJobTemplJobNodeCredentialResource2Config(),
+				Config: testAccWkflwJobTemplJobNodeCredentialResource2Config(rName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.CompareValuePairs(
-						fmt.Sprintf("%s_workflow_job_template_job_node.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_job_node.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("id"),
-						fmt.Sprintf("%s_workflow_job_template_job_node_credential.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_job_node_credential.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("id"),
 						IdCompare,
 					),
@@ -56,122 +55,127 @@ func TestAccWkflwJobTemplJobNodeCredentialResource(t *testing.T) {
 	})
 }
 
-func testAccWkflwJobTemplJobNodeCredentialResource1Config() string {
+func testAccWkflwJobTemplJobNodeCredentialResource1Config(rName string) string {
 	return fmt.Sprintf(`
-resource "%[1]s_organization" "test" {
+resource "%[1]s_organization" "%[3]s" {
   name        = "%[2]s"
 }
-resource "%[1]s_inventory" "test" {
+resource "%[1]s_inventory" "%[3]s" {
   name         = "%[2]s"
-  organization = %[1]s_organization.test.id
+  organization = %[1]s_organization.%[3]s.id
 }
-resource "%[1]s_project" "test" {
+resource "%[1]s_project" "%[3]s" {
   name         		= "%[2]s"
-  organization 		= %[1]s_organization.test.id
+  organization 		= %[1]s_organization.%[3]s.id
   scm_type     		= "git"
   scm_url      		= "git@github.com:user/repo.git"
   allow_override 	= true
 }
-data "%[1]s_credential_type" "test" {
+data "%[1]s_credential_type" "%[3]s" {
   name = "Machine"
   kind = "ssh"
 }
-resource "%[1]s_credential" "test" {
+resource "%[1]s_credential" "%[3]s" {
   name            = "%[2]s"
   description	    = "%[2]s"
-  organization    = %[1]s_organization.test.id
-  credential_type = data.%[1]s_credential_type.test.id
+  organization    = %[1]s_organization.%[3]s.id
+  credential_type = data.%[1]s_credential_type.%[3]s.id
   inputs = jsonencode({
     "password" : "%[2]s",
     "username" : "%[2]s"
   })
 }
-resource "%[1]s_job_template" "test" {
+resource "%[1]s_job_template" "%[3]s" {
   name        = "%[2]s"
   job_type    = "run"
-  project     = %[1]s_project.test.id
+  project     = %[1]s_project.%[3]s.id
+  inventory   = %[1]s_inventory.%[3]s.id
   playbook    = "%[2]s"
+  ask_credential_on_launch = true
 }
-resource "%[1]s_workflow_job_template" "test" {
+resource "%[1]s_workflow_job_template" "%[3]s" {
   name                     = "%[2]s"
-  inventory                = %[1]s_inventory.test.id
-  organization             = %[1]s_organization.test.id
+  inventory                = %[1]s_inventory.%[3]s.id
+  organization             = %[1]s_organization.%[3]s.id
 }
-resource "%[1]s_workflow_job_template_job_node" "test" {
-  unified_job_template     	= %[1]s_job_template.test.id
-  workflow_job_template_id 	= %[1]s_workflow_job_template.test.id
-  inventory 				        = %[1]s_inventory.test.id
+resource "%[1]s_workflow_job_template_job_node" "%[3]s" {
+  unified_job_template     	= %[1]s_job_template.%[3]s.id
+  workflow_job_template_id 	= %[1]s_workflow_job_template.%[3]s.id
+  inventory 				        = %[1]s_inventory.%[3]s.id
+
 }
-resource "%[1]s_workflow_job_template_job_node_credential" "test" {
-  credential_ids  = [ %[1]s_credential.test.id ]
-  id              = %[1]s_workflow_job_template_job_node.test.id
+resource "%[1]s_workflow_job_template_job_node_credential" "%[3]s" {
+  credential_ids  = [ %[1]s_credential.%[3]s.id ]
+  id              = %[1]s_workflow_job_template_job_node.%[3]s.id
 }
-  `, configprefix.Prefix, acctest.RandString(5))
+  `, configprefix.Prefix, acctest.RandString(5), rName, rName+"a", rName+"b")
 }
 
-func testAccWkflwJobTemplJobNodeCredentialResource2Config() string {
+func testAccWkflwJobTemplJobNodeCredentialResource2Config(rName string) string {
 	return fmt.Sprintf(`
-resource "%[1]s_organization" "test" {
+resource "%[1]s_organization" "%[3]s" {
   name        = "%[2]s"
 }
-resource "%[1]s_inventory" "test" {
+resource "%[1]s_inventory" "%[3]s" {
   name         = "%[2]s"
-  organization = %[1]s_organization.test.id
+  organization = %[1]s_organization.%[3]s.id
 }
-resource "%[1]s_project" "test" {
+resource "%[1]s_project" "%[3]s" {
   name         		= "%[2]s"
-  organization 		= %[1]s_organization.test.id
+  organization 		= %[1]s_organization.%[3]s.id
   scm_type     		= "git"
   scm_url      		= "git@github.com:user/repo.git"
   allow_override 	= true
 }
-data "%[1]s_credential_type" "test1" {
+data "%[1]s_credential_type" "%[4]s" {
   name = "Machine"
   kind = "ssh"
 }
-resource "%[1]s_credential" "test1" {
+resource "%[1]s_credential" "%[4]s" {
   name            = "%[2]s"
   description	  = "%[2]s"
-  organization    = %[1]s_organization.test.id
-  credential_type = data.%[1]s_credential_type.test1.id
+  organization    = %[1]s_organization.%[3]s.id
+  credential_type = data.%[1]s_credential_type.%[4]s.id
   inputs = jsonencode({
     "password" : "%[2]s",
     "username" : "%[2]s"
   })
 }
-data "%[1]s_credential_type" "test2" {
+data "%[1]s_credential_type" "%[5]s" {
   name = "Amazon Web Services"
   kind = "cloud"
 }
-resource "%[1]s_credential" "test2" {
+resource "%[1]s_credential" "%[5]s" {
   name            = "%[2]s"
   description	  = "%[2]s"
-  organization    = %[1]s_organization.test.id
-  credential_type = data.%[1]s_credential_type.test2.id
+  organization    = %[1]s_organization.%[3]s.id
+  credential_type = data.%[1]s_credential_type.%[5]s.id
   inputs = jsonencode({
     "password" : "%[2]s",
     "username" : "%[2]s"
   })
 }
-resource "%[1]s_job_template" "test" {
+resource "%[1]s_job_template" "%[3]s" {
   name        = "%[2]s"
   job_type    = "run"
-  project     = %[1]s_project.test.id
+  project     = %[1]s_project.%[3]s.id
   playbook    = "%[2]s"
+  inventory   = %[1]s_inventory.%[3]s.id
+  ask_credential_on_launch = true
 }
-resource "%[1]s_workflow_job_template" "test" {
+resource "%[1]s_workflow_job_template" "%[3]s" {
   name                     = "%[2]s"
-  inventory                = %[1]s_inventory.test.id
-  organization             = %[1]s_organization.test.id
+  inventory                = %[1]s_inventory.%[3]s.id
+  organization             = %[1]s_organization.%[3]s.id
 }
-resource "%[1]s_workflow_job_template_job_node" "test" {
-  unified_job_template     	= %[1]s_job_template.test.id
-  workflow_job_template_id 	= %[1]s_workflow_job_template.test.id
-  inventory 				= %[1]s_inventory.test.id
+resource "%[1]s_workflow_job_template_job_node" "%[3]s" {
+  unified_job_template     	= %[1]s_job_template.%[3]s.id
+  workflow_job_template_id 	= %[1]s_workflow_job_template.%[3]s.id
+  inventory 				= %[1]s_inventory.%[3]s.id
 }
-resource "%[1]s_workflow_job_template_job_node_credential" "test" {
-  credential_ids  = [ %[1]s_credential.test1.id, %[1]s_credential.test2.id ]
-  id = %[1]s_workflow_job_template_job_node.test.id
+resource "%[1]s_workflow_job_template_job_node_credential" "%[3]s" {
+  credential_ids  = [ %[1]s_credential.%[4]s.id, %[1]s_credential.%[5]s.id ]
+  id = %[1]s_workflow_job_template_job_node.%[3]s.id
 }
-  `, configprefix.Prefix, acctest.RandString(5))
+  `, configprefix.Prefix, acctest.RandString(5), rName, rName+"a", rName+"b")
 }

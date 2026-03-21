@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccWkflwJobTemplateSurveySpec(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 	wkflkJtName := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 
 	resource.Test(t, resource.TestCase{
@@ -25,27 +26,27 @@ func TestAccWkflwJobTemplateSurveySpec(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccWkflwJobTemplateSurveySpecConfig(wkflkJtName),
+				Config: testAccWkflwJobTemplateSurveySpecConfig(wkflkJtName, rName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("%s_workflow_job_template_survey_spec.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact("test description"),
 					),
 					statecheck.CompareValuePairs(
-						fmt.Sprintf("%s_workflow_job_template.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("id"),
-						fmt.Sprintf("%s_workflow_job_template_survey_spec.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("id"),
 						compare.ValuesSame(),
 					),
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("%s_workflow_job_template_survey_spec.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(""),
 					),
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("%s_workflow_job_template_survey_spec.test", configprefix.Prefix),
+						fmt.Sprintf("%s_workflow_job_template_survey_spec.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("spec"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -95,7 +96,7 @@ func TestAccWkflwJobTemplateSurveySpec(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      fmt.Sprintf("%s_workflow_job_template_survey_spec.test", configprefix.Prefix),
+				ResourceName:      fmt.Sprintf("%s_workflow_job_template_survey_spec.%s", configprefix.Prefix, rName),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -103,42 +104,42 @@ func TestAccWkflwJobTemplateSurveySpec(t *testing.T) {
 	})
 }
 
-func testAccWkflwJobTemplateSurveySpecConfig(workflow_template_name string) string {
+func testAccWkflwJobTemplateSurveySpecConfig(workflow_template_name string, rName string) string {
 	return fmt.Sprintf(`
-resource "%[1]s_organization" "test" {
+resource "%[1]s_organization" "%[5]s" {
 	name = "%[2]s"
 }
 
-resource "%[1]s_inventory" "test" {
+resource "%[1]s_inventory" "%[5]s" {
   name         = "%[2]s"
-  organization = %[1]s_organization.test.id
+  organization = %[1]s_organization.%[5]s.id
 }
 
-resource "%[1]s_project" "test" {
+resource "%[1]s_project" "%[5]s" {
 	name = "%[3]s"
-	organization = %[1]s_organization.test.id
+	organization = %[1]s_organization.%[5]s.id
 	allow_override = true
 	scm_type = "git"
 	scm_url = "fake"
 }
 
-resource "%[1]s_job_template" "test" {
+resource "%[1]s_job_template" "%[5]s" {
   job_type  = "run"
   name      = "%[4]s"
   ask_inventory_on_launch = true
-  project   = %[1]s_project.test.id
+  project   = %[1]s_project.%[5]s.id
   playbook  = "hello_world.yml"
 }
 
-resource "%[1]s_workflow_job_template" "test" {
+resource "%[1]s_workflow_job_template" "%[5]s" {
   name                     = "%[2]s"
-  inventory                = %[1]s_inventory.test.id
-  organization             = %[1]s_organization.test.id
+  inventory                = %[1]s_inventory.%[5]s.id
+  organization             = %[1]s_organization.%[5]s.id
 }
 
-resource "%[1]s_workflow_job_template_survey_spec" "test" {
+resource "%[1]s_workflow_job_template_survey_spec" "%[5]s" {
   description = "test description"
-  id          = %[1]s_workflow_job_template.test.id
+  id          = %[1]s_workflow_job_template.%[5]s.id
   name        = ""
   spec = [
     {
@@ -175,5 +176,5 @@ resource "%[1]s_workflow_job_template_survey_spec" "test" {
     },
   ]
 }
-`, configprefix.Prefix, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), workflow_template_name)
+`, configprefix.Prefix, acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), acctest.RandStringFromCharSet(5, acctest.CharSetAlpha), workflow_template_name, rName)
 }
