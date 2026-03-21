@@ -92,6 +92,7 @@ resource "%[1]s_job_template" "%[3]s" {
   inventory   = %[1]s_inventory.%[3]s.id
   playbook    = "%[2]s"
   ask_credential_on_launch = true
+  ask_inventory_on_launch  = true
 }
 resource "%[1]s_workflow_job_template" "%[3]s" {
   name                     = "%[2]s"
@@ -162,6 +163,7 @@ resource "%[1]s_job_template" "%[3]s" {
   playbook    = "%[2]s"
   inventory   = %[1]s_inventory.%[3]s.id
   ask_credential_on_launch = true
+  ask_inventory_on_launch  = true
 }
 resource "%[1]s_workflow_job_template" "%[3]s" {
   name                     = "%[2]s"
