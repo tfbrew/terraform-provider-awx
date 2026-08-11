@@ -222,7 +222,7 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			)
 			return
 		} else if envAPIRetryCountExists && envAPIRetryDelaySecondsExists {
-			retryCountInt, err := strconv.Atoi(envAPIRRetryCount)
+			retryCountInt, err := strconv.ParseInt(envAPIRRetryCount, 10, 32)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Provider Configuration Error",
@@ -230,7 +230,7 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 				)
 				return
 			}
-			retryDelayInt, err := strconv.Atoi(envAPIRetryDelaySeconds)
+			retryDelayInt, err := strconv.ParseInt(envAPIRetryDelaySeconds, 10, 32)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Provider Configuration Error",
