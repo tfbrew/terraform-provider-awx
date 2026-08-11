@@ -191,11 +191,11 @@ func (r *WorkflowJobTemplateApprovalNode) Create(ctx context.Context, req resour
 	}
 
 	tempId = fmt.Sprintf("%v", returnedData["id"])
-	tempIdInt, err = strconv.Atoi(tempId)
+	tempIdInt, err := strconv.ParseInt(tempId, 10, 32)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error converting returned ID to an integer",
-			fmt.Sprintf("Error converting %v to integer, with error %v", tempId, err.Error()),
+			"Error converting returned ID to int32",
+			fmt.Sprintf("Error converting %v to int32, with error %v", tempId, err.Error()),
 		)
 		return
 	}
