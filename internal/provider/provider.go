@@ -222,19 +222,19 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 			)
 			return
 		} else if envAPIRetryCountExists && envAPIRetryDelaySecondsExists {
-			retryCountInt, err := strconv.Atoi(envAPIRRetryCount)
+			retryCountInt, err := strconv.ParseInt(envAPIRRetryCount, 10, 32)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Provider Configuration Error",
-					fmt.Sprintf("TOWER_API_RETRY_COUNT must be an integer, got: %s", envAPIRRetryCount),
+					fmt.Sprintf("TOWER_API_RETRY_COUNT must be a 32-bit integer, got: %s", envAPIRRetryCount),
 				)
 				return
 			}
-			retryDelayInt, err := strconv.Atoi(envAPIRetryDelaySeconds)
+			retryDelayInt, err := strconv.ParseInt(envAPIRetryDelaySeconds, 10, 32)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Provider Configuration Error",
-					fmt.Sprintf("TOWER_API_RETRY_DELAY_SECONDS must be an integer, got: %s", envAPIRetryDelaySeconds),
+					fmt.Sprintf("TOWER_API_RETRY_DELAY_SECONDS must be a 32-bit integer, got: %s", envAPIRetryDelaySeconds),
 				)
 				return
 			}
