@@ -31,12 +31,12 @@ jobs:
           go-version-file: 'go.mod'
           cache: false
       - run: go mod download
-      - run: go build -tags=repoAAP -v .
+      - run: go build -tags=repoAWX -v .
       - name: Run linters
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: latest
-          args: --build-tags 'repoAAP'
+          args: --build-tags 'repoAWX'
 
   generate:
     runs-on: ubuntu-latest
