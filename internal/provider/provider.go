@@ -303,6 +303,7 @@ func (p *theProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewWorkflowJobTemplateApprovalNodeResource,
 		NewWorkflowJobTemplateJobNodeCredentialResource,
 		NewWorkflowJobTemplateJobNodeResource,
+		NewWorkflowJobTemplateLabelsResource,
 		NewWorkflowJobTemplateNodeLabelResource,
 		NewWorkflowJobTemplateNodeSuccessResource,
 		NewWorkflowJobTemplateNodeFailureResource,
