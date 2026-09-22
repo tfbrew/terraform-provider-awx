@@ -475,7 +475,7 @@ resource "%[1]s_user" "test" {
   last_name         	= "%[4]s"
   email		         	= "%[5]s"
   password_wo 		    = "%[6]s"
-  password_wo_version   = 2
+  password_wo_version   = 1
   is_superuser          = %[7]v
 }
   `, configprefix.Prefix, resource.Username, resource.FirstName, resource.LastName, resource.Email, resource.Password, resource.IsSuperuser)
@@ -636,7 +636,7 @@ func testAccSetUserPasswordOutOfBand(username, newPassword string) resource.Test
 			}
 		}
 
-		lookupURL := fmt.Sprintf("/api/v2/users/?username=%s", urlParser.QueryEscape(username))
+		lookupURL := fmt.Sprintf("users/?username=%s", urlParser.QueryEscape(username))
 		body, _, err := client.GenericAPIRequest(context.Background(), http.MethodGet, lookupURL, nil, []int{200}, "gateway")
 		if err != nil {
 			return fmt.Errorf("unable to look up user %q for out-of-band password update: %w", username, err)
@@ -665,7 +665,7 @@ func testAccSetUserPasswordOutOfBand(username, newPassword string) resource.Test
 			Password:        newPassword,
 		}
 
-		updateURL := fmt.Sprintf("/api/v2/users/%d/", user.Id)
+		updateURL := fmt.Sprintf("users/%d/", user.Id)
 		_, _, err = client.CreateUpdateAPIRequest(context.Background(), http.MethodPut, updateURL, updateBody, []int{200}, "gateway")
 		if err != nil {
 			return fmt.Errorf("unable to set out-of-band password for %q: %w", username, err)

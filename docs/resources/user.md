@@ -40,9 +40,9 @@ resource "awx_user" "example" {
 - `is_superuser` (Boolean) Designates that this user has all permissions without explicitly assigning them. Only one of `is_superuser` or `is_system_auditor` is allowed.
 - `is_system_auditor` (Boolean) User is a system wide auditor. Only one of `is_superuser` or `is_system_auditor` is allowed.
 - `last_name` (String) User's last name.
-- `password` (String, Sensitive) User's password. Consider using WriteOnly `password_wo` version of this attribute instead. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.
-- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write only version of `password`. Use in coordination with `password_wo_version`. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.
-- `password_wo_version` (Number) Version of the password_wo. This is used to force updates to `password_wo` when there is a change of the password that needs to be sent to the API. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.
+- `password` (String, Sensitive) User's password. Consider using WriteOnly `password_wo` version of this attribute instead. Any time an update operation is performed, AWX requires the password to be included. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write only version of `password`. Use in coordination with `password_wo_version`. Any time an update operation is performed, AWX requires the password to be included. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.
+- `password_wo_version` (Number) Version of the password_wo. This is used to force updates to `password_wo` when there is a change of the password that needs to be sent to the API and no other properties are changed. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.
 
 ### Read-Only
 

@@ -17,7 +17,6 @@ type providerClient struct {
 	client               *http.Client
 	endpoint             string
 	auth                 string
-	urlPrefix            string
 	apiRetryCount        int32
 	apiRetryDelaySeconds int32
 }
@@ -26,7 +25,7 @@ type providerClient struct {
 // headers and then makes the actual http request.
 func (c *providerClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int, aap25_api_endpoint_hint string) (responseBody []byte, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(url, aap25_api_endpoint_hint)
+	url, errorMessage = c.buildAPIUrl(url, aap25_api_endpoint_hint)
 
 	var body io.Reader
 
@@ -113,7 +112,7 @@ func SleepWithContext(ctx context.Context, d time.Duration) {
 
 func (c *providerClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int, aap25_api_endpoint_hint string) (returnedData map[string]any, statusCode int, errorMessage error) {
 
-	url = c.buildAPIUrl(url, aap25_api_endpoint_hint)
+	url, errorMessage = c.buildAPIUrl(url, aap25_api_endpoint_hint)
 
 	var body io.Reader
 
@@ -195,12 +194,17 @@ func (c *providerClient) CreateUpdateAPIRequest(ctx context.Context, method, url
 }
 
 // In AAP, most api endpoint live in /controller/. But, sometimes they specifyc gateway endpoint instead.
-func (c *providerClient) buildAPIUrl(resourceUrl, aap25_api_endpoint_hint string) (url string) {
+func (c *providerClient) buildAPIUrl(resourceUrl, aap25_api_endpoint_hint string) (url string, errorMessage error) {
 
 	if aap25_api_endpoint_hint == "gateway" && configprefix.Prefix == "aap" {
 		url = c.endpoint + "/api/gateway/v1/" + resourceUrl
+	} else if configprefix.Prefix == "aap" {
+		url = c.endpoint + "/api/controller/v2/" + resourceUrl
+	} else if configprefix.Prefix == "awx" {
+		url = c.endpoint + "/api/v2/" + resourceUrl
 	} else {
-		url = c.endpoint + c.urlPrefix + resourceUrl
+		errorMessage = fmt.Errorf("configprefix.Prefix not set properly, set to: %s", configprefix.Prefix)
+		return
 	}
 
 	return
