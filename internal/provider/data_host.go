@@ -101,10 +101,9 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	var url string
+	query := urlParser.Values{}
 
 	if !data.Id.IsNull() {
-		// set url for read by id HTTP request
 		id, err := strconv.Atoi(data.Id.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -112,15 +111,18 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 				fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
 			return
 		}
-		url = fmt.Sprintf("hosts/%d/", id)
+		query.Set("id", strconv.Itoa(id))
 	}
-	if !data.Name.IsNull() && !data.Inventory.IsNull() {
-		// set url for read by name HTTP request
-		name := urlParser.QueryEscape(data.Name.ValueString())
-		url = fmt.Sprintf("hosts/?name=%s&inventory=%d", name, data.Inventory.ValueInt32())
+	if !data.Name.IsNull() {
+		query.Set("name", data.Name.ValueString())
+	}
+	if !data.Inventory.IsNull() {
+		query.Set("inventory", strconv.Itoa(int(data.Inventory.ValueInt32())))
 	}
 
-	body, statusCode, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200, 404}, "")
+	url := "hosts/?" + query.Encode()
+
+	body, _, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API http request",
@@ -128,44 +130,25 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	if statusCode == 404 {
-		resp.State.RemoveResource(ctx)
+	countResult := struct {
+		Count   int            `json:"count"`
+		Results []HostAPIModel `json:"results"`
+	}{}
+
+	err = json.Unmarshal(body, &countResult)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to unmarshal response body into object",
+			fmt.Sprintf("Error =  %v.", err.Error()))
 		return
 	}
-
-	var responseData HostAPIModel
-
-	if !data.Id.IsNull() && data.Name.IsNull() && data.Inventory.IsNull() {
-		err = json.Unmarshal(body, &responseData)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to unmarshal response body into object",
-				fmt.Sprintf("Error =  %v.", err.Error()))
-			return
-		}
+	if countResult.Count != 1 {
+		resp.Diagnostics.AddError(
+			"Incorrect number of hosts returned",
+			fmt.Sprintf("Unable to read host as API returned %v hosts for query %q.", countResult.Count, query.Encode()))
+		return
 	}
-	// If looking up by name, check that there is only one response and extract it.
-	if data.Id.IsNull() && !data.Name.IsNull() && data.Inventory.IsNull() {
-		nameResult := struct {
-			Count   int            `json:"count"`
-			Results []HostAPIModel `json:"results"`
-		}{}
-		err = json.Unmarshal(body, &nameResult)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to unmarshal response body into object",
-				fmt.Sprintf("Error:  %v.", err.Error()))
-			return
-		}
-		if nameResult.Count == 1 {
-			responseData = nameResult.Results[0]
-		} else {
-			resp.Diagnostics.AddError(
-				"Incorrect number of hosts returned by name",
-				fmt.Sprintf("Unable to read host as API returned %v hosts.", nameResult.Count))
-			return
-		}
-	}
+	responseData := countResult.Results[0]
 
 	idAsString := strconv.Itoa(responseData.Id)
 	data.Id = types.StringValue(idAsString)
