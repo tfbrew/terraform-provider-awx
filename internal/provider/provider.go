@@ -203,14 +203,6 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	client.endpoint = endpoint
 	client.auth = auth
 
-	if configprefix.Prefix == "awx" {
-		client.urlPrefix = "/api/v2/"
-	}
-
-	if configprefix.Prefix == "aap" {
-		client.urlPrefix = "/api/controller/v2/"
-	}
-
 	if data.APIretry.IsNull() {
 		envAPIRRetryCount, envAPIRetryCountExists := os.LookupEnv("TOWER_API_RETRY_COUNT")
 		envAPIRetryDelaySeconds, envAPIRetryDelaySecondsExists := os.LookupEnv("TOWER_API_RETRY_DELAY_SECONDS")
