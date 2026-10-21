@@ -11,4 +11,8 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "daily"    
+    groups:
+      github-codeql:
+        patterns:
+          - "github/codeql-action/*"
