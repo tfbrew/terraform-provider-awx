@@ -62,7 +62,7 @@ func (r *InventoryResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:    true,
 			},
 			"kind": schema.StringAttribute{
-				Description: "Set to `smart` for smart inventories",
+				Description: "Leave empty for regular inventories. Set to `smart` for smart inventories (AAP documentation recommends against using smart type - use constructed_inventory resource.)",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"smart"}...),
