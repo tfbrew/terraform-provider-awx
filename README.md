@@ -1,9 +1,10 @@
-<!-- SPECIAL: This readme should be altered to match each repo to which it is included.  -->
+<!-- AAP-AWX-DIFF-BEGIN: This readme should be altered to match each repo to which it is included. -->
 # Terraform Provider AWX (AWX, AAP2.4)
 
 **See [tfbrew/terraform-provider-aap](https://github.com/tfbrew/terraform-provider-aap) for support for Ansible Automation Platform (AAP) versions 2.5 or greater.**
 
 This is a terraform provider for AWX and AAP2.4  built with the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework) and based on the [Terraform Provider Scafolding Framework](https://github.com/hashicorp/terraform-provider-scaffolding-framework).
+<!-- AAP-AWX-DIFF-END -->
 
 If you find any bugs or have a feature request, please open a GitHub issue.
 
@@ -15,7 +16,7 @@ This repo has modified the GNUmake file inherited from the Terraform scaffold re
 
 This code is used for two different providers:
 
-- tfbrew/aap: Supports aap2.5 and greater.
+- tfbrew/aap: Supports aap2.6 and greater (along with limited support for 2.5).
 - tfbrew/awx: Supports awx and aap2.4.
 
 **This requires manual intervention & using Go build tags to make the code as simliar as possible accross all three repositories.**
@@ -30,7 +31,7 @@ For **VS Code** this repo includes the workspace files `.vscode/settings.json` a
 
 ## Code Handling for Each Repo
 
-Search all files in this repository for the phrase `SPECIAL` to find files that may need to be updated to be specfiic to the containing repository & whether this is targetted for an aap named provider or an awx named provider.
+Apart from the Go module path, every file is kept identical between this repository and its sibling (terraform-provider-aap / terraform-provider-awx). Lines that must differ are wrapped in `AAP-AWX-DIFF` begin/end comments, and files that exist in only one repository carry an `AAP-AWX-DIFF` file comment. Search for the phrase `AAP-AWX-DIFF` to find them. The maintainers check for unmarked drift with the `drift-check.sh` script in the tfbrew helpers repository.
 
 ## Writing Acceptance Tests
 

@@ -1,4 +1,3 @@
-// SPECIAL: This file may require repo or controller-specific things.
 package provider
 
 import (
@@ -62,19 +61,25 @@ func (r *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Description: "User's email.",
 			},
 			"password": schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
+				Optional:  true,
+				Sensitive: true,
+				// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
 				Description: "User's password. Consider using WriteOnly `password_wo` version of this attribute instead. Any time an update operation is performed, AWX requires the password to be included. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.",
+				// AAP-AWX-DIFF-END
 			},
 			"password_wo": schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
-				WriteOnly:   true,
+				Optional:  true,
+				Sensitive: true,
+				WriteOnly: true,
+				// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
 				Description: "Write only version of `password`. Use in coordination with `password_wo_version`. Any time an update operation is performed, AWX requires the password to be included. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.",
+				// AAP-AWX-DIFF-END
 			},
 			"password_wo_version": schema.Int32Attribute{
-				Optional:    true,
+				Optional: true,
+				// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
 				Description: "Version of the password_wo. This is used to force updates to `password_wo` when there is a change of the password that needs to be sent to the API and no other properties are changed. If the password is updated in automation controller, due to the api, terraform will not know that it has been changed.",
+				// AAP-AWX-DIFF-END
 			},
 			"is_superuser": schema.BoolAttribute{
 				Optional:    true,
@@ -83,10 +88,12 @@ func (r *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Computed:    true,
 			},
 			"is_system_auditor": schema.BoolAttribute{
-				Optional:    true,
+				Optional: true,
+				// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
 				Description: "User is a system wide auditor. Only one of `is_superuser` or `is_system_auditor` is allowed.",
-				Default:     booldefault.StaticBool(false),
-				Computed:    true,
+				// AAP-AWX-DIFF-END
+				Default:  booldefault.StaticBool(false),
+				Computed: true,
 			},
 		},
 	}
@@ -98,13 +105,17 @@ func (r *UserResource) ConfigValidators(ctx context.Context) []resource.ConfigVa
 			path.MatchRoot("is_superuser"),
 			path.MatchRoot("is_system_auditor"),
 		),
+		// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
 		resourcevalidator.ExactlyOneOf(
+			// AAP-AWX-DIFF-END
 			path.MatchRoot("password"),
 			path.MatchRoot("password_wo"),
 		),
 		resourcevalidator.PreferWriteOnlyAttribute(
 			path.MatchRoot("password"),
 			path.MatchRoot("password_wo"),
+		// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
+		// AAP-AWX-DIFF-END
 		),
 	}
 }
@@ -273,6 +284,8 @@ func (r *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var data UserModel
+	// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
+	// AAP-AWX-DIFF-END
 	var configPasswordWo types.String
 
 	// write-only attributes are not available from plan/state; read from config.
@@ -282,6 +295,8 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
+	// AAP-AWX-DIFF-END
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -300,7 +315,9 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	bodyData.IsSuperuser = data.IsSuperuser.ValueBool()
 	bodyData.IsSystemAuditor = data.IsSystemAuditor.ValueBool()
 
+	// AAP-AWX-DIFF-BEGIN: AWX requires the password on every user update, so awx requires exactly one of password/password_wo and always resends it; aap only resends password_wo when password_wo_version changes (and requires the two together). is_system_auditor and password descriptions differ to match.
 	if !configPasswordWo.IsNull() {
+		// AAP-AWX-DIFF-END
 		bodyData.Password = configPasswordWo.ValueString()
 	} else if !data.Password.IsNull() || !data.Password.Equal(types.StringValue("$encrypted$")) {
 		bodyData.Password = data.Password.ValueString()

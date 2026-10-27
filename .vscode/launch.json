@@ -3,24 +3,32 @@
     //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
     "version": "0.2.0",
     "configurations": [
-{
-    //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
+        {
+            //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
+            // AAP-AWX-DIFF-BEGIN: This is repo specific and hard-coded AAP vs AWX.
+            "name": "AWX-AAP24",
+            // AAP-AWX-DIFF-END
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}",
+            "env": {
+                // AAP-AWX-DIFF-BEGIN: This is repo specific and hard-coded AAP vs AWX.
+                "TOWER_OAUTH_TOKEN": "${env:TOWER_OAUTH_TOKEN}",
+                "TOWER_HOST": "${env:TOWER_HOST}",
+                // AAP-AWX-DIFF-END
+                "GOEXPERIMENT": "jsonv2"
+            },
+            "buildFlags": [
+                // AAP-AWX-DIFF-BEGIN: This is repo specific and hard-coded AAP vs AWX.
+                "-tags=repoAWX"
+                // AAP-AWX-DIFF-END
+            ],
+            "args": [
+                "-debug"
+            ],
 
-        "name": "AWX-AAP24",
-        "type": "go",
-        "request": "launch",
-        "mode": "debug",
-        "program": "${workspaceFolder}",
-        "env": {
-            "TOWER_OAUTH_TOKEN": "{env:TOWER_OAUTH_TOKEN}",
-            "TOWER_HOST": "{env:TOWER_HOST",
-            "GOEXPERIMENT": "jsonv2"
-        },
-        "buildFlags": ["-tags=repoAWX"],
-        "args": ["-debug"]
-    }
-
-    //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
-
+        }
+        //  NO SECRETS - this is specific to your VS Code workspace anyway - and is tracked in git. 
     ]
 }

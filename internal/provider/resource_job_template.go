@@ -107,10 +107,12 @@ func (r *JobTemplateResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"extra_vars": schema.StringAttribute{
-				Optional:    true,
+				Optional: true,
+				// AAP-AWX-DIFF-BEGIN: Empty vars default to "---" in awx but are left unset in aap.
 				Default:     stringdefault.StaticString("---"),
-				Computed:    true,
 				Description: "Specify `extra_vars` for the template. Default value is `\"---\"`",
+				// AAP-AWX-DIFF-END
+				Computed: true,
 			},
 			"job_tags": schema.StringAttribute{
 				Optional:    true,

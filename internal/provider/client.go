@@ -14,18 +14,22 @@ import (
 )
 
 type providerClient struct {
-	client               *http.Client
-	endpoint             string
-	auth                 string
+	client   *http.Client
+	endpoint string
+	auth     string
+	// AAP-AWX-DIFF-BEGIN: aap routes requests to the gateway, controller, EDA and galaxy APIs; awx always uses /api/v2/.
+	// AAP-AWX-DIFF-END
 	apiRetryCount        int32
 	apiRetryDelaySeconds int32
 }
 
 // A wrapper for http.NewRequestWithContext() that prepends tower endpoint to URL & sets authorization
 // headers and then makes the actual http request.
+// AAP-AWX-DIFF-BEGIN: aap routes requests to the gateway, controller, EDA and galaxy APIs; awx always uses /api/v2/.
 func (c *providerClient) GenericAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int, aap25_api_endpoint_hint string) (responseBody []byte, statusCode int, errorMessage error) {
 
 	url, errorMessage = c.buildAPIUrl(url, aap25_api_endpoint_hint)
+	// AAP-AWX-DIFF-END
 
 	var body io.Reader
 
@@ -135,9 +139,11 @@ func (c *providerClient) WaitForDeletion(ctx context.Context, url string, aap25_
 	}
 }
 
+// AAP-AWX-DIFF-BEGIN: aap routes requests to the gateway, controller, EDA and galaxy APIs; awx always uses /api/v2/.
 func (c *providerClient) CreateUpdateAPIRequest(ctx context.Context, method, url string, requestBody any, successCodes []int, aap25_api_endpoint_hint string) (returnedData map[string]any, statusCode int, errorMessage error) {
 
 	url, errorMessage = c.buildAPIUrl(url, aap25_api_endpoint_hint)
+	// AAP-AWX-DIFF-END
 
 	var body io.Reader
 
@@ -218,7 +224,7 @@ func (c *providerClient) CreateUpdateAPIRequest(ctx context.Context, method, url
 	return
 }
 
-// In AAP, most api endpoint live in /controller/. But, sometimes they specifyc gateway endpoint instead.
+// AAP-AWX-DIFF-BEGIN: aap routes requests to the gateway, controller, EDA and galaxy APIs; awx always uses /api/v2/.
 func (c *providerClient) buildAPIUrl(resourceUrl, aap25_api_endpoint_hint string) (url string, errorMessage error) {
 
 	if aap25_api_endpoint_hint == "gateway" && configprefix.Prefix == "aap" {
@@ -231,6 +237,7 @@ func (c *providerClient) buildAPIUrl(resourceUrl, aap25_api_endpoint_hint string
 		errorMessage = fmt.Errorf("configprefix.Prefix not set properly, set to: %s", configprefix.Prefix)
 		return
 	}
+	// AAP-AWX-DIFF-END
 
 	return
 }
