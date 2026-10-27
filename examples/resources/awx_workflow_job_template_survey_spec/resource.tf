@@ -1,28 +1,10 @@
-resource "awx_organization" "example" {
-  name        = "example"
-  description = "example"
-}
-
-resource "awx_inventory" "example" {
-  name         = "example"
-  description  = "example"
-  organization = awx_organization.example.id
-}
-
-resource "awx_job_template" "example" {
-  job_type = "run"
-  name     = "example"
-  project  = awx_organization.example.id
-  playbook = "example.yml"
-}
-
 resource "awx_workflow_job_template" "example" {
   name         = "example"
-  inventory    = awx_inventory.example.id
-  organization = awx_organization.example.id
+  inventory    = 1
+  organization = 1
 }
 
-resource "awx_job_template_survey_spec" "example" {
+resource "awx_workflow_job_template_survey_spec" "example" {
   description = "example description"
   id          = awx_workflow_job_template.example.id
   name        = ""

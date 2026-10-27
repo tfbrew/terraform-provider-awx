@@ -13,31 +13,13 @@ Associate survey specs to an existing Workflow Job Template.
 ## Example Usage
 
 ```terraform
-resource "awx_organization" "example" {
-  name        = "example"
-  description = "example"
-}
-
-resource "awx_inventory" "example" {
-  name         = "example"
-  description  = "example"
-  organization = awx_organization.example.id
-}
-
-resource "awx_job_template" "example" {
-  job_type = "run"
-  name     = "example"
-  project  = awx_organization.example.id
-  playbook = "example.yml"
-}
-
 resource "awx_workflow_job_template" "example" {
   name         = "example"
-  inventory    = awx_inventory.example.id
-  organization = awx_organization.example.id
+  inventory    = 1
+  organization = 1
 }
 
-resource "awx_job_template_survey_spec" "example" {
+resource "awx_workflow_job_template_survey_spec" "example" {
   description = "example description"
   id          = awx_workflow_job_template.example.id
   name        = ""
@@ -116,5 +98,6 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
+# Import the survey spec of a specific workflow job template via the workflow job template's ID
 terraform import awx_workflow_job_template_survey_spec.example 100
 ```
