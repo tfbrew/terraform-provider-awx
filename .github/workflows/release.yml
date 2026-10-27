@@ -1,4 +1,3 @@
-# SPECIAL: add build tag env variable to pass into .goreleaser.yml
 # Terraform Provider release workflow.
 name: Release
 
@@ -32,10 +31,6 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      - name: Print build tag value
-        run: echo "REPO_BUILD_TAG_VALUE=${REPO_BUILD_TAG_VALUE}"
-        env:
-          REPO_BUILD_TAG_VALUE: ${{ vars.BUILD_TAG }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
@@ -44,4 +39,4 @@ jobs:
           # GitHub sets the GITHUB_TOKEN secret automatically.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          REPO_BUILD_TAG_VALUE: ${{ vars.BUILD_TAG }} # SPECIAL from org repo var
+          REPO_BUILD_TAG_VALUE: ${{ vars.BUILD_TAG }}
