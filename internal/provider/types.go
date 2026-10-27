@@ -475,23 +475,26 @@ type Messages struct {
 }
 
 type OrganizationModel struct {
-	Id             types.String `tfsdk:"id"`
-	Aap25GatewayId types.Int32  `tfsdk:"aap25_gateway_id"`
-	Name           types.String `tfsdk:"name"`
-	Description    types.String `tfsdk:"description"`
-	DefaultEnv     types.Int32  `tfsdk:"default_environment"`
-	MaxHosts       types.Int32  `tfsdk:"max_hosts"`
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	MaxHosts    types.Int32  `tfsdk:"max_hosts"`
+	// AAP-AWX-DIFF-BEGIN: aap also tracks the gateway and EDA organization IDs and opa_query_path; awx tracks default_environment.
+	DefaultEnv types.Int32 `tfsdk:"default_environment"`
+	// AAP-AWX-DIFF-END
 }
-
-type contextKey string
 
 type OrganizationAPIModel struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
-	DefaultEnv  int    `json:"default_environment,omitempty"`
 	MaxHosts    int    `json:"max_hosts,omitempty"`
+	// AAP-AWX-DIFF-BEGIN: aap also tracks opa_query_path; awx tracks default_environment.
+	DefaultEnv int `json:"default_environment,omitempty"`
+	// AAP-AWX-DIFF-END
 }
+
+type contextKey string
 
 type ProjectModel struct {
 	Id                    types.String `tfsdk:"id"`
