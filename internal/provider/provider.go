@@ -3,6 +3,7 @@ package provider
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"net/http"
@@ -38,11 +39,12 @@ type theProvider struct {
 
 // theProviderModel describes the provider data model.
 type theProviderModel struct {
-	Endpoint types.String `tfsdk:"endpoint"`
-	Token    types.String `tfsdk:"token"`
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
-	APIretry types.Object `tfsdk:"api_retry"`
+	Endpoint           types.String `tfsdk:"endpoint"`
+	Token              types.String `tfsdk:"token"`
+	Username           types.String `tfsdk:"username"`
+	Password           types.String `tfsdk:"password"`
+	APIretry           types.Object `tfsdk:"api_retry"`
+	InsecureSkipVerify types.Bool   `tfsdk:"insecure_skip_verify"`
 }
 
 type apiRetryModel struct {
@@ -94,6 +96,10 @@ func (p *theProvider) Schema(ctx context.Context, req provider.SchemaRequest, re
 						},
 					},
 				},
+			},
+			"insecure_skip_verify": schema.BoolAttribute{
+				Description: "Set true to skip SSL certificate verification for the automation controller. You can also set this using the " + configprefix.EnvPrefix + "INSECURE_SKIP_VERIFY environment variable.",
+				Optional:    true,
 			},
 		},
 	}
@@ -195,6 +201,25 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 
 	httpclient := &http.Client{
 		Timeout: 30 * time.Second,
+	}
+
+	// Check for insecure skip verify option
+	var insecureSkipVerify bool
+
+	if !data.InsecureSkipVerify.IsNull() {
+		insecureSkipVerify = data.InsecureSkipVerify.ValueBool()
+	} else if envInsecure, exists := os.LookupEnv(configprefix.EnvPrefix + "INSECURE_SKIP_VERIFY"); exists {
+		if envInsecure == "true" || envInsecure == "1" {
+			insecureSkipVerify = true
+		}
+	}
+
+	if insecureSkipVerify {
+		httpclient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
 	}
 
 	client := new(providerClient)
