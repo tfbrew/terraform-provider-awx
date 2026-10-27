@@ -129,7 +129,7 @@ func (d *CredentialTypeDataSource) Read(ctx context.Context, req datasource.Read
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error retrieving datasource. The resource may not exist.",
-			fmt.Sprintf("Error = %s.", err.Error()))
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 

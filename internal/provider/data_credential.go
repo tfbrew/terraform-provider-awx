@@ -145,12 +145,11 @@ func (d *CredentialDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	}
 
 	url := "credentials/?" + query.Encode()
-
 	body, _, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error retrieving datasource. The resource may not exist.",
-			fmt.Sprintf("Error = %s.", err.Error()))
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 
