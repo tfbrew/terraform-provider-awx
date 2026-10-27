@@ -240,6 +240,17 @@ type ConstructedInventoryAPIModel struct {
 	Verbosity                    int    `json:"verbosity"`
 }
 
+type GenericEndpointModel struct {
+	Id            types.String `tfsdk:"id"`
+	ApiPath       types.String `tfsdk:"api_path"`
+	ApiEndpoint   types.String `tfsdk:"api_endpoint"`
+	DataJson      types.String `tfsdk:"data_json"`
+	UpdateMethod  types.String `tfsdk:"update_method"`
+	DisableRead   types.Bool   `tfsdk:"disable_read"`
+	IgnoreRead    types.Set    `tfsdk:"ignore_read"`
+	DisableDelete types.Bool   `tfsdk:"disable_delete"`
+}
+
 type InventoryModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`

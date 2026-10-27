@@ -295,6 +295,7 @@ func (p *theProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewCredentialInputSourcesResource,
 		NewCredentialTypeResource,
 		NewHostResource,
+		NewGenericEndpointResource,
 		NewGroupResource,
 		NewGroupHostResource,
 		NewInstanceGroupResource,
