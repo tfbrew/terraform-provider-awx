@@ -290,6 +290,7 @@ func (p *theProvider) Configure(ctx context.Context, req provider.ConfigureReque
 func (p *theProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewExecutionEnvironmentResource,
+		NewConstructedInventoryResource,
 		NewCredentialResource,
 		NewCredentialInputSourcesResource,
 		NewCredentialTypeResource,
@@ -297,6 +298,7 @@ func (p *theProvider) Resources(ctx context.Context) []func() resource.Resource 
 		NewGroupResource,
 		NewGroupHostResource,
 		NewInstanceGroupResource,
+		NewInventoryInputResource,
 		NewInventoryResource,
 		NewInventorySourceResource,
 		NewJobTemplateCredentialResource,

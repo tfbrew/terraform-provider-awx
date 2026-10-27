@@ -1,0 +1,1 @@
+terraform import awx_constructed_inventory.example 21
