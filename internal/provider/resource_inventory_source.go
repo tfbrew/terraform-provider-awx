@@ -16,7 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	// AAP-AWX-DIFF-BEGIN: Empty vars default to "---" in awx but are left unset in aap.
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	// AAP-AWX-DIFF-END
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -113,10 +115,12 @@ func (r *InventorySourceResource) Schema(ctx context.Context, req resource.Schem
 				Computed:    true,
 			},
 			"source_vars": schema.StringAttribute{
+				// AAP-AWX-DIFF-BEGIN: Empty vars default to "---" in awx but are left unset in aap.
 				Optional:    true,
 				Default:     stringdefault.StaticString("---"),
 				Computed:    true,
 				Description: "Default value is `\"---\"`",
+				// AAP-AWX-DIFF-END
 			},
 			"source_project": schema.Int32Attribute{
 				Description: "The ID of the source project.",

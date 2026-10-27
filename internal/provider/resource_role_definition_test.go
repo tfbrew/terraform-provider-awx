@@ -19,14 +19,18 @@ func TestAccRoleDefinitionResource(t *testing.T) {
 		Name:        "test-group-" + acctest.RandString(5),
 		Description: "Example 1",
 		ContentType: "shared.organization",
+		// AAP-AWX-DIFF-BEGIN: AAP 2.6 role definitions are tested with an extra change permission.
 		Permissions: []string{"awx.add_notificationtemplate", "awx.view_notificationtemplate"},
+		// AAP-AWX-DIFF-END
 	}
 
 	RoleDefinition2 := RoleDefinitionAPIModel{
 		Name:        "test-group-" + acctest.RandString(5),
 		Description: "Example 2",
 		ContentType: "shared.organization",
+		// AAP-AWX-DIFF-BEGIN: AAP 2.6 role definitions are tested with an extra change permission.
 		Permissions: []string{"awx.delete_notificationtemplate", "awx.view_notificationtemplate"},
+		// AAP-AWX-DIFF-END
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -55,6 +59,8 @@ func TestAccRoleDefinitionResource(t *testing.T) {
 						knownvalue.SetExact([]knownvalue.Check{
 							knownvalue.StringExact(RoleDefinition1.Permissions[0]),
 							knownvalue.StringExact(RoleDefinition1.Permissions[1]),
+							// AAP-AWX-DIFF-BEGIN: AAP 2.6 role definitions are tested with an extra change permission.
+							// AAP-AWX-DIFF-END
 						}),
 					),
 				},
@@ -83,6 +89,8 @@ func TestAccRoleDefinitionResource(t *testing.T) {
 						knownvalue.SetExact([]knownvalue.Check{
 							knownvalue.StringExact(RoleDefinition2.Permissions[0]),
 							knownvalue.StringExact(RoleDefinition2.Permissions[1]),
+							// AAP-AWX-DIFF-BEGIN: AAP 2.6 role definitions are tested with an extra change permission.
+							// AAP-AWX-DIFF-END
 						}),
 					),
 				},
@@ -97,7 +105,11 @@ resource "%[1]s_role_definition" "%[6]s" {
   name         = "%[2]s"
   description  = "Test role definition"
   content_type = "%[3]s"
+  // AAP-AWX-DIFF-BEGIN: AAP 2.6 role definitions are tested with an extra change permission.
   permissions   = ["%[4]s", "%[5]s"]
+  // AAP-AWX-DIFF-END
 }
+// AAP-AWX-DIFF-BEGIN: AAP 2.6 role definitions are tested with an extra change permission.
 `, configprefix.Prefix, resource.Name, resource.ContentType, resource.Permissions[0], resource.Permissions[1], rName)
+	// AAP-AWX-DIFF-END
 }
