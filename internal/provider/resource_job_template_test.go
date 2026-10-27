@@ -102,6 +102,8 @@ func TestAccJobTemplateResource(t *testing.T) {
 						tfjsonpath.New("playbook"),
 						knownvalue.StringExact(resource2.Playbook),
 					),
+					// AAP-AWX-DIFF-BEGIN: Empty vars default to "---" in awx but are left unset in aap.
+					// AAP-AWX-DIFF-END
 					statecheck.CompareValuePairs(
 						fmt.Sprintf("%s_inventory.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("id"),

@@ -25,12 +25,12 @@ jobs:
           go-version-file: 'go.mod'
           cache: false
       - run: go mod download
-      - run: go build -tags=repoAWX -v .
+      - run: go build -tags=${{ vars.BUILD_TAG }} -v .
       - name: Run linters
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: latest
-          args: --build-tags 'repoAWX'
+          args: --build-tags '${{ vars.BUILD_TAG }}'
 
   generate:
     runs-on: ubuntu-latest
@@ -50,24 +50,22 @@ jobs:
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)
 
+  # AAP-AWX-DIFF-BEGIN: Each repo tests its own platforms: job names, credentials and AAP 2.4-only settings.
   testawx:
     name: Terraform Provider Acceptance Tests AWX
+  # AAP-AWX-DIFF-END
+    if: github.event.pull_request.head.repo.full_name == github.repository
     needs: build
-    if: |
-          github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     strategy:
-      fail-fast: true
+      fail-fast: true # cancel all in-progress runs if one fails
       matrix:
         # list whatever Terraform versions here you would like to support
         terraform:
-          - '1.12.*'
-          - '1.16.*'
+          - '1.15.*'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: 'go.mod'
@@ -79,19 +77,21 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
+          # AAP-AWX-DIFF-BEGIN: Each repo tests its own platforms: job names, credentials and AAP 2.4-only settings.
           TOWER_HOST: ${{ secrets.TOWER_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.TOWER_OAUTH_TOKEN }}
-          TOWER_PLATFORM: "awx"
-        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -timeout 20m ./internal/provider/
-        timeout-minutes: 20
+          # AAP-AWX-DIFF-END
+        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -timeout 60m ./internal/provider/
+        timeout-minutes: 60
 
+  # AAP-AWX-DIFF-BEGIN: Each repo tests its own platforms: job names, credentials and AAP 2.4-only settings.
   testaap24:
     name: Terraform Provider Acceptance Tests AAP 2.4
+  # AAP-AWX-DIFF-END
+    if: github.event.pull_request.head.repo.full_name == github.repository
     needs: build
-    if: |
-          github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     strategy:
       fail-fast: true # cancel all in-progress runs if one fails
       matrix:
@@ -101,8 +101,6 @@ jobs:
           - '1.16.*'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: 'go.mod'
@@ -114,9 +112,11 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
+          # AAP-AWX-DIFF-BEGIN: Each repo tests its own platforms: job names, credentials and AAP 2.4-only settings.
           TOWER_HOST: ${{ secrets.AAP_24_HOST }}
           TOWER_OAUTH_TOKEN: ${{ secrets.AAP_24_OAUTH_TOKEN }}
           TOWER_API_RETRY_COUNT: 1 # Run aap2.4 test with API_RETRY_COUNT
           TOWER_API_RETRY_DELAY_SECONDS: 2 # Run aap2.4 test with API_RETRY_DELAY_SECONDS
-        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -skip "TestAccRoleDefinitionResource|TestAccRoleDefinitionDataSource|TestAccRoleUserAssignmentResource|TestAccRoleTeamAssignmentResource" -timeout 20m ./internal/provider/ # Exclude test incompatible with aap2.4
-        timeout-minutes: 20
+        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -skip "TestAccRoleDefinitionResource|TestAccRoleDefinitionDataSource|TestAccRoleUserAssignmentResource|TestAccRoleTeamAssignmentResource" -timeout 60m ./internal/provider/ # Exclude test incompatible with aap2.4
+          # AAP-AWX-DIFF-END
+        timeout-minutes: 60

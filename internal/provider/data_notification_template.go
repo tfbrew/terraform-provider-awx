@@ -125,7 +125,7 @@ func (d *NotificationTemplateDataSource) Read(ctx context.Context, req datasourc
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error retrieving datasource. The resource may not exist.",
-			fmt.Sprintf("Error = %s.", err.Error()))
+			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
 

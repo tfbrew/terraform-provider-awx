@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 var _ resource.Resource = &ScheduleResource{}
@@ -64,6 +65,54 @@ func (r *ScheduleResource) Schema(ctx context.Context, req resource.SchemaReques
 				Default:     booldefault.StaticBool(true),
 				Computed:    true,
 			},
+			"inventory": schema.Int32Attribute{
+				Description: "Inventory id for schedule - for providing prompt values",
+				Optional:    true,
+			},
+			"limit": schema.StringAttribute{
+				Description: "Limit - for providing prompt values.",
+				Optional:    true,
+			},
+			"forks": schema.Int32Attribute{
+				Description: "Forks for schedule - for providing prompt values",
+				Optional:    true,
+			},
+			"job_slice_count": schema.Int32Attribute{
+				Description: "Job Slice Count for schedule - for providing prompt values",
+				Optional:    true,
+			},
+			"scm_branch": schema.StringAttribute{
+				Description: "SCM Branch - for providing prompt values.",
+				Optional:    true,
+			},
+			"job_tags": schema.StringAttribute{
+				Description: "Job Tags - for providing prompt values.",
+				Optional:    true,
+			},
+			"skip_tags": schema.StringAttribute{
+				Description: "Skip Tags - for providing prompt values.",
+				Optional:    true,
+			},
+			"diff_mode": schema.BoolAttribute{
+				Description: "Diff Mode - for providing prompt values.",
+				Optional:    true,
+			},
+			"verbosity": schema.Int32Attribute{
+				Description: "Verbosity - for providing prompt values",
+				Optional:    true,
+			},
+			"execution_environment": schema.Int32Attribute{
+				Description: "Execution Environment id - for providing prompt values",
+				Optional:    true,
+			},
+			"timeout": schema.Int32Attribute{
+				Description: "Timeout - for providing prompt values",
+				Optional:    true,
+			},
+			"extra_data": schema.DynamicAttribute{
+				Description: "This field expects an object of key value pairs. If the value for a particular key is a list of strings, wrap the value in `tolist([...])` in your terraform configuration code. See the example schedule for more details.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -102,6 +151,88 @@ func (r *ScheduleResource) Create(ctx context.Context, req resource.CreateReques
 	bodyData.Enabled = data.Enabled.ValueBool()
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
+	}
+
+	if !(data.Inventory.IsNull()) {
+		bodyData.Inventory = int(data.Inventory.ValueInt32())
+	}
+	if !(data.Limit.IsNull()) {
+		bodyData.Limit = data.Limit.ValueString()
+	}
+	if !(data.Forks.IsNull()) {
+		bodyData.Forks = int(data.Forks.ValueInt32())
+	}
+	if !(data.JobSliceCount.IsNull()) {
+		bodyData.JobSliceCount = int(data.JobSliceCount.ValueInt32())
+	}
+	if !(data.Verbosity.IsNull()) {
+		bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+	}
+	if !(data.ExecutionEnvironment.IsNull()) {
+		bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
+	}
+	if !(data.Timeout.IsNull()) {
+		bodyData.Timeout = int(data.Timeout.ValueInt32())
+	}
+	if !(data.ScmBranch.IsNull()) {
+		bodyData.ScmBranch = data.ScmBranch.ValueString()
+	}
+	if !(data.JobTags.IsNull()) {
+		bodyData.JobTags = data.JobTags.ValueString()
+	}
+	if !(data.SkipTags.IsNull()) {
+		bodyData.SkipTags = data.SkipTags.ValueString()
+	}
+	if !(data.DiffMode.IsNull()) {
+		bodyData.DiffMode = data.DiffMode.ValueBool()
+	}
+
+	if !data.ExtraData.IsUnderlyingValueNull() && !data.ExtraData.IsNull() {
+		extraDataMap := make(map[string]any)
+
+		switch val := data.ExtraData.UnderlyingValue().(type) {
+		case types.Object:
+
+			for key, v := range val.Attributes() {
+				switch v := v.(type) {
+				case basetypes.StringValue:
+					extraDataMap[key] = v.ValueString()
+
+				case basetypes.NumberValue:
+					f64, _ := v.ValueBigFloat().Float64()
+					extraDataMap[key] = f64
+
+				case basetypes.ListValue:
+
+					beforeStringConversion := v.Elements()
+					stringSlice := make([]string, len(beforeStringConversion))
+					for i, elem := range beforeStringConversion {
+						strElem, ok := elem.(types.String)
+						if !ok {
+							resp.Diagnostics.AddError(
+								"extra data list contains non-string element",
+								fmt.Sprintf("extra data key '%s' has a non-string element of type: %T", key, elem),
+							)
+							return
+						}
+						stringSlice[i] = strElem.ValueString()
+					}
+					extraDataMap[key] = stringSlice
+
+				default:
+					resp.Diagnostics.AddError(
+						"extra data value specified is invalid type create",
+						fmt.Sprintf("extra data key '%s' has an unexpected type: %T. Wrap lists in tolist([...]) for the list element within extra data.", key, v),
+					)
+					return
+				}
+			}
+		default:
+			resp.Diagnostics.AddError("Extra data type invalid (create)", "The extra_data should be a types.Object.")
+			return
+		}
+
+		bodyData.ExtraData = extraDataMap
 	}
 
 	url := "schedules/"
@@ -179,6 +310,134 @@ func (r *ScheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 			return
 		}
 	}
+	if !data.Limit.IsNull() || responseData.Limit != "" {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("limit"), responseData.Limit)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.ScmBranch.IsNull() || responseData.ScmBranch != "" {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scm_branch"), responseData.ScmBranch)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.JobTags.IsNull() || responseData.JobTags != "" {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_tags"), responseData.JobTags)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.DiffMode.IsNull() || responseData.DiffMode {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), responseData.DiffMode)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.DiffMode.IsNull() || responseData.DiffMode {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("diff_mode"), responseData.DiffMode)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.Inventory.IsNull() || responseData.Inventory != 0 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("inventory"), responseData.Inventory)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.Timeout.IsNull() || responseData.Timeout != 0 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeout"), responseData.Timeout)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.Forks.IsNull() || responseData.Forks != 0 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("forks"), responseData.Forks)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.JobSliceCount.IsNull() || responseData.JobSliceCount != 0 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("job_slice_count"), responseData.JobSliceCount)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.Verbosity.IsNull() || responseData.Verbosity != 0 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("verbosity"), responseData.Verbosity)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if !data.ExecutionEnvironment.IsNull() || responseData.ExecutionEnvironment != 0 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("execution_environment"), responseData.ExecutionEnvironment)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	if !data.ExtraData.IsUnderlyingValueNull() && !data.ExtraData.IsNull() {
+
+		extraDataValue := data.ExtraData.UnderlyingValue()
+
+		// convert state to map[string]any
+		currExtraDataState := make(map[string]any)
+
+		switch val := extraDataValue.(type) {
+		case types.Object:
+			for key, v := range val.Attributes() {
+				switch v := v.(type) {
+				case basetypes.StringValue:
+					currExtraDataState[key] = v.ValueString()
+
+				case basetypes.NumberValue:
+					f64, _ := v.ValueBigFloat().Float64()
+					currExtraDataState[key] = f64
+
+				case basetypes.ListValue:
+
+					beforeStringConversion := v.Elements()
+					stringSlice := make([]string, len(beforeStringConversion))
+					for i, elem := range beforeStringConversion {
+						strElem, ok := elem.(types.String)
+						if !ok {
+							resp.Diagnostics.AddError(
+								"extra data tuple contains non-string element",
+								fmt.Sprintf("extra data key '%s' has a non-string element of type: %T", key, elem),
+							)
+							return
+						}
+						stringSlice[i] = strElem.ValueString()
+					}
+					currExtraDataState[key] = stringSlice
+
+				default:
+					resp.Diagnostics.AddError(
+						"extra data value specified is invalid type",
+						fmt.Sprintf("extra data key '%s' has an unexpected type: %T", key, v),
+					)
+					return
+				}
+			}
+
+			var dynValue basetypes.DynamicValue
+			resp.Diagnostics.Append(extraDataApiToDynamicObject(ctx, responseData.ExtraData, &dynValue)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("extra_data"), &dynValue)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+		default:
+			resp.Diagnostics.AddError("extra data value specified is invalid type", "extra data must be an object.")
+			return
+		}
+	}
+
 }
 
 func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -206,6 +465,87 @@ func (r *ScheduleResource) Update(ctx context.Context, req resource.UpdateReques
 
 	if !(data.Description.IsNull()) {
 		bodyData.Description = data.Description.ValueString()
+	}
+	if !(data.Inventory.IsNull()) {
+		bodyData.Inventory = int(data.Inventory.ValueInt32())
+	}
+	if !(data.Limit.IsNull()) {
+		bodyData.Limit = data.Limit.ValueString()
+	}
+	if !(data.Forks.IsNull()) {
+		bodyData.Forks = int(data.Forks.ValueInt32())
+	}
+	if !(data.JobSliceCount.IsNull()) {
+		bodyData.JobSliceCount = int(data.JobSliceCount.ValueInt32())
+	}
+	if !(data.Verbosity.IsNull()) {
+		bodyData.Verbosity = int(data.Verbosity.ValueInt32())
+	}
+	if !(data.ExecutionEnvironment.IsNull()) {
+		bodyData.ExecutionEnvironment = int(data.ExecutionEnvironment.ValueInt32())
+	}
+	if !(data.Timeout.IsNull()) {
+		bodyData.Timeout = int(data.Timeout.ValueInt32())
+	}
+	if !(data.ScmBranch.IsNull()) {
+		bodyData.ScmBranch = data.ScmBranch.ValueString()
+	}
+	if !(data.JobTags.IsNull()) {
+		bodyData.JobTags = data.JobTags.ValueString()
+	}
+	if !(data.SkipTags.IsNull()) {
+		bodyData.SkipTags = data.SkipTags.ValueString()
+	}
+	if !(data.DiffMode.IsNull()) {
+		bodyData.DiffMode = data.DiffMode.ValueBool()
+	}
+
+	if !data.ExtraData.IsUnderlyingValueNull() && !data.ExtraData.IsNull() {
+		extraDataMap := make(map[string]any)
+
+		switch val := data.ExtraData.UnderlyingValue().(type) {
+
+		case types.Object:
+			for key, v := range val.Attributes() {
+
+				switch v := v.(type) {
+				case basetypes.StringValue:
+					extraDataMap[key] = v.ValueString()
+
+				case basetypes.NumberValue:
+					f64, _ := v.ValueBigFloat().Float64()
+					extraDataMap[key] = f64
+
+				case basetypes.ListValue:
+
+					beforeStringConversion := v.Elements()
+					stringSlice := make([]string, len(beforeStringConversion))
+					for i, elem := range beforeStringConversion {
+						strElem, ok := elem.(types.String)
+						if !ok {
+							resp.Diagnostics.AddError(
+								"extra data tuple contains non-string element",
+								fmt.Sprintf("extra data key '%s' has a non-string element of type: %T", key, elem),
+							)
+							return
+						}
+						stringSlice[i] = strElem.ValueString()
+					}
+					extraDataMap[key] = stringSlice
+				default:
+					resp.Diagnostics.AddError(
+						"extra data value specified is invalid type",
+						fmt.Sprintf("extra data key '%s' has an unexpected type: %T", key, v),
+					)
+					return
+				}
+			}
+		default:
+			resp.Diagnostics.AddError("Extra Data type invalid", "The extra data should be a types.Object.")
+			return
+		}
+
+		bodyData.ExtraData = extraDataMap
 	}
 
 	url := fmt.Sprintf("schedules/%d/", id)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -61,7 +62,7 @@ func (r *InventoryResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:    true,
 			},
 			"kind": schema.StringAttribute{
-				Description: "Set to `smart` for smart inventories",
+				Description: "Leave empty for regular inventories. Set to `smart` for smart inventories (AAP documentation recommends against using smart type - use constructed_inventory resource.)",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"smart"}...),
@@ -309,6 +310,14 @@ func (r *InventoryResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error making API delete request",
+			fmt.Sprintf("Error was: %s.", err.Error()))
+		return
+	}
+
+	err = r.client.WaitForDeletion(ctx, fmt.Sprintf("inventories/%d/", id), "", 5*time.Minute)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error waiting for inventory deletion",
 			fmt.Sprintf("Error was: %s.", err.Error()))
 		return
 	}
