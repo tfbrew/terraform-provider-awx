@@ -64,7 +64,7 @@ jobs:
   # AAP-AWX-DIFF-END
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: ${{ fromJSON(vars.TEST_TIMEOUT_MINUTES) }}
     strategy:
       fail-fast: true # cancel all in-progress runs if one fails
       matrix:
@@ -92,8 +92,8 @@ jobs:
           TOWER_OAUTH_TOKEN: ${{ secrets.TOWER_OAUTH_TOKEN }}
           TOWER_PLATFORM: "awx"
           # AAP-AWX-DIFF-END
-        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -timeout 60m ./internal/provider/
-        timeout-minutes: 60
+        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -timeout ${{ vars.TEST_TIMEOUT_MINUTES }}m ./internal/provider/
+        timeout-minutes: ${{ fromJSON(vars.TEST_TIMEOUT_MINUTES) }}
 
   # AAP-AWX-DIFF-BEGIN: Build tag, test matrix and secrets differ per repo.
   testaap24:
@@ -101,7 +101,7 @@ jobs:
   # AAP-AWX-DIFF-END
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: ${{ fromJSON(vars.TEST_TIMEOUT_MINUTES) }}
     strategy:
       fail-fast: true # cancel all in-progress runs if one fails
       matrix:
@@ -129,6 +129,6 @@ jobs:
           TOWER_OAUTH_TOKEN: ${{ secrets.AAP_24_OAUTH_TOKEN }}
           TOWER_API_RETRY_COUNT: 1 # Run aap2.4 test with API_RETRY_COUNT
           TOWER_API_RETRY_DELAY_SECONDS: 2 # Run aap2.4 test with API_RETRY_DELAY_SECONDS
-        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -skip "TestAccRoleDefinitionResource|TestAccRoleDefinitionDataSource|TestAccRoleUserAssignmentResource|TestAccRoleTeamAssignmentResource" -timeout 60m ./internal/provider/ # Exclude test incompatible with aap2.4
+        run: go test -v -failfast -cover -tags=${{ vars.BUILD_TAG }} -skip "TestAccRoleDefinitionResource|TestAccRoleDefinitionDataSource|TestAccRoleUserAssignmentResource|TestAccRoleTeamAssignmentResource" -timeout ${{ vars.TEST_TIMEOUT_MINUTES }}m ./internal/provider/ # Exclude test incompatible with aap2.4
         # AAP-AWX-DIFF-END
-        timeout-minutes: 60
+        timeout-minutes: ${{ fromJSON(vars.TEST_TIMEOUT_MINUTES) }}
