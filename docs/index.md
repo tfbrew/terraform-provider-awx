@@ -32,7 +32,7 @@ provider "awx" {
 }
 
 provider "awx" {
-  endpoint = "http://aap.example.com"
+  endpoint = "http://tower.example.com"
   token    = "mysecrettoken"
   api_retry = {
     api_retry_count         = 1
@@ -48,6 +48,7 @@ provider "awx" {
 
 - `api_retry` (Attributes) An optional block to define if the provider should retry GET/read API requests that intitially fail. (see [below for nested schema](#nestedatt--api_retry))
 - `endpoint` (String) URL for automation controller (i.e. https://tower.example.com)
+- `insecure_skip_verify` (Boolean) Set true to skip SSL certificate verification for the automation controller. You can also set this using the TOWER_INSECURE_SKIP_VERIFY environment variable.
 - `password` (String) Automation controller password (instead of token). You can also set this using the TOWER_PASSWORD environment variable.
 - `token` (String) Automation controller access token (instead of username/password). You can also set this using the TOWER_OAUTH_TOKEN environment variable.
 - `username` (String) Automation controller username (instead of token). You can also set this using the TOWER_USERNAME environment variable.

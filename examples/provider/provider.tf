@@ -18,7 +18,7 @@ provider "awx" {
 }
 
 provider "awx" {
-  endpoint = "http://aap.example.com"
+  endpoint = "http://tower.example.com"
   token    = "mysecrettoken"
   api_retry = {
     api_retry_count         = 1

@@ -51,8 +51,10 @@ func (r *WorkflowJobTemplatesResource) Schema(ctx context.Context, req resource.
 			},
 			"extra_vars": schema.StringAttribute{
 				Optional: true,
+				// AAP-AWX-DIFF-BEGIN: Empty vars default to "---" in awx but are left unset in aap.
 				Default:  stringdefault.StaticString("---"),
 				Computed: true,
+				// AAP-AWX-DIFF-END
 			},
 			"organization": schema.Int32Attribute{
 				Required: true,

@@ -72,6 +72,8 @@ func TestAccWorkflowJobTemplateResource(t *testing.T) {
 						fmt.Sprintf("%s_workflow_job_template.%s", configprefix.Prefix, rName2),
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(resource2.Description),
+					// AAP-AWX-DIFF-BEGIN: Empty vars default to "---" in awx but are left unset in aap.
+					// AAP-AWX-DIFF-END
 					),
 					statecheck.CompareValuePairs(
 						fmt.Sprintf("%s_inventory.%s", configprefix.Prefix, rName2),

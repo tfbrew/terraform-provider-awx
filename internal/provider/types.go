@@ -38,15 +38,17 @@ type LabelDissasocBody struct {
 }
 
 type CredentialModel struct {
-	Id             types.String  `tfsdk:"id"`
-	Name           types.String  `tfsdk:"name"`
-	Description    types.String  `tfsdk:"description"`
-	Organization   types.Int32   `tfsdk:"organization"`
-	Team           types.Int32   `tfsdk:"team"`
-	User           types.Int32   `tfsdk:"user"`
-	CredentialType types.Int32   `tfsdk:"credential_type"`
-	Kind           types.String  `tfsdk:"kind"`
-	Inputs         types.Dynamic `tfsdk:"inputs"`
+	Id              types.String  `tfsdk:"id"`
+	Name            types.String  `tfsdk:"name"`
+	Description     types.String  `tfsdk:"description"`
+	Organization    types.Int32   `tfsdk:"organization"`
+	Team            types.Int32   `tfsdk:"team"`
+	User            types.Int32   `tfsdk:"user"`
+	CredentialType  types.Int32   `tfsdk:"credential_type"`
+	Kind            types.String  `tfsdk:"kind"`
+	Inputs          types.Dynamic `tfsdk:"inputs"`
+	InputsWO        types.Dynamic `tfsdk:"inputs_wo"`
+	InputsWOVersion types.Int32   `tfsdk:"inputs_wo_version"`
 }
 
 type CredentialModelv0 struct {
@@ -89,15 +91,17 @@ type CredentialResult struct {
 }
 
 type CredentialAPIModel struct {
-	Id             int            `json:"id"`
-	Name           string         `json:"name"`
-	Description    string         `json:"description,omitempty"`
-	Organization   int            `json:"organization,omitempty"`
-	Team           int            `json:"team,omitempty"`
-	User           int            `json:"user,omitempty"`
-	CredentialType int            `json:"credential_type"`
-	Kind           string         `json:"kind,omitempty"`
-	Inputs         map[string]any `json:"inputs,omitempty"`
+	Id              int            `json:"id"`
+	Name            string         `json:"name"`
+	Description     string         `json:"description,omitempty"`
+	Organization    int            `json:"organization,omitempty"`
+	Team            int            `json:"team,omitempty"`
+	User            int            `json:"user,omitempty"`
+	CredentialType  int            `json:"credential_type"`
+	Kind            string         `json:"kind,omitempty"`
+	Inputs          map[string]any `json:"inputs,omitempty"`
+	InputsWO        map[string]any `json:"inputs_wo,omitempty"`
+	InputsWOVersion int            `json:"inputs_wo_version,omitempty"`
 }
 
 type CredentialTypeModel struct {
@@ -181,6 +185,15 @@ type GroupHostAssocAPIModel struct {
 	Id int `json:"id"`
 }
 
+type InventoryInputModel struct {
+	ConstructedInventoryID types.String `tfsdk:"constructed_inventory_id"`
+	InputInventoryID       types.String `tfsdk:"input_inventory_id"`
+}
+
+type InventoryInputAssocAPIModel struct {
+	Id int `json:"id"`
+}
+
 type InstanceGroupModel struct {
 	Id                       types.String `tfsdk:"id"`
 	Name                     types.String `tfsdk:"name"`
@@ -203,6 +216,43 @@ type InstanceGroupAPIModel struct {
 	PolicyInstancePercentage int    `json:"policy_instance_percentage"`
 	PolicyInstanceMinimum    int    `json:"policy_instance_minimum"`
 	Credential               int    `json:"credential,omitempty"`
+}
+
+type ConstructedInventoryModel struct {
+	Id                           types.String `tfsdk:"id"`
+	Name                         types.String `tfsdk:"name"`
+	Description                  types.String `tfsdk:"description"`
+	Organization                 types.Int32  `tfsdk:"organization"`
+	Variables                    types.String `tfsdk:"variables"`
+	PreventInstanceGroupFallback types.Bool   `tfsdk:"prevent_instance_group_fallback"`
+	SourceVars                   types.String `tfsdk:"source_vars"`
+	UpdateCacheTimeout           types.Int32  `tfsdk:"update_cache_timeout"`
+	Limit                        types.String `tfsdk:"limit"`
+	Verbosity                    types.Int32  `tfsdk:"verbosity"`
+}
+
+type ConstructedInventoryAPIModel struct {
+	Id                           int    `json:"id"`
+	Name                         string `json:"name"`
+	Description                  string `json:"description"`
+	Organization                 int    `json:"organization"`
+	Variables                    string `json:"variables"`
+	PreventInstanceGroupFallback bool   `json:"prevent_instance_group_fallback"`
+	SourceVars                   string `json:"source_vars"`
+	UpdateCacheTimeout           int    `json:"update_cache_timeout"`
+	Limit                        string `json:"limit"`
+	Verbosity                    int    `json:"verbosity"`
+}
+
+type GenericEndpointModel struct {
+	Id            types.String `tfsdk:"id"`
+	ApiPath       types.String `tfsdk:"api_path"`
+	ApiEndpoint   types.String `tfsdk:"api_endpoint"`
+	DataJson      types.String `tfsdk:"data_json"`
+	UpdateMethod  types.String `tfsdk:"update_method"`
+	DisableRead   types.Bool   `tfsdk:"disable_read"`
+	IgnoreRead    types.Set    `tfsdk:"ignore_read"`
+	DisableDelete types.Bool   `tfsdk:"disable_delete"`
 }
 
 type InventoryModel struct {
@@ -425,23 +475,26 @@ type Messages struct {
 }
 
 type OrganizationModel struct {
-	Id             types.String `tfsdk:"id"`
-	Aap25GatewayId types.Int32  `tfsdk:"aap25_gateway_id"`
-	Name           types.String `tfsdk:"name"`
-	Description    types.String `tfsdk:"description"`
-	DefaultEnv     types.Int32  `tfsdk:"default_environment"`
-	MaxHosts       types.Int32  `tfsdk:"max_hosts"`
+	Id          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	MaxHosts    types.Int32  `tfsdk:"max_hosts"`
+	// AAP-AWX-DIFF-BEGIN: aap also tracks the gateway and EDA organization IDs and opa_query_path; awx tracks default_environment.
+	DefaultEnv types.Int32 `tfsdk:"default_environment"`
+	// AAP-AWX-DIFF-END
 }
-
-type contextKey string
 
 type OrganizationAPIModel struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
-	DefaultEnv  int    `json:"default_environment,omitempty"`
 	MaxHosts    int    `json:"max_hosts,omitempty"`
+	// AAP-AWX-DIFF-BEGIN: aap also tracks opa_query_path; awx tracks default_environment.
+	DefaultEnv int `json:"default_environment,omitempty"`
+	// AAP-AWX-DIFF-END
 }
+
+type contextKey string
 
 type ProjectModel struct {
 	Id                    types.String `tfsdk:"id"`
@@ -530,21 +583,45 @@ type RoleTeamAssignmentAPIModel struct {
 }
 
 type ScheduleModel struct {
-	Id                 types.String `tfsdk:"id"`
-	Name               types.String `tfsdk:"name"`
-	Description        types.String `tfsdk:"description"`
-	UnifiedJobTemplate types.Int32  `tfsdk:"unified_job_template"`
-	Rrule              types.String `tfsdk:"rrule"`
-	Enabled            types.Bool   `tfsdk:"enabled"`
+	Id                   types.String  `tfsdk:"id"`
+	Name                 types.String  `tfsdk:"name"`
+	Description          types.String  `tfsdk:"description"`
+	UnifiedJobTemplate   types.Int32   `tfsdk:"unified_job_template"`
+	Rrule                types.String  `tfsdk:"rrule"`
+	Enabled              types.Bool    `tfsdk:"enabled"`
+	Inventory            types.Int32   `tfsdk:"inventory"`
+	Limit                types.String  `tfsdk:"limit"`
+	Forks                types.Int32   `tfsdk:"forks"`
+	JobSliceCount        types.Int32   `tfsdk:"job_slice_count"`
+	ScmBranch            types.String  `tfsdk:"scm_branch"`
+	JobTags              types.String  `tfsdk:"job_tags"`
+	SkipTags             types.String  `tfsdk:"skip_tags"`
+	DiffMode             types.Bool    `tfsdk:"diff_mode"`
+	Verbosity            types.Int32   `tfsdk:"verbosity"`
+	ExecutionEnvironment types.Int32   `tfsdk:"execution_environment"`
+	Timeout              types.Int32   `tfsdk:"timeout"`
+	ExtraData            types.Dynamic `tfsdk:"extra_data"`
 }
 
 type ScheduleAPIModel struct {
-	Id                 int    `json:"id"`
-	Name               string `json:"name"`
-	Description        string `json:"description,omitempty"`
-	UnifiedJobTemplate int    `json:"unified_job_template"`
-	Rrule              string `json:"rrule"`
-	Enabled            bool   `json:"enabled"`
+	Id                   int            `json:"id"`
+	Name                 string         `json:"name"`
+	Description          string         `json:"description,omitempty"`
+	UnifiedJobTemplate   int            `json:"unified_job_template"`
+	Rrule                string         `json:"rrule"`
+	Enabled              bool           `json:"enabled"`
+	Inventory            int            `json:"inventory,omitempty"`
+	Limit                string         `json:"limit,omitempty"`
+	Forks                int            `json:"forks,omitempty"`
+	JobSliceCount        int            `json:"job_slice_count,omitempty"`
+	ScmBranch            string         `json:"scm_branch,omitempty"`
+	JobTags              string         `json:"job_tags,omitempty"`
+	SkipTags             string         `json:"skip_tags,omitempty"`
+	DiffMode             bool           `json:"diff_mode,omitempty"`
+	Verbosity            int            `json:"verbosity,omitempty"`
+	ExecutionEnvironment int            `json:"execution_environment,omitempty"`
+	Timeout              int            `json:"timeout,omitempty"`
+	ExtraData            map[string]any `json:"extra_data,omitempty"`
 }
 
 type Survey struct {

@@ -29,7 +29,9 @@ func TestAccRoleUserAssignmentResource(t *testing.T) {
 					statecheck.CompareValuePairs(
 						fmt.Sprintf("%s_role_user_assignment.%s-1", configprefix.Prefix, rName),
 						tfjsonpath.New("object_id"),
+						// AAP-AWX-DIFF-BEGIN: AAP 2.6 manages organization roles in the gateway, so aap tests a project role instead.
 						fmt.Sprintf("%s_organization.%s-1", configprefix.Prefix, rName),
+						// AAP-AWX-DIFF-END
 						tfjsonpath.New("id"),
 						IdCompare,
 					),
@@ -60,7 +62,9 @@ func TestAccRoleUserAssignmentResource(t *testing.T) {
 					statecheck.CompareValuePairs(
 						fmt.Sprintf("%s_role_user_assignment.%s-2", configprefix.Prefix, rName),
 						tfjsonpath.New("object_id"),
+						// AAP-AWX-DIFF-BEGIN: AAP 2.6 manages organization roles in the gateway, so aap tests a project role instead.
 						fmt.Sprintf("%s_organization.%s-2", configprefix.Prefix, rName),
+						// AAP-AWX-DIFF-END
 						tfjsonpath.New("id"),
 						IdCompare,
 					),
@@ -89,11 +93,15 @@ func testAccRoleUserAssignmentResourceConfig(number int, rName string) string {
 resource "%[1]s_organization" "%[4]s-%[3]d" {
   name        			= "%[2]s-%[3]d"
 }
+// AAP-AWX-DIFF-BEGIN: AAP 2.6 manages organization roles in the gateway, so aap tests a project role instead.
+// AAP-AWX-DIFF-END
 resource "%[1]s_role_definition" "%[4]s-%[3]d" {
   name         = "%[2]s-%[3]d"
   description  = "Test role definition"
+  // AAP-AWX-DIFF-BEGIN: AAP 2.6 manages organization roles in the gateway, so aap tests a project role instead.
   content_type = "shared.organization"
   permissions   = ["shared.member_organization", "shared.view_organization"]
+  // AAP-AWX-DIFF-END
 }
 resource "%[1]s_user" "%[4]s-%[3]d" {
   username      = "%[2]s-%[3]d"
@@ -103,7 +111,9 @@ resource "%[1]s_user" "%[4]s-%[3]d" {
   password 		= "%[2]s-%[3]d-password"
 }
 resource "%[1]s_role_user_assignment" "%[4]s-%[3]d" {
+  // AAP-AWX-DIFF-BEGIN: AAP 2.6 manages organization roles in the gateway, so aap tests a project role instead.
   object_id       = %[1]s_organization.%[4]s-%[3]d.id
+  // AAP-AWX-DIFF-END
   role_definition = %[1]s_role_definition.%[4]s-%[3]d.id
   user            = %[1]s_user.%[4]s-%[3]d.id
 }

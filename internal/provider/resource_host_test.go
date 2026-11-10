@@ -81,7 +81,9 @@ func TestAccHostResource(t *testing.T) {
 					statecheck.ExpectKnownValue(
 						fmt.Sprintf("%s_host.%s", configprefix.Prefix, rName),
 						tfjsonpath.New("variables"),
+						// AAP-AWX-DIFF-BEGIN: Empty vars default to "---" in awx but are left unset in aap.
 						knownvalue.StringExact("---"),
+						// AAP-AWX-DIFF-END
 					),
 					statecheck.ExpectKnownValue(
 						fmt.Sprintf("%s_host.%s", configprefix.Prefix, rName),
