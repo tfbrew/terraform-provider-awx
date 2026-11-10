@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
+	urlParser "net/url"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -95,20 +95,15 @@ func (d *RoleDefinitionDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	var url string
+	query := urlParser.Values{}
 	if !data.Id.IsNull() {
-		id, err := strconv.Atoi(data.Id.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable convert id from string to int.",
-				fmt.Sprintf("Unable to convert id: %v. ", data.Id.ValueString()))
-			return
-		}
-		url = fmt.Sprintf("role_definitions/?id=%d", id)
+		query.Set("id", data.Id.ValueString())
 	}
 	if !data.Name.IsNull() {
-		url = fmt.Sprintf("role_definitions/?name=%s", data.Name.ValueString())
+		query.Set("name", data.Name.ValueString())
 	}
+
+	url := "role_definitions/?" + query.Encode()
 
 	body, _, err := d.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "")
 	if err != nil {

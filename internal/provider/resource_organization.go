@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	urlParser "net/url"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -165,7 +166,9 @@ func (r *OrganizationResource) Create(ctx context.Context, req resource.CreateRe
 
 		// overwrite returnedData with Get against org's /controller/ endpoint
 
-		url := fmt.Sprintf("organizations/?name=%s", data.Name.ValueString())
+		query := urlParser.Values{}
+		query.Set("name", data.Name.ValueString())
+		url := "organizations/?" + query.Encode()
 		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "controller")
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -240,7 +243,9 @@ func (r *OrganizationResource) Read(ctx context.Context, req resource.ReadReques
 	// if aap2.5 get the /gateway/ id and set the related field
 	if configprefix.Prefix == "aap" {
 
-		url := fmt.Sprintf("organizations/?name=%s", responseData.Name)
+		query := urlParser.Values{}
+		query.Set("name", responseData.Name)
+		url := "organizations/?" + query.Encode()
 		responseBodyData, _, err := r.client.GenericAPIRequest(ctx, http.MethodGet, url, nil, []int{200}, "gateway")
 		if err != nil {
 			resp.Diagnostics.AddError(
